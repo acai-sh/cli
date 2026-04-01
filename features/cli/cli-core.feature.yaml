@@ -1,0 +1,46 @@
+feature:
+    name: cli-core
+    product: cli
+    version: 1.0.0
+    description: |
+        Shared command-line behavior for the acai CLI.
+        These requirements apply across the CLI surface where relevant.
+
+components:
+    TARGETING:
+        description: Shared implementation resolution behavior for commands that target one implementation
+        requirements:
+            1: A command that accepts `--impl` uses that implementation directly when it is provided
+            2: A command that omits `--impl` and supports branch-based targeting reads the current repo remote and branch name from git
+            3: If branch-based targeting yields exactly one implementation, that implementation is used automatically
+            4: If branch-based targeting yields multiple implementations, the command exits with an ambiguity error and lists the candidate names
+            5: If branch-based targeting yields no implementations, the command exits non-zero and states that no implementation matched the current repo, branch, and product
+
+    AUTH:
+        description: Shared API authentication behavior
+        requirements:
+            1: A command that calls the API includes a Bearer token in each request
+            2: The Bearer token is configurable via an environment variable
+
+    OUTPUT:
+        description: Shared machine-readable output behavior
+        requirements:
+            1: A command that supports `--json` reserves stdout for the final JSON payload when `--json` is active
+
+constraints:
+    EXITS:
+        requirements:
+            1: A successful command exits with code `0`
+            2: A usage or input validation error exits with code `2`
+            3: A runtime failure exits with code `1`
+
+    UX:
+        requirements:
+            1: The CLI works in non-interactive environments such as CI and agent runtimes
+            2: The CLI never requires an interactive prompt to complete a command
+
+    DIST:
+        requirements:
+            1: The CLI can be distributed as a JavaScript bundle runnable via `npx`
+            2: The CLI can be distributed through GitHub Releases as platform-specific binaries
+            3: GitHub Release binaries are built using `bun compile`

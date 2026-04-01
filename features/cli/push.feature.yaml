@@ -1,0 +1,65 @@
+feature:
+    name: push
+    product: cli
+    version: 1.0.0
+    description: |
+        The `acai push` command scans the local repo for specs and ACID references, builds one payload per product,
+        and syncs that branch-derived truth to the API.
+
+components:
+    MAIN:
+        description: Primary command behavior
+        requirements:
+            1: Exposes `acai push`
+            2: Accepts one or more optional feature-name arguments to limit scanning to those features
+            3: Accepts `--all` to scan all eligible spec and source files from repo root
+            4: Accepts optional `--product <product-name>`
+            5: Accepts optional `--target` selector for naming or linking implementations
+            6: Accepts optional `--parent` selector for establishing inheritance when a new implementation is created
+            7: Reads the current repo remote and branch name from git
+            8: Scans local spec files and code references from repo root
+            9: Groups outgoing payloads by product because the API accepts one product per push request
+
+    SCAN:
+        description: Spec and ref collection
+        requirements:
+            1: Parses feature specs from local files
+            2: Extracts full ACID references from code and tests
+            3: Associates each discovered spec with its path and last modified commit
+            4: Omits products that produced neither specs nor refs for the current scan
+            5: Supports `deprecated true` at the component level in feature specs
+            5-note: This is a shorthand that applies `deprecated true` to every ACID within that component when building the push payload
+            5-1: Individual ACID deprecation on the requirement itself takes precedence when both are present
+
+    API:
+        description: Interaction with the push API
+        requirements:
+            1: Sends one `POST /api/v1/push` request per product discovered during the scan
+            2: Namespaced `--target product/impl` and `--parent product/impl` values are split by product before the API call
+            3: If feature-name arguments are provided, only matching specs and refs are included in each per-product payload
+            4: API failures for one product do not silently mask the result for another product
+            5: When a refs-only push creates or links an implementation, the command sends `--product` as `product_name`
+
+    OUTPUT:
+        description: Human and machine readable results
+        requirements:
+            1: Prints one result block per product
+            2: Each result block includes the resolved implementation name when available
+            3: Each result block includes specs created and specs updated counts
+            4: Warnings returned by the API are surfaced to the user
+            5: Supports `--json` output for machine consumption
+
+constraints:
+    SAFETY:
+        requirements:
+            1: "`acai push` never scans or sends states"
+            2: Each outgoing API payload uses the product name parsed from the included specs, or explicit `--product` when the payload contains no specs
+            3: The command exits non-zero when any per-product push fails
+            4: When a push request contains refs but no specs, the command never guesses a product from refs alone
+            5: A refs-only push creates a new child implementation only when `--product`, `--target`, and `--parent` are all provided
+
+    UX:
+        requirements:
+            1: The command works in non-interactive environments such as CI and git hooks
+            2: The command produces deterministic per-product grouping from the same repo contents
+            3: Users should keep feature names globally unique when they want refs to remain distinct across products on the same branch
