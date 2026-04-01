@@ -113,17 +113,13 @@ describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-cor
     });
   });
 
-  test("cli-core.TARGETING.1 rejects a missing product selector", () => {
-    expect(() => normalizeWorkOptions({ json: true })).toThrow("Missing required --product value.");
-  });
-
   test("cli-core.TARGETING.1 still reports a missing product selector before API config resolution", async () => {
     const output = { stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } };
 
     const exitCode = await runCli(["work", "--impl", "main"], { output, env: {} });
 
     expect(exitCode).toBe(2);
-    expect(readWrites(output.stderr.write)).toContain("Missing required --product value.");
+    expect(readWrites(output.stderr.write)).toContain("required option '--product <name>' not specified");
     expect(readWrites(output.stderr.write)).toContain("Usage: acai work");
   });
 
@@ -313,7 +309,8 @@ describe("cli-core.HELP.3 cli-core.HELP.5", () => {
 
     expect(helpExit).toBe(0);
     expect(shortHelpExit).toBe(0);
-    expect(readWrites(helpOutput.stdout.write)).toContain("Usage: acai work");
+    expect(readWrites(helpOutput.stdout.write)).toContain("Usage: acai work --product <name> [options]");
+    expect(readWrites(helpOutput.stdout.write)).toContain("product name (required)");
     expect(readWrites(helpOutput.stdout.write)).toBe(readWrites(shortHelpOutput.stdout.write));
     expect(apiClient.listImplementations).not.toHaveBeenCalled();
     expect(apiClient.listImplementationFeatures).not.toHaveBeenCalled();
@@ -334,7 +331,7 @@ describe("cli-core.ERRORS.3 cli-core.ERRORS.4 cli-core.ERRORS.5", () => {
   test("cli-core.ERRORS.4 reports unknown options with work help text", async () => {
     const output = { stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } };
 
-    const exitCode = await runCli(["work", "--unknown-option"], { output });
+    const exitCode = await runCli(["work", "--product", "example-product", "--unknown-option"], { output });
 
     expect(exitCode).toBe(2);
     expect(readWrites(output.stderr.write)).toContain("unknown option");

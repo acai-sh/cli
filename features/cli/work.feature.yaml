@@ -11,7 +11,7 @@ components:
         description: Primary command behavior
         requirements:
             1: Exposes `acai work`
-            2: Requires a product selector via `--product` or an equivalent namespaced implementation selector
+            2: Requires a product selector via `--product`
             3: Accepts optional `--impl <implementation-name>`
             4: Accepts optional `--status <value>` filters, repeatable
             5: Accepts optional `--changed-since-commit <commit>`

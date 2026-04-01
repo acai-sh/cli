@@ -12,7 +12,7 @@ export interface WorkArgs {
 }
 
 export interface WorkCommandOptions {
-  product?: string;
+  product: string;
   impl?: string;
   status?: string[];
   changedSinceCommit?: string;
@@ -25,10 +25,6 @@ export interface WorkTargetResolverDependencies {
 
 // work.MAIN.1 / cli-core.TARGETING.1
 export function normalizeWorkOptions(options: WorkCommandOptions): WorkArgs {
-  if (!options.product) {
-    throw usageError("Missing required --product value.");
-  }
-
   if (options.product.startsWith("-")) {
     throw usageError("Missing value for --product.");
   }

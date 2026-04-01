@@ -32,7 +32,8 @@ describe("cli-core.HELP.1 cli-core.HELP.2 cli-core.HELP.4 cli-core.HELP.5", () =
     expect(help.exitCode).toBe(0);
     expect(shortHelp.exitCode).toBe(0);
     expect(help.stdout).toBe(shortHelp.stdout);
-    expect(help.stdout).toContain("Usage: acai work");
+    expect(help.stdout).toContain("Usage: acai work --product <name> [options]");
+    expect(help.stdout).toContain("product name (required)");
     expect(help.stderr.trim()).toBe("");
     expect(shortHelp.stderr.trim()).toBe("");
   });
@@ -238,7 +239,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
     });
 
     expect(result.exitCode).toBe(2);
-    expect(result.stderr).toContain("Missing required --product value.");
+    expect(result.stderr).toContain("required option '--product <name>' not specified");
     expect(result.stderr).toContain("Usage: acai work");
   });
 
@@ -246,7 +247,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
     const result = await runCliSubprocess(["work", "--impl", "main"]);
 
     expect(result.exitCode).toBe(2);
-    expect(result.stderr).toContain("Missing required --product value.");
+    expect(result.stderr).toContain("required option '--product <name>' not specified");
     expect(result.stderr).toContain("Usage: acai work");
   });
 
@@ -259,7 +260,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
   });
 
   test("cli-core.ERRORS.4 exits non-zero for unknown work options", async () => {
-    const result = await runCliSubprocess(["work", "--unknown-option"]);
+    const result = await runCliSubprocess(["work", "--product", "example-product", "--unknown-option"]);
 
     expect(result.exitCode).toBe(2);
     expect(result.stderr).toContain("unknown option");
