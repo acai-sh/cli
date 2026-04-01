@@ -84,8 +84,8 @@ function createCliProgram(dependencies: CliDependencies, output: OutputPorts): {
     .option("--json", "emit JSON output")
     .action(async (options: WorkCommandOptions) => {
       try {
-        const apiClient = dependencies.apiClient ?? createApiClient(resolveApiConfig(env));
         const workArgs = normalizeWorkOptions(options);
+        const apiClient = dependencies.apiClient ?? createApiClient(resolveApiConfig(env));
         state.workResult = await runWorkCommand(apiClient, workArgs);
       } catch (error) {
         if (error instanceof CliError && error.kind === "usage") {

@@ -242,6 +242,14 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
     expect(result.stderr).toContain("Usage: acai work");
   });
 
+  test("cli-core.TARGETING.1 still reports a missing product selector when API env is absent", async () => {
+    const result = await runCliSubprocess(["work", "--impl", "main"]);
+
+    expect(result.exitCode).toBe(2);
+    expect(result.stderr).toContain("Missing required --product value.");
+    expect(result.stderr).toContain("Usage: acai work");
+  });
+
   test("cli-core.ERRORS.3 exits non-zero for unknown commands", async () => {
     const result = await runCliSubprocess(["bogus"]);
 

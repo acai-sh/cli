@@ -117,6 +117,16 @@ describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-cor
     expect(() => normalizeWorkOptions({ json: true })).toThrow("Missing required --product value.");
   });
 
+  test("cli-core.TARGETING.1 still reports a missing product selector before API config resolution", async () => {
+    const output = { stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } };
+
+    const exitCode = await runCli(["work", "--impl", "main"], { output, env: {} });
+
+    expect(exitCode).toBe(2);
+    expect(readWrites(output.stderr.write)).toContain("Missing required --product value.");
+    expect(readWrites(output.stderr.write)).toContain("Usage: acai work");
+  });
+
   test("cli-core.TARGETING.2 and cli-core.TARGETING.3 normalize git remote context", async () => {
     const context = await readGitContext({
       runner: {
