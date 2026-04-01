@@ -4,6 +4,40 @@ import { createFakeGitContext } from "../test/support/fake-git.ts";
 import { createMockApiServer } from "../test/support/mock-api.ts";
 import { runCliSubprocess } from "../test/support/cli.ts";
 
+describe("cli-core.HELP.1 cli-core.HELP.2 cli-core.HELP.4 cli-core.HELP.5", () => {
+  test("acai prints top-level help when invoked without a subcommand", async () => {
+    const result = await runCliSubprocess([]);
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr.trim()).toBe("");
+    expect(result.stdout).toContain("Usage: acai");
+    expect(result.stdout).toContain("work");
+  });
+
+  test("acai --help and acai -h produce the same top-level help", async () => {
+    const help = await runCliSubprocess(["--help"]);
+    const shortHelp = await runCliSubprocess(["-h"]);
+
+    expect(help.exitCode).toBe(0);
+    expect(shortHelp.exitCode).toBe(0);
+    expect(help.stdout).toBe(shortHelp.stdout);
+    expect(help.stderr.trim()).toBe("");
+    expect(shortHelp.stderr.trim()).toBe("");
+  });
+
+  test("acai work --help and acai work -h produce the same command help", async () => {
+    const help = await runCliSubprocess(["work", "--help"]);
+    const shortHelp = await runCliSubprocess(["work", "-h"]);
+
+    expect(help.exitCode).toBe(0);
+    expect(shortHelp.exitCode).toBe(0);
+    expect(help.stdout).toBe(shortHelp.stdout);
+    expect(help.stdout).toContain("Usage: acai work");
+    expect(help.stderr.trim()).toBe("");
+    expect(shortHelp.stderr.trim()).toBe("");
+  });
+});
+
 describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-core.UX.2", () => {
   test("work.MAIN.1 work.MAIN.3 work.MAIN.4 work.MAIN.5 work.MAIN.7 work.MAIN.8 work.API.1 work.UX.1 prints text output for a direct target", async () => {
     const server = createMockApiServer((request) => {
@@ -194,6 +228,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 
     expect(result.exitCode).toBe(2);
     expect(result.stderr).toContain("Missing API base URL configuration.");
+    expect(result.stderr).toContain("Usage: acai work");
   });
 
   test("work.MAIN.2 and cli-core.EXITS.2 require a product selector", async () => {
@@ -204,6 +239,23 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 
     expect(result.exitCode).toBe(2);
     expect(result.stderr).toContain("Missing required --product value.");
+    expect(result.stderr).toContain("Usage: acai work");
+  });
+
+  test("cli-core.ERRORS.3 exits non-zero for unknown commands", async () => {
+    const result = await runCliSubprocess(["bogus"]);
+
+    expect(result.exitCode).toBe(2);
+    expect(result.stderr).toContain("unknown command");
+    expect(result.stderr).toContain("Usage: acai");
+  });
+
+  test("cli-core.ERRORS.4 exits non-zero for unknown work options", async () => {
+    const result = await runCliSubprocess(["work", "--unknown-option"]);
+
+    expect(result.exitCode).toBe(2);
+    expect(result.stderr).toContain("unknown option");
+    expect(result.stderr).toContain("Usage: acai work");
   });
 
   test("cli-core.HTTP.2 surfaces API auth failures", async () => {
@@ -361,5 +413,6 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 
     expect(result.exitCode).toBe(2);
     expect(result.stderr).toContain("Missing value for --changed-since-commit.");
+    expect(result.stderr).toContain("Usage: acai work");
   });
 });

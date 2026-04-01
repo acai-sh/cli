@@ -1,11 +1,16 @@
 import { describe, expect, mock, test } from "bun:test";
 import { createApiClient } from "./core/api.ts";
 import { resolveApiConfig } from "./core/config.ts";
+import { runCli } from "./core/cli.ts";
 import { writeJsonResult, writeTextResult } from "./core/output.ts";
 import { normalizeRepoUri, readGitContext } from "./core/git.ts";
-import { parseWorkArgs, runWorkCommand } from "./core/work.ts";
+import { normalizeWorkOptions, runWorkCommand } from "./core/work.ts";
 import { buildImplementationFeaturesResponse, buildImplementationsResponse } from "../test/support/fixtures.ts";
 import { createMockApiServer } from "../test/support/mock-api.ts";
+
+function readWrites(writer: { mock: { calls: unknown[][] } }): string {
+  return (writer.mock.calls as Array<[string]>).map(([text]) => text).join("");
+}
 
 describe("cli-core.CONFIG.1 cli-core.AUTH.2", () => {
   test("resolves API base URL and bearer token from env", () => {
@@ -90,23 +95,16 @@ describe("cli-core.OUTPUT.1 cli-core.OUTPUT.2", () => {
 });
 
 describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-core.TARGETING.4 cli-core.TARGETING.5 cli-core.ERRORS.2", () => {
-  test("cli-core.TARGETING.1 parses direct work flags and repeated filters", () => {
-    const parsed = parseWorkArgs([
-      "work",
-      "--product",
-      "example-product",
-      "--impl",
-      "main",
-      "--status",
-      "todo",
-      "--status",
-      "doing",
-      "--changed-since-commit",
-      "abc123",
-      "--json",
-    ]);
-
-    expect(parsed.workArgs).toEqual({
+  test("cli-core.TARGETING.1 normalizes commander values into work args", () => {
+    expect(
+      normalizeWorkOptions({
+        product: "example-product",
+        impl: "main",
+        status: ["todo", "doing"],
+        changedSinceCommit: "abc123",
+        json: true,
+      }),
+    ).toEqual({
       productName: "example-product",
       implementationName: "main",
       statuses: ["todo", "doing"],
@@ -115,11 +113,8 @@ describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-cor
     });
   });
 
-  test("cli-core.TARGETING.1 rejects missing values when the next token is another flag", () => {
-    expect(() => parseWorkArgs(["work", "--product", "--json"])).toThrow("Missing value for --product.");
-    expect(() => parseWorkArgs(["work", "--product", "example-product", "--impl", "--json"])).toThrow("Missing value for --impl.");
-    expect(() => parseWorkArgs(["work", "--product", "example-product", "--status", "--json"])).toThrow("Missing value for --status.");
-    expect(() => parseWorkArgs(["work", "--product", "example-product", "--changed-since-commit", "--json"])).toThrow("Missing value for --changed-since-commit.");
+  test("cli-core.TARGETING.1 rejects a missing product selector", () => {
+    expect(() => normalizeWorkOptions({ json: true })).toThrow("Missing required --product value.");
   });
 
   test("cli-core.TARGETING.2 and cli-core.TARGETING.3 normalize git remote context", async () => {
@@ -248,5 +243,105 @@ describe("work.MAIN.1 work.MAIN.3 work.MAIN.4 work.MAIN.5 work.MAIN.6 work.MAIN.
       statuses: ["todo", "doing"],
       changedSinceCommit: "abc123",
     });
+  });
+});
+
+describe("cli-core.HELP.1 cli-core.HELP.2 cli-core.HELP.4", () => {
+  test("runCli prints top-level help and skips the API when invoked without a subcommand", async () => {
+    const output = { stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } };
+    const apiClient = {
+      listImplementations: mock(async () => {
+        throw new Error("should not be called");
+      }),
+      listImplementationFeatures: mock(async () => {
+        throw new Error("should not be called");
+      }),
+    };
+
+    const exitCode = await runCli([], { output, apiClient: apiClient as never });
+
+    expect(exitCode).toBe(0);
+    expect(readWrites(output.stdout.write)).toContain("Usage: acai");
+    expect(readWrites(output.stdout.write)).toContain("work");
+    expect(output.stderr.write).not.toHaveBeenCalled();
+    expect(apiClient.listImplementations).not.toHaveBeenCalled();
+    expect(apiClient.listImplementationFeatures).not.toHaveBeenCalled();
+  });
+
+  test("cli-core.HELP.2 and cli-core.HELP.5 keep --help and -h in sync", async () => {
+    const makeOutput = () => ({ stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } });
+
+    const helpOutput = makeOutput();
+    const shortHelpOutput = makeOutput();
+
+    const helpExit = await runCli(["--help"], { output: helpOutput });
+    const shortHelpExit = await runCli(["-h"], { output: shortHelpOutput });
+
+    expect(helpExit).toBe(0);
+    expect(shortHelpExit).toBe(0);
+    expect(readWrites(helpOutput.stdout.write)).toBe(readWrites(shortHelpOutput.stdout.write));
+  });
+});
+
+describe("cli-core.HELP.3 cli-core.HELP.5", () => {
+  test("runCli prints work help for --help and -h without calling the API", async () => {
+    const makeOutput = () => ({ stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } });
+    const apiClient = {
+      listImplementations: mock(async () => {
+        throw new Error("should not be called");
+      }),
+      listImplementationFeatures: mock(async () => {
+        throw new Error("should not be called");
+      }),
+    };
+
+    const helpOutput = makeOutput();
+    const shortHelpOutput = makeOutput();
+
+    const helpExit = await runCli(["work", "--help"], { output: helpOutput, apiClient: apiClient as never });
+    const shortHelpExit = await runCli(["work", "-h"], { output: shortHelpOutput, apiClient: apiClient as never });
+
+    expect(helpExit).toBe(0);
+    expect(shortHelpExit).toBe(0);
+    expect(readWrites(helpOutput.stdout.write)).toContain("Usage: acai work");
+    expect(readWrites(helpOutput.stdout.write)).toBe(readWrites(shortHelpOutput.stdout.write));
+    expect(apiClient.listImplementations).not.toHaveBeenCalled();
+    expect(apiClient.listImplementationFeatures).not.toHaveBeenCalled();
+  });
+});
+
+describe("cli-core.ERRORS.3 cli-core.ERRORS.4 cli-core.ERRORS.5", () => {
+  test("runCli reports unknown commands with help text", async () => {
+    const output = { stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } };
+
+    const exitCode = await runCli(["bogus"], { output });
+
+    expect(exitCode).toBe(2);
+    expect(readWrites(output.stderr.write)).toContain("unknown command");
+    expect(readWrites(output.stderr.write)).toContain("Usage: acai");
+  });
+
+  test("cli-core.ERRORS.4 reports unknown options with work help text", async () => {
+    const output = { stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } };
+
+    const exitCode = await runCli(["work", "--unknown-option"], { output });
+
+    expect(exitCode).toBe(2);
+    expect(readWrites(output.stderr.write)).toContain("unknown option");
+    expect(readWrites(output.stderr.write)).toContain("Usage: acai work");
+  });
+
+  test("cli-core.ERRORS.5 prints work help when usage validation fails inside the command", async () => {
+    const output = { stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } };
+
+    const exitCode = await runCli(["work", "--product", "example-product", "--impl", "main"], {
+      env: { ACAI_API_TOKEN: "secret" },
+      output,
+    });
+
+    expect(exitCode).toBe(2);
+    const stderr = readWrites(output.stderr.write);
+    expect(stderr).toContain("Missing API base URL configuration.");
+    expect(stderr).toContain("Usage: acai work");
   });
 });

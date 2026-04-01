@@ -11,45 +11,50 @@ export interface WorkArgs {
   json: boolean;
 }
 
+export interface WorkCommandOptions {
+  product?: string;
+  impl?: string;
+  status?: string[];
+  changedSinceCommit?: string;
+  json?: boolean;
+}
+
 export interface WorkTargetResolverDependencies {
   readGitContext?: typeof readGitContext;
 }
 
-export function parseWorkArgs(argv: string[]): { command: string | null; workArgs: WorkArgs } {
-  const args = argv.slice();
-  const command = args.shift() ?? null;
-  const workArgs: WorkArgs = { productName: "", statuses: [], json: false };
-
-  while (args.length > 0) {
-    const flag = args.shift();
-    if (!flag) break;
-
-    switch (flag) {
-      case "--json":
-        workArgs.json = true;
-        break;
-      case "--product":
-        workArgs.productName = requireValue(flag, args);
-        break;
-      case "--impl":
-        workArgs.implementationName = requireValue(flag, args);
-        break;
-      case "--status":
-        workArgs.statuses.push(requireValue(flag, args));
-        break;
-      case "--changed-since-commit":
-        workArgs.changedSinceCommit = requireValue(flag, args);
-        break;
-      default:
-        throw usageError(`Unknown flag: ${flag}`);
-    }
-  }
-
-  if (!workArgs.productName) {
+// work.MAIN.1 / cli-core.TARGETING.1
+export function normalizeWorkOptions(options: WorkCommandOptions): WorkArgs {
+  if (!options.product) {
     throw usageError("Missing required --product value.");
   }
 
-  return { command, workArgs };
+  if (options.product.startsWith("-")) {
+    throw usageError("Missing value for --product.");
+  }
+
+  if (options.impl?.startsWith("-")) {
+    throw usageError("Missing value for --impl.");
+  }
+
+  if (options.changedSinceCommit?.startsWith("-")) {
+    throw usageError("Missing value for --changed-since-commit.");
+  }
+
+  const statuses = options.status ?? [];
+  for (const status of statuses) {
+    if (status.startsWith("-")) {
+      throw usageError("Missing value for --status.");
+    }
+  }
+
+  return {
+    productName: options.product,
+    implementationName: options.impl,
+    statuses,
+    changedSinceCommit: options.changedSinceCommit,
+    json: options.json ?? false,
+  };
 }
 
 export async function runWorkCommand(
@@ -109,10 +114,4 @@ async function resolveImplementationName(
   throw runtimeError(
     `Multiple implementations matched the current repo, branch, and product: ${implementations.map((entry) => entry.implementation_name).join(", ")}`,
   );
-}
-
-function requireValue(flag: string, args: string[]): string {
-  const value = args.shift();
-  if (!value || value.startsWith("--")) throw usageError(`Missing value for ${flag}.`);
-  return value;
 }
