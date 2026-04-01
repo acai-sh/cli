@@ -14,6 +14,7 @@
         "typescript": "^5"
     },
     "dependencies": {
+        "commander": "^14.0.3",
         "openapi-fetch": "^0.17.0"
     }
 }
