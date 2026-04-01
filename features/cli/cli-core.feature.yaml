@@ -41,12 +41,16 @@ components:
             2: Invoking `acai --help` prints top-level help output
             3: Invoking `acai <command> --help` prints help output for that command
             4: Help output exits successfully without calling the API
+            5: Invoking `acai -h` or `acai <command> -h` prints the same help output as the corresponding `--help` form
 
     ERRORS:
         description: Shared API and runtime error reporting behavior
         requirements:
             1: When the API returns an error response with a detail message, the command surfaces that detail to the user
             2: When branch-based targeting cannot read the current repo remote or branch name from git, the command exits non-zero and states that git context could not be determined
+            3: Invoking `acai <unknown-command>` exits with a usage or input validation error and identifies the command as unknown
+            4: Invoking a command with an unknown option exits with a usage or input validation error and identifies the option as unknown
+            5: When a command exits with a usage or input validation error, the CLI also prints command usage or help text
 
 constraints:
     HTTP:
@@ -58,7 +62,7 @@ constraints:
     EXITS:
         requirements:
             1: A successful command exits with code `0`
-            2: A usage or input validation error exits with code `2`
+            2: A usage or input validation error, including unknown commands and unknown options, exits with code `2`
             3: A runtime failure exits with code `1`
 
     UX:
