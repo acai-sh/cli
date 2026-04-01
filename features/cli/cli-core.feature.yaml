@@ -34,6 +34,14 @@ components:
             1: A command that supports `--json` reserves stdout for the final JSON payload when `--json` is active
             2: A command that supports `--json` writes warnings, diagnostics, and non-payload text to stderr when `--json` is active
 
+    HELP:
+        description: Shared help and command discovery behavior
+        requirements:
+            1: Invoking `acai` with no subcommand prints top-level help output
+            2: Invoking `acai --help` prints top-level help output
+            3: Invoking `acai <command> --help` prints help output for that command
+            4: Help output exits successfully without calling the API
+
     ERRORS:
         description: Shared API and runtime error reporting behavior
         requirements:
