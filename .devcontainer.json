@@ -3,5 +3,9 @@
     "remoteUser": "bun",
     "build": {
         "dockerfile": "./Dockerfile"
+    },
+    "runArgs": ["--network=${localEnv:DEVCONTAINER_NETWORK:bridge}"],
+    "containerEnv": {
+        "TERM": "xterm-256color"
     }
 }
