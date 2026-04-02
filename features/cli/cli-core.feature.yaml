@@ -25,7 +25,7 @@ components:
     CONFIG:
         description: Shared runtime configuration behavior
         requirements:
-            1: A command that calls the API reads the API base URL from configuration
+            1: A command that calls the API defaults its API base URL to `https://acai.sh/api/v1` and allows configuration to override it
             2: A command that requires API configuration exits with a usage or input validation error when required configuration is missing
 
     OUTPUT:

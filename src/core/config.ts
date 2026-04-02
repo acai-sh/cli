@@ -11,10 +11,7 @@ export interface EnvLike {
 
 // cli-core.CONFIG.1, cli-core.CONFIG.2, and cli-core.AUTH.2
 export function resolveApiConfig(env: EnvLike = process.env): ApiConfig {
-  const baseUrl = env.ACAI_API_BASE_URL ?? env.ACAI_API_URL;
-  if (!baseUrl) {
-    throw usageError("Missing API base URL configuration.");
-  }
+  const baseUrl = env.ACAI_API_BASE_URL ?? env.ACAI_API_URL ?? "https://acai.sh/api/v1";
 
   const token = env.ACAI_API_TOKEN;
   if (!token) {

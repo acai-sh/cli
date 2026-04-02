@@ -13,13 +13,18 @@ function readWrites(writer: { mock: { calls: unknown[][] } }): string {
 }
 
 describe("cli-core.CONFIG.1 cli-core.AUTH.2", () => {
+  test("cli-core.CONFIG.1 defaults the API base URL to the hosted acai.sh endpoint", () => {
+    const config = resolveApiConfig({ ACAI_API_TOKEN: "secret" });
+    expect(config).toEqual({ baseUrl: "https://acai.sh/api/v1", token: "secret" });
+  });
+
   test("resolves API base URL and bearer token from env", () => {
     const config = resolveApiConfig({ ACAI_API_BASE_URL: "https://api.example.test", ACAI_API_TOKEN: "secret" });
     expect(config).toEqual({ baseUrl: "https://api.example.test", token: "secret" });
   });
 
-  test("cli-core.CONFIG.2 fails when API configuration is missing", () => {
-    expect(() => resolveApiConfig({})).toThrow("Missing API base URL configuration.");
+  test("cli-core.CONFIG.2 fails when API bearer token configuration is missing", () => {
+    expect(() => resolveApiConfig({})).toThrow("Missing API bearer token configuration.");
   });
 });
 
@@ -342,13 +347,13 @@ describe("cli-core.ERRORS.3 cli-core.ERRORS.4 cli-core.ERRORS.5", () => {
     const output = { stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } };
 
     const exitCode = await runCli(["work", "--product", "example-product", "--impl", "main"], {
-      env: { ACAI_API_TOKEN: "secret" },
+      env: {},
       output,
     });
 
     expect(exitCode).toBe(2);
     const stderr = readWrites(output.stderr.write);
-    expect(stderr).toContain("Missing API base URL configuration.");
+    expect(stderr).toContain("Missing API bearer token configuration.");
     expect(stderr).toContain("Usage: acai work");
   });
 });

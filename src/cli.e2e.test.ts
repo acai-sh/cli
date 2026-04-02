@@ -222,13 +222,11 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
     await git.cleanup();
   });
 
-  test("cli-core.CONFIG.2 exits with usage errors when config is missing", async () => {
-    const result = await runCliSubprocess(["work", "--product", "example-product", "--impl", "main"], {
-      ACAI_API_TOKEN: "secret",
-    });
+  test("cli-core.CONFIG.2 exits with usage errors when the API token is missing", async () => {
+    const result = await runCliSubprocess(["work", "--product", "example-product", "--impl", "main"]);
 
     expect(result.exitCode).toBe(2);
-    expect(result.stderr).toContain("Missing API base URL configuration.");
+    expect(result.stderr).toContain("Missing API bearer token configuration.");
     expect(result.stderr).toContain("Usage: acai work");
   });
 
