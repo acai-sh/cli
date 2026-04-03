@@ -28,7 +28,7 @@ describe("cli-core.CONFIG.1 cli-core.AUTH.2", () => {
   });
 });
 
-describe("cli-core.AUTH.1 cli-core.HTTP.1 cli-core.HTTP.2 cli-core.HTTP.3 cli-core.ERRORS.1", () => {
+describe("cli-core.AUTH.1 cli-core.HTTP.1 cli-core.HTTP.2 cli-core.HTTP.3 cli-core.ERRORS.1 cli-core.ERRORS.6", () => {
   test("applies bearer auth on outgoing API requests", async () => {
     const server = createMockApiServer((request) => {
       expect(request.headers.get("authorization")).toBe("Bearer secret");
@@ -54,10 +54,23 @@ describe("cli-core.AUTH.1 cli-core.HTTP.1 cli-core.HTTP.2 cli-core.HTTP.3 cli-co
 
     const client = createApiClient(
       { baseUrl: "https://api.example.test", token: "secret" },
-      { client: { GET: get } as never },
+      { client: { GET: get, POST: mock(async () => { throw new Error("unexpected"); }) } as never },
     );
 
     await expect(client.listImplementationFeatures({ productName: "example-product", implementationName: "main" })).rejects.toThrow("API request failed.");
+  });
+
+  test("cli-core.ERRORS.6 normalizes empty API responses", async () => {
+    const get = mock(async () => ({ data: undefined, error: undefined, response: undefined }));
+
+    const client = createApiClient(
+      { baseUrl: "https://api.example.test", token: "secret" },
+      { client: { GET: get, POST: mock(async () => { throw new Error("unexpected"); }) } as never },
+    );
+
+    await expect(client.listImplementations({ productName: "example-product" })).rejects.toThrow(
+      "API request failed. Check ACAI_API_BASE_URL and that the server is reachable.",
+    );
   });
 
   test("surfaces API detail messages", async () => {
@@ -69,10 +82,49 @@ describe("cli-core.AUTH.1 cli-core.HTTP.1 cli-core.HTTP.2 cli-core.HTTP.3 cli-co
 
     const client = createApiClient(
       { baseUrl: "https://api.example.test", token: "secret" },
-      { client: { GET: get } as never },
+      { client: { GET: get, POST: mock(async () => { throw new Error("unexpected"); }) } as never },
     );
 
     await expect(client.listImplementations({ productName: "example-product" })).rejects.toThrow("detail from api");
+  });
+
+  test("push.API.1 push.API.4 sends POST /push requests and normalizes push errors", async () => {
+    const post = mock(async (path: string, options: Record<string, unknown>) => {
+      expect(path).toBe("/push");
+      expect(options.body).toMatchObject({ product_name: "example-product" });
+      return {
+        data: {
+          product_name: "example-product",
+          implementation_name: "main",
+          specs_created: 1,
+          specs_updated: 0,
+          warnings: [],
+        },
+      };
+    });
+
+    const client = createApiClient(
+      { baseUrl: "https://api.example.test", token: "secret" },
+      { client: { GET: mock(async () => { throw new Error("unexpected"); }), POST: post } as never },
+    );
+
+    await expect(client.push({ branch_name: "main", commit_hash: "c1", repo_uri: "github.com/my-org/my-repo", product_name: "example-product" })).resolves.toMatchObject({
+      product_name: "example-product",
+      implementation_name: "main",
+    });
+
+    const errorPost = mock(async () => ({
+      data: undefined,
+      error: { errors: { detail: "push detail" } },
+      response: { status: 422 },
+    }));
+
+    const errorClient = createApiClient(
+      { baseUrl: "https://api.example.test", token: "secret" },
+      { client: { GET: mock(async () => { throw new Error("unexpected"); }), POST: errorPost } as never },
+    );
+
+    await expect(errorClient.push({ branch_name: "main", commit_hash: "c1", repo_uri: "github.com/my-org/my-repo", product_name: "example-product" })).rejects.toThrow("push detail");
   });
 });
 

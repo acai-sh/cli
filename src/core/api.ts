@@ -16,11 +16,13 @@ export interface ApiClient {
     statuses?: string[];
     changedSinceCommit?: string;
   }): Promise<paths["/implementation-features"]["get"]["responses"][200]["content"]["application/json"]>;
+  push(input: NonNullable<paths["/push"]["post"]["requestBody"]>["content"]["application/json"]): Promise<paths["/push"]["post"]["responses"][200]["content"]["application/json"]>;
 }
 
 export interface CreateApiClientOptions {
   client?: {
     GET: (path: string, options: Record<string, unknown>) => Promise<any>;
+    POST: (path: string, options: Record<string, unknown>) => Promise<any>;
   };
 }
 
@@ -37,7 +39,7 @@ export function createApiClient(config: ApiConfig, options: CreateApiClientOptio
 
   return {
     async listImplementations(input) {
-      return request(client, "/implementations", {
+      return request(client, "GET", "/implementations", {
         params: {
           query: {
             product_name: input.productName,
@@ -49,7 +51,7 @@ export function createApiClient(config: ApiConfig, options: CreateApiClientOptio
       });
     },
     async listImplementationFeatures(input) {
-      return request(client, "/implementation-features", {
+      return request(client, "GET", "/implementation-features", {
         params: {
           query: {
             product_name: input.productName,
@@ -60,32 +62,45 @@ export function createApiClient(config: ApiConfig, options: CreateApiClientOptio
         },
       });
     },
+    async push(input) {
+      return request(client, "POST", "/push", {
+        body: input,
+      });
+    },
   };
 }
 
-// cli-core.HTTP.1 / cli-core.HTTP.2 / cli-core.HTTP.3 / cli-core.ERRORS.1
+// cli-core.HTTP.1 / cli-core.HTTP.2 / cli-core.HTTP.3 / cli-core.ERRORS.1 / cli-core.ERRORS.6
 async function request(
   client: any,
+  method: "GET" | "POST",
   path: string,
   options: Record<string, unknown>,
 ): Promise<any> {
   try {
-    const response = await client.GET(path, options);
+    const response = await client[method](path, options);
     if (response?.error) {
       throw normalizeApiResponseError(response.error, response.response?.status);
     }
-    return response.data;
+
+    if (response?.data !== undefined) {
+      return response.data;
+    }
+
+    throw normalizeApiResponseError(undefined, response?.response?.status);
   } catch (error) {
     if (error instanceof Error && error.name === "CliError") {
       throw error;
     }
-    throw runtimeError("API request failed.", undefined, error);
+    throw runtimeError("API request failed. Check ACAI_API_BASE_URL and that the server is reachable.", undefined, error);
   }
 }
 
 function normalizeApiResponseError(error: unknown, status?: number) {
   const detail = extractErrorDetail(error);
-  const message = detail ?? `API request failed with status ${status ?? "unknown"}.`;
+  const message = detail ?? (status === undefined
+    ? "API request failed. Check ACAI_API_BASE_URL and that the server is reachable."
+    : `API request failed with status ${status}.`);
   return runtimeError(message, detail, error);
 }
 

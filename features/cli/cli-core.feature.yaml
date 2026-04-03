@@ -51,6 +51,7 @@ components:
             3: Invoking `acai <unknown-command>` exits with a usage or input validation error and identifies the command as unknown
             4: Invoking a command with an unknown option exits with a usage or input validation error and identifies the option as unknown
             5: When a command exits with a usage or input validation error, the CLI also prints command usage or help text
+            6: When an API call fails without a structured error payload, the command exits non-zero with a normalized runtime error instead of crashing on an unexpected response shape
 
 constraints:
     HTTP:

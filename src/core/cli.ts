@@ -15,6 +15,12 @@ import {
     runWorkCommand,
     type WorkCommandOptions,
 } from "./work.ts";
+import {
+    normalizePushOptions,
+    planPush,
+    runPushCommand,
+    type PushCommandOptions,
+} from "./push.ts";
 
 export interface CliDependencies {
     env?: Record<string, string | undefined>;
@@ -24,6 +30,7 @@ export interface CliDependencies {
 
 interface CliState {
     workResult?: CommandResult;
+    pushResult?: CommandResult;
     usageError?: CliError;
     usageHelpCommand?: string;
 }
@@ -91,6 +98,24 @@ export async function runCli(
         return result.exitCode;
     }
 
+    if (state?.pushResult) {
+        const result = state.pushResult;
+        if (result.jsonPayload !== undefined) {
+            await writeJsonResult(
+                output,
+                result.jsonPayload,
+                result.stderrLines,
+            );
+        } else {
+            await writeTextResult(
+                output,
+                result.stdoutLines ?? [],
+                result.stderrLines,
+            );
+        }
+        return result.exitCode;
+    }
+
     return 0;
 }
 
@@ -100,12 +125,26 @@ function createCliProgram(
 ): { program: Command; state: CliState } {
     const state: CliState = {};
     const env = dependencies.env ?? process.env;
-
+    const purple = "\x1b[38;2;217;66;189m";
+    const bold = "\x1b[1m";
+    const dim = "\x1b[2m";
+    const reset = "\x1b[0m";
     const program = new Command();
     program
         .name("acai")
         .description(
-            "CLI and toolkit to assist spec-driven development. Use acai to push local specs (feature.yaml) and inline code references (ACIDs) to an acai.sh server, and to apply status updates and annotations. Or use acai to fetch data and discover work.",
+            `  ${purple}${bold}Acai helps you coordinate spec-driven software projects.${reset}
+
+  ${purple}•${reset} Specs are written in local .yaml files (e.g. ${dim}my-feature.feature.yaml${reset}).
+  ${purple}•${reset} Specs contain a list of functional acceptance criteria with stable IDs (AKA 'ACIDs').
+  ${purple}•${reset} A Product can have many Features, and many Implementations. (e.g. ${dim}my-cli${reset} Product has a ${dim}dev${reset} Implementation with ${dim}my-new-command.feature.yaml${reset})
+  ${purple}•${reset} An Implementation tracks specific git branches (e.g. 'Production' tracks 'main'), and optionally a parent implementation from which to inherit data.
+  ${purple}•${reset} The Acai.sh server is a hub to help humans and AI agents coordinate across all Products, Features, and Implementations.
+
+  ${purple}🔗${reset} ${bold}Official Docs:${reset}  ${purple}https://acai.sh${reset}
+  ${purple}🤖${reset} ${bold}AI/LLM Docs:${reset}    https://acai.sh/llms.txt
+
+  ${dim}Use these commands after editing specs, implementing code, or to identify and self-assign remaining work.${reset}`,
         )
         .showHelpAfterError(true)
         .exitOverride()
@@ -144,6 +183,63 @@ function createCliProgram(
             } catch (error) {
                 if (error instanceof CliError && error.kind === "usage") {
                     state.usageHelpCommand = "work";
+                    state.usageError = error;
+                    return;
+                }
+
+                throw error;
+            }
+        });
+
+    program
+        .command("push")
+        .usage("[feature-names...] [options]")
+        .description(
+            "Push local specs and ACID refs to the API. Use feature names to limit the scan, or --all to scan the full repo.",
+        )
+        // push.MAIN.1 / push.MAIN.2 / push.MAIN.3 / push.MAIN.4 / push.MAIN.5 / push.MAIN.6
+        .argument("[feature-names...]")
+        .option("--all", "scan all eligible specs and refs from repo root")
+        .option(
+            "--product <name>",
+            "explicit product name for refs-only pushes",
+        )
+        .option("--target <selector>", "target implementation selector")
+        .option("--parent <selector>", "parent implementation selector")
+        .option("--json", "emit JSON output")
+        .action(async (featureNames: string[], options: PushCommandOptions) => {
+            try {
+                const pushArgs = normalizePushOptions({
+                    featureNames,
+                    all: options.all,
+                    product: options.product,
+                    target: options.target,
+                    parent: options.parent,
+                    json: options.json,
+                });
+                const pushPlan = await planPush({
+                    cwd: process.cwd(),
+                    featureNames: pushArgs.all
+                        ? undefined
+                        : pushArgs.featureNames,
+                    product: pushArgs.product,
+                    target: pushArgs.target,
+                    parent: pushArgs.parent,
+                });
+                const apiClient =
+                    dependencies.apiClient ??
+                    createApiClient(resolveApiConfig(env));
+                state.pushResult = await runPushCommand(
+                    apiClient,
+                    pushArgs,
+                    {
+                        cwd: process.cwd(),
+                    },
+                    pushPlan,
+                );
+            } catch (error) {
+                if (error instanceof CliError && error.kind === "usage") {
+                    state.usageHelpCommand = "push";
                     state.usageError = error;
                     return;
                 }
