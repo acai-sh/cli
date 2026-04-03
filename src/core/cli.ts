@@ -5,7 +5,7 @@ import { resolveApiConfig } from "./config.ts";
 import { CliError, runtimeError } from "./errors.ts";
 import {
     defaultOutputPorts,
-    writeJsonResult,
+    writeCommandResult,
     writeTextResult,
     type CommandResult,
     type OutputPorts,
@@ -93,75 +93,23 @@ export async function runCli(
     }
 
     if (state?.workResult) {
-        const result = state.workResult;
-        if (result.jsonPayload !== undefined) {
-            await writeJsonResult(
-                output,
-                result.jsonPayload,
-                result.stderrLines,
-            );
-        } else {
-            await writeTextResult(
-                output,
-                result.stdoutLines ?? [],
-                result.stderrLines,
-            );
-        }
-        return result.exitCode;
+        await writeCommandResult(output, state.workResult);
+        return state.workResult.exitCode;
     }
 
     if (state?.featureResult) {
-        const result = state.featureResult;
-        if (result.jsonPayload !== undefined) {
-            await writeJsonResult(
-                output,
-                result.jsonPayload,
-                result.stderrLines,
-            );
-        } else {
-            await writeTextResult(
-                output,
-                result.stdoutLines ?? [],
-                result.stderrLines,
-            );
-        }
-        return result.exitCode;
+        await writeCommandResult(output, state.featureResult);
+        return state.featureResult.exitCode;
     }
 
     if (state?.pushResult) {
-        const result = state.pushResult;
-        if (result.jsonPayload !== undefined) {
-            await writeJsonResult(
-                output,
-                result.jsonPayload,
-                result.stderrLines,
-            );
-        } else {
-            await writeTextResult(
-                output,
-                result.stdoutLines ?? [],
-                result.stderrLines,
-            );
-        }
-        return result.exitCode;
+        await writeCommandResult(output, state.pushResult);
+        return state.pushResult.exitCode;
     }
 
     if (state?.setStatusResult) {
-        const result = state.setStatusResult;
-        if (result.jsonPayload !== undefined) {
-            await writeJsonResult(
-                output,
-                result.jsonPayload,
-                result.stderrLines,
-            );
-        } else {
-            await writeTextResult(
-                output,
-                result.stdoutLines ?? [],
-                result.stderrLines,
-            );
-        }
-        return result.exitCode;
+        await writeCommandResult(output, state.setStatusResult);
+        return state.setStatusResult.exitCode;
     }
 
     return 0;

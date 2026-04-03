@@ -523,7 +523,7 @@ describe("set-status.MAIN.1 set-status.MAIN.2 set-status.MAIN.3 set-status.MAIN.
     }
   });
 
-  test("cli-core.TARGETING.4 and cli-core.TARGETING.5 fail on ambiguous or missing git-derived targets", async () => {
+  test("cli-core.TARGETING.4 cli-core.TARGETING.5 and set-status.SAFETY.2 fail on ambiguous or missing git-derived targets", async () => {
     const ambiguousGit = await createFakeGitContext({ remote: "git@github.com:my-org/my-repo.git", branch: "main" });
     const ambiguousServer = createMockApiServer((request) => {
       const url = new URL(request.url);
