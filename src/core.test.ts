@@ -5,7 +5,7 @@ import { runCli } from "./core/cli.ts";
 import { writeJsonResult, writeTextResult } from "./core/output.ts";
 import { normalizeRepoUri, readGitContext } from "./core/git.ts";
 import { normalizeWorkOptions, runWorkCommand } from "./core/work.ts";
-import { buildImplementationFeaturesResponse, buildImplementationsResponse } from "../test/support/fixtures.ts";
+import { buildFeatureContextResponse, buildImplementationFeaturesResponse, buildImplementationsResponse } from "../test/support/fixtures.ts";
 import { createMockApiServer } from "../test/support/mock-api.ts";
 
 function readWrites(writer: { mock: { calls: unknown[][] } }): string {
@@ -86,6 +86,61 @@ describe("cli-core.AUTH.1 cli-core.HTTP.1 cli-core.HTTP.2 cli-core.HTTP.3 cli-co
     );
 
     await expect(client.listImplementations({ productName: "example-product" })).rejects.toThrow("detail from api");
+  });
+
+  test("feature.API.1 normalizes feature-context API detail failures", async () => {
+    const get = mock(async () => ({
+      data: undefined,
+      error: { errors: { detail: "feature detail" } },
+      response: { status: 404 },
+    }));
+
+    const client = createApiClient(
+      { baseUrl: "https://api.example.test", token: "secret" },
+      { client: { GET: get, POST: mock(async () => { throw new Error("unexpected"); }) } as never },
+    );
+
+    await expect(
+      client.getFeatureContext({
+        productName: "example-product",
+        featureName: "feature",
+        implementationName: "main",
+      }),
+    ).rejects.toThrow("feature detail");
+  });
+
+  test("feature.API.1 sends GET /feature-context requests", async () => {
+    const get = mock(async (path: string, options: Record<string, unknown>) => {
+      expect(path).toBe("/feature-context");
+      expect(options).toMatchObject({
+        params: {
+          query: {
+            product_name: "example-product",
+            feature_name: "feature",
+            implementation_name: "main",
+            include_refs: true,
+            statuses: ["completed"],
+          },
+        },
+      });
+
+      return { data: buildFeatureContextResponse() };
+    });
+
+    const client = createApiClient(
+      { baseUrl: "https://api.example.test", token: "secret" },
+      { client: { GET: get, POST: mock(async () => { throw new Error("unexpected"); }) } as never },
+    );
+
+    await expect(
+      client.getFeatureContext({
+        productName: "example-product",
+        featureName: "feature",
+        implementationName: "main",
+        includeRefs: true,
+        statuses: ["completed"],
+      }),
+    ).resolves.toEqual(buildFeatureContextResponse());
   });
 
   test("push.API.1 push.API.4 sends POST /push requests and normalizes push errors", async () => {

@@ -16,6 +16,13 @@ export interface ApiClient {
     statuses?: string[];
     changedSinceCommit?: string;
   }): Promise<paths["/implementation-features"]["get"]["responses"][200]["content"]["application/json"]>;
+  getFeatureContext(input: {
+    productName: string;
+    featureName: string;
+    implementationName: string;
+    includeRefs?: boolean;
+    statuses?: string[];
+  }): Promise<paths["/feature-context"]["get"]["responses"][200]["content"]["application/json"]>;
   push(input: NonNullable<paths["/push"]["post"]["requestBody"]>["content"]["application/json"]): Promise<paths["/push"]["post"]["responses"][200]["content"]["application/json"]>;
 }
 
@@ -58,6 +65,19 @@ export function createApiClient(config: ApiConfig, options: CreateApiClientOptio
             implementation_name: input.implementationName,
             statuses: input.statuses,
             changed_since_commit: input.changedSinceCommit,
+          },
+        },
+      });
+    },
+    async getFeatureContext(input) {
+      return request(client, "GET", "/feature-context", {
+        params: {
+          query: {
+            product_name: input.productName,
+            feature_name: input.featureName,
+            implementation_name: input.implementationName,
+            include_refs: input.includeRefs,
+            statuses: input.statuses,
           },
         },
       });

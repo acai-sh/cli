@@ -16,6 +16,11 @@ import {
     type WorkCommandOptions,
 } from "./work.ts";
 import {
+    normalizeFeatureOptions,
+    runFeatureCommand,
+    type FeatureCommandOptions,
+} from "./feature.ts";
+import {
     normalizePushOptions,
     planPush,
     runPushCommand,
@@ -29,6 +34,7 @@ export interface CliDependencies {
 }
 
 interface CliState {
+    featureResult?: CommandResult;
     workResult?: CommandResult;
     pushResult?: CommandResult;
     usageError?: CliError;
@@ -82,6 +88,24 @@ export async function runCli(
 
     if (state?.workResult) {
         const result = state.workResult;
+        if (result.jsonPayload !== undefined) {
+            await writeJsonResult(
+                output,
+                result.jsonPayload,
+                result.stderrLines,
+            );
+        } else {
+            await writeTextResult(
+                output,
+                result.stdoutLines ?? [],
+                result.stderrLines,
+            );
+        }
+        return result.exitCode;
+    }
+
+    if (state?.featureResult) {
+        const result = state.featureResult;
         if (result.jsonPayload !== undefined) {
             await writeJsonResult(
                 output,
@@ -152,6 +176,47 @@ function createCliProgram(
         .configureOutput({
             writeOut: (text) => void output.stdout.write(text),
             writeErr: (text) => void output.stderr.write(text),
+        });
+
+    program
+        .command("feature")
+        .usage("<feature-name> [options]")
+        .description(
+            "Load canonical feature context for one product + feature + implementation. When --impl is omitted, acai resolves the current implementation from the git branch. --product may also be inferred from --impl <product/implementation>.",
+        )
+        // feature.MAIN.1 / feature.MAIN.2 / feature.MAIN.3 / feature.MAIN.4 / feature.MAIN.5 / feature.MAIN.6
+        .argument("<feature-name>")
+        .option("--product <name>", "product name")
+        .option(
+            "--impl <name>",
+            "implementation name or namespaced selector <product/implementation>",
+        )
+        .option(
+            "--status <value>",
+            "status filter",
+            (value: string, previous: string[] = []) => [...previous, value],
+        )
+        .option("--include-refs", "include per-ACID refs")
+        .option("--json", "emit JSON output")
+        .action(async (featureName: string, options: FeatureCommandOptions) => {
+            try {
+                const featureArgs = normalizeFeatureOptions(featureName, options);
+                const apiClient =
+                    dependencies.apiClient ??
+                    createApiClient(resolveApiConfig(env));
+                state.featureResult = await runFeatureCommand(
+                    apiClient,
+                    featureArgs,
+                );
+            } catch (error) {
+                if (error instanceof CliError && error.kind === "usage") {
+                    state.usageHelpCommand = "feature";
+                    state.usageError = error;
+                    return;
+                }
+
+                throw error;
+            }
         });
 
     program
