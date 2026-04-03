@@ -38,7 +38,7 @@ You are responsible for git ops - create and integrate branches as you see fit, 
 Please follow these templates. In some cases, you do not need to add any additional information. If there is a relevant feature.yaml file, feel free to reference it.
 
 **prepare-tasks**
-> Proceed with task planning and creation. Details are provided below. In response, provide me the task file path so I can assign a dev to it. Or, let me know if the project has reached completion. Details: <include sufficient context for the planner to plan the next set of tasks, e.g. relevant feature specs, notes to pass along, original prompt, etc.)
+> Proceed with task planning and creation. Details are provided below. In response, provide me the task file paths so I can assign them. Or, halt and notify me when the project has reached completion to your satisfaction. Details: <include sufficient context for the planner to plan the next set of tasks, e.g. relevant feature specs, notes to pass along, original prompt, etc.)
 
 **implement - new assignment**
 > You can find the task assignment file at path: `<path>`. It should contain everything you need to proceed with implementation.
