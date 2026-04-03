@@ -3,6 +3,7 @@ name: prepare-tasks
 description: "Plan and prepare the next batch of work tasks"
 mode: subagent
 model: openai/gpt-5.4
+variant: high
 permission:
   edit: allow
   bash:

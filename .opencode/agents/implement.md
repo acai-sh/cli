@@ -2,7 +2,7 @@
 name: implement
 description: "My job is to develop and implement code to complete predefined task files."
 mode: all
-model: openai/gpt-5.4-mini
+model: openai/gpt-5.4
 permission:
   edit: allow
   bash:

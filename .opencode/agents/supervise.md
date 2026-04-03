@@ -2,7 +2,8 @@
 name: supervise
 description: "The supervisor's only job is to coordinate and delegate other agents for task definition, implementation, and review."
 mode: primary
-model: openai/gpt-5.4-mini
+model: openai/gpt-5.4
+variant: low
 permission:
   edit: allow
   bash:
