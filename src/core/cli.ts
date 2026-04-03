@@ -26,6 +26,11 @@ import {
     runPushCommand,
     type PushCommandOptions,
 } from "./push.ts";
+import {
+    normalizeSetStatusOptions,
+    runSetStatusCommand,
+    type SetStatusCommandOptions,
+} from "./set-status.ts";
 
 export interface CliDependencies {
     env?: Record<string, string | undefined>;
@@ -37,6 +42,7 @@ interface CliState {
     featureResult?: CommandResult;
     workResult?: CommandResult;
     pushResult?: CommandResult;
+    setStatusResult?: CommandResult;
     usageError?: CliError;
     usageHelpCommand?: string;
 }
@@ -124,6 +130,24 @@ export async function runCli(
 
     if (state?.pushResult) {
         const result = state.pushResult;
+        if (result.jsonPayload !== undefined) {
+            await writeJsonResult(
+                output,
+                result.jsonPayload,
+                result.stderrLines,
+            );
+        } else {
+            await writeTextResult(
+                output,
+                result.stdoutLines ?? [],
+                result.stderrLines,
+            );
+        }
+        return result.exitCode;
+    }
+
+    if (state?.setStatusResult) {
+        const result = state.setStatusResult;
         if (result.jsonPayload !== undefined) {
             await writeJsonResult(
                 output,
@@ -248,6 +272,41 @@ function createCliProgram(
             } catch (error) {
                 if (error instanceof CliError && error.kind === "usage") {
                     state.usageHelpCommand = "work";
+                    state.usageError = error;
+                    return;
+                }
+
+                throw error;
+            }
+        });
+
+    program
+        .command("set-status")
+        .usage("<json> [options]")
+        .description(
+            "Write one batch of ACID status updates for exactly one feature in one implementation. Accepts inline JSON, @file input, or - for stdin.",
+        )
+        // set-status.MAIN.1 / set-status.MAIN.2 / set-status.MAIN.3 / set-status.MAIN.4 / set-status.MAIN.5 / set-status.MAIN.6
+        .argument("<json>")
+        .option("--product <name>", "product name")
+        .option(
+            "--impl <name>",
+            "implementation name or namespaced selector <product/implementation>",
+        )
+        .option("--json", "emit JSON output")
+        .action(async (source: string, options: SetStatusCommandOptions) => {
+            try {
+                const setStatusArgs = normalizeSetStatusOptions(source, options);
+                const apiClient =
+                    dependencies.apiClient ??
+                    createApiClient(resolveApiConfig(env));
+                state.setStatusResult = await runSetStatusCommand(
+                    apiClient,
+                    setStatusArgs,
+                );
+            } catch (error) {
+                if (error instanceof CliError && error.kind === "usage") {
+                    state.usageHelpCommand = "set-status";
                     state.usageError = error;
                     return;
                 }

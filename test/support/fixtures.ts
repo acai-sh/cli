@@ -1,4 +1,4 @@
-import type { FeatureContextAcidEntry, FeatureContextResponse, ImplementationFeatureEntry, ImplementationFeaturesResponse, ImplementationEntry, ImplementationsResponse } from "../../src/generated/types.ts";
+import type { FeatureContextAcidEntry, FeatureContextResponse, FeatureStatesResponse, ImplementationFeatureEntry, ImplementationFeaturesResponse, ImplementationEntry, ImplementationsResponse } from "../../src/generated/types.ts";
 
 export function buildImplementationFeatureEntry(
   overrides: Partial<ImplementationFeatureEntry> = {},
@@ -95,6 +95,22 @@ export function buildFeatureContextResponse(
         status_counts: { completed: 1 } as never,
         total_acids: 1,
       },
+      warnings: [],
+      ...(overrides.data ?? {}),
+    },
+  };
+}
+
+export function buildFeatureStatesResponse(
+  overrides: { data?: Partial<FeatureStatesResponse["data"]> } = {},
+): FeatureStatesResponse {
+  return {
+    data: {
+      feature_name: "set-status",
+      implementation_id: "impl-1",
+      implementation_name: "main",
+      product_name: "example-product",
+      states_written: 2,
       warnings: [],
       ...(overrides.data ?? {}),
     },

@@ -23,6 +23,7 @@ export interface ApiClient {
     includeRefs?: boolean;
     statuses?: string[];
   }): Promise<paths["/feature-context"]["get"]["responses"][200]["content"]["application/json"]>;
+  setFeatureStates(input: NonNullable<paths["/feature-states"]["patch"]["requestBody"]>["content"]["application/json"]): Promise<paths["/feature-states"]["patch"]["responses"][200]["content"]["application/json"]>;
   push(input: NonNullable<paths["/push"]["post"]["requestBody"]>["content"]["application/json"]): Promise<paths["/push"]["post"]["responses"][200]["content"]["application/json"]>;
 }
 
@@ -30,6 +31,7 @@ export interface CreateApiClientOptions {
   client?: {
     GET: (path: string, options: Record<string, unknown>) => Promise<any>;
     POST: (path: string, options: Record<string, unknown>) => Promise<any>;
+    PATCH?: (path: string, options: Record<string, unknown>) => Promise<any>;
   };
 }
 
@@ -87,13 +89,18 @@ export function createApiClient(config: ApiConfig, options: CreateApiClientOptio
         body: input,
       });
     },
+    async setFeatureStates(input) {
+      return request(client, "PATCH", "/feature-states", {
+        body: input,
+      });
+    },
   };
 }
 
 // cli-core.HTTP.1 / cli-core.HTTP.2 / cli-core.HTTP.3 / cli-core.ERRORS.1 / cli-core.ERRORS.6
 async function request(
   client: any,
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "PATCH",
   path: string,
   options: Record<string, unknown>,
 ): Promise<any> {

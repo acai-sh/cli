@@ -4,14 +4,25 @@ export interface SpawnedCliResult {
   stderr: string;
 }
 
-export async function runCliSubprocess(args: string[], env: Record<string, string> = {}): Promise<SpawnedCliResult> {
+export interface RunCliSubprocessOptions {
+  cwd?: string;
+  input?: string;
+}
+
+export async function runCliSubprocess(
+  args: string[],
+  env: Record<string, string> = {},
+  options: RunCliSubprocessOptions = {},
+): Promise<SpawnedCliResult> {
+  const workspaceRoot = import.meta.dir + "/../..";
   const proc = Bun.spawn({
-    cmd: ["bun", "src/index.ts", ...args],
-    cwd: import.meta.dir + "/../..",
+    cmd: ["bun", workspaceRoot + "/src/index.ts", ...args],
+    cwd: options.cwd ?? workspaceRoot,
     env: {
       ...process.env,
       ...env,
     },
+    stdin: options.input === undefined ? "ignore" : new TextEncoder().encode(options.input),
     stdout: "pipe",
     stderr: "pipe",
   });
