@@ -52,7 +52,7 @@ export function normalizeFeatureOptions(
   };
 }
 
-// feature.API.1 / feature.API.2 / feature.API.3 / feature.UX.1 / feature.UX.2
+// feature.API.1 / feature.API.2 / feature.API.3 / feature.UX.1 / feature.UX.2 / cli-core.OUTPUT.1 / cli-core.OUTPUT.2
 export async function runFeatureCommand(
   apiClient: ApiClient,
   args: FeatureArgs,
@@ -76,7 +76,11 @@ export async function runFeatureCommand(
   });
 
   if (args.json) {
-    return { exitCode: 0, jsonPayload: response };
+    return {
+      exitCode: 0,
+      jsonPayload: response,
+      stderrLines: response.data.warnings,
+    };
   }
 
   return {
@@ -107,6 +111,10 @@ export function formatFeatureContext(
         );
       }
     }
+  }
+
+  for (const warning of data.warnings) {
+    lines.push(`warning: ${warning}`);
   }
 
   return lines;

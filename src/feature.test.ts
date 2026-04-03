@@ -202,7 +202,7 @@ describe("feature.API.1 feature.API.2 feature.API.3 feature.UX.1 feature.UX.2 cl
     }
   });
 
-  test("feature.API.2 and feature.API.3 format summary, acids, and refs in API order", () => {
+  test("feature.API.2 feature.API.3 and feature.UX.1 format summary, acids, refs, and warnings in API order", () => {
     const payload = buildFeatureContextResponse({
       data: {
         acids: [
@@ -234,6 +234,7 @@ describe("feature.API.1 feature.API.2 feature.API.3 feature.UX.1 feature.UX.2 cl
           total_acids: 2,
           status_counts: { incomplete: 1, completed: 1 } as never,
         },
+        warnings: ["warning one"],
       },
     });
 
@@ -243,11 +244,12 @@ describe("feature.API.1 feature.API.2 feature.API.3 feature.UX.1 feature.UX.2 cl
       "feature.MAIN.2 status=incomplete refs=0 test_refs=0 requirement=second",
       "feature.MAIN.1 status=completed refs=1 test_refs=1 requirement=first",
       "  ref repo=github.com/my-org/my-repo branch=main path=src/feature.test.ts is_test=true",
+      "warning: warning one",
     ]);
   });
 
-  test("feature.MAIN.6 and cli-core.OUTPUT.1 keep the full json payload on stdout", async () => {
-    const payload = buildFeatureContextResponse();
+  test("feature.MAIN.6 cli-core.OUTPUT.1 and cli-core.OUTPUT.2 keep the full json payload on stdout and warnings on stderr", async () => {
+    const payload = buildFeatureContextResponse({ data: { warnings: ["warning one"] } });
     const result = await runFeatureCommand(
       {
         listImplementations: mock(async () => buildImplementationsResponse()),
@@ -263,6 +265,6 @@ describe("feature.API.1 feature.API.2 feature.API.3 feature.UX.1 feature.UX.2 cl
       },
     );
 
-    expect(result).toEqual({ exitCode: 0, jsonPayload: payload });
+    expect(result).toEqual({ exitCode: 0, jsonPayload: payload, stderrLines: ["warning one"] });
   });
 });

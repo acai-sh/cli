@@ -71,7 +71,7 @@ describe("cli-core.HELP.1 cli-core.HELP.2 cli-core.HELP.4 cli-core.HELP.5", () =
 });
 
 describe("feature.MAIN.1 feature.MAIN.2 feature.MAIN.3 feature.MAIN.4 feature.MAIN.5 feature.MAIN.6 feature.API.1 feature.API.2 feature.API.3 feature.UX.1 feature.UX.2", () => {
-  test("feature.API.1 feature.API.2 feature.API.3 prints text output for a direct target with refs and statuses", async () => {
+  test("feature.API.1 feature.API.2 feature.API.3 feature.UX.1 prints text output for a direct target with refs, statuses, and warnings", async () => {
     const server = createMockApiServer((request) => {
       const url = new URL(request.url);
 
@@ -114,6 +114,7 @@ describe("feature.MAIN.1 feature.MAIN.2 feature.MAIN.3 feature.MAIN.4 feature.MA
                 total_acids: 2,
                 status_counts: { incomplete: 1, completed: 1 } as never,
               },
+              warnings: ["warning one"],
             },
           }),
         );
@@ -139,6 +140,7 @@ describe("feature.MAIN.1 feature.MAIN.2 feature.MAIN.3 feature.MAIN.4 feature.MA
         "feature.MAIN.2 status=incomplete refs=0 test_refs=0 requirement=requires product selector",
         "feature.API.3 status=completed refs=1 test_refs=1 requirement=relays refs",
         "  ref repo=github.com/my-org/my-repo branch=main path=src/feature.test.ts is_test=true",
+        "warning: warning one",
       ]);
     } finally {
       server.stop();
@@ -217,11 +219,11 @@ describe("feature.MAIN.1 feature.MAIN.2 feature.MAIN.3 feature.MAIN.4 feature.MA
     }
   });
 
-  test("feature.MAIN.6 cli-core.OUTPUT.1 cli-core.OUTPUT.2 keeps json payload on stdout", async () => {
+  test("feature.MAIN.6 cli-core.OUTPUT.1 cli-core.OUTPUT.2 keeps json payload on stdout and warnings on stderr", async () => {
     const server = createMockApiServer((request) => {
       const url = new URL(request.url);
       if (url.pathname === "/feature-context") {
-        return Response.json(buildFeatureContextResponse());
+        return Response.json(buildFeatureContextResponse({ data: { warnings: ["warning one"] } }));
       }
 
       return new Response("not found", { status: 404 });
@@ -237,7 +239,7 @@ describe("feature.MAIN.1 feature.MAIN.2 feature.MAIN.3 feature.MAIN.4 feature.MA
       );
 
       expect(result.exitCode).toBe(0);
-      expect(result.stderr.trim()).toBe("");
+      expect(result.stderr.trim()).toBe("warning one");
       expect(JSON.parse(result.stdout).data.feature_name).toBe("feature");
     } finally {
       server.stop();
