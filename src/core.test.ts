@@ -1,4 +1,5 @@
 import { describe, expect, mock, test } from "bun:test";
+import { readFile } from "node:fs/promises";
 import { createApiClient } from "./core/api.ts";
 import { resolveApiConfig } from "./core/config.ts";
 import { runCli } from "./core/cli.ts";
@@ -25,6 +26,32 @@ describe("cli-core.CONFIG.1 cli-core.AUTH.2", () => {
 
   test("cli-core.CONFIG.2 fails when API bearer token configuration is missing", () => {
     expect(() => resolveApiConfig({})).toThrow("Missing API bearer token configuration.");
+  });
+});
+
+describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
+  test("package and release workflow define npm publishing with provenance and GitHub Release binaries", async () => {
+    const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+    const releaseWorkflow = await readFile(new URL("../.github/workflows/release.yml", import.meta.url), "utf8");
+    const cliEntrypoint = await readFile(new URL("./index.ts", import.meta.url), "utf8");
+
+    expect(packageJson.name).toBe("acai");
+    expect(packageJson.files).toEqual(["dist", "README.md", "docs"]);
+    expect(packageJson.bin).toEqual({ acai: "dist/acai.js" });
+    expect(packageJson.scripts["build:npm"]).toContain("bun build ./src/index.ts --target=node --outfile dist/acai.js");
+    expect(packageJson.scripts.prepack).toBe("bun run build:npm");
+    expect(packageJson.scripts["build:release:linux-x64"]).toContain("--compile");
+    expect(packageJson.scripts["build:release:darwin-arm64"]).toContain("--compile");
+    expect(cliEntrypoint.startsWith("#!/usr/bin/env node")).toBe(true);
+
+    expect(releaseWorkflow).toContain("id-token: write");
+    expect(releaseWorkflow).toContain("Verify tag matches package version");
+    expect(releaseWorkflow).toContain("npm publish --provenance");
+    expect(releaseWorkflow).toContain("--tag next");
+    expect(releaseWorkflow).toContain("cli-core.DIST.1");
+    expect(releaseWorkflow).toContain("cli-core.DIST.2 / cli-core.DIST.3");
+    expect(releaseWorkflow).toContain("softprops/action-gh-release@v2");
+    expect(releaseWorkflow).toContain("SHA256SUMS.txt");
   });
 });
 
