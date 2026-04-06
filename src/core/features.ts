@@ -3,7 +3,7 @@ import { usageError } from "./errors.ts";
 import type { CommandResult } from "./output.ts";
 import { resolveImplementationName, type OneImplementationResolverDependencies } from "./targeting.ts";
 
-export interface WorkArgs {
+export interface FeaturesArgs {
   productName: string;
   implementationName?: string;
   statuses: string[];
@@ -11,7 +11,7 @@ export interface WorkArgs {
   json: boolean;
 }
 
-export interface WorkCommandOptions {
+export interface FeaturesCommandOptions {
   product: string;
   impl?: string;
   status?: string[];
@@ -19,10 +19,10 @@ export interface WorkCommandOptions {
   json?: boolean;
 }
 
-export type WorkTargetResolverDependencies = OneImplementationResolverDependencies;
+export type FeaturesTargetResolverDependencies = OneImplementationResolverDependencies;
 
-// work.MAIN.1 / cli-core.TARGETING.1
-export function normalizeWorkOptions(options: WorkCommandOptions): WorkArgs {
+// features.MAIN.1 / cli-core.TARGETING.1
+export function normalizeFeaturesOptions(options: FeaturesCommandOptions): FeaturesArgs {
   if (options.product.startsWith("-")) {
     throw usageError("Missing value for --product.");
   }
@@ -51,10 +51,10 @@ export function normalizeWorkOptions(options: WorkCommandOptions): WorkArgs {
   };
 }
 
-export async function runWorkCommand(
+export async function runFeaturesCommand(
   apiClient: ApiClient,
-  args: WorkArgs,
-  dependencies: WorkTargetResolverDependencies = {},
+  args: FeaturesArgs,
+  dependencies: FeaturesTargetResolverDependencies = {},
 ): Promise<CommandResult> {
   const implementationName = await resolveImplementationName(apiClient, {
     productName: args.productName,

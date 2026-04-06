@@ -4,7 +4,7 @@ import { resolveApiConfig } from "./core/config.ts";
 import { runCli } from "./core/cli.ts";
 import { writeJsonResult, writeTextResult } from "./core/output.ts";
 import { normalizeRepoUri, readGitContext } from "./core/git.ts";
-import { normalizeWorkOptions, runWorkCommand } from "./core/work.ts";
+import { normalizeFeaturesOptions, runFeaturesCommand } from "./core/features.ts";
 import { buildFeatureContextResponse, buildImplementationFeaturesResponse, buildImplementationsResponse } from "../test/support/fixtures.ts";
 import { createMockApiServer } from "../test/support/mock-api.ts";
 
@@ -207,9 +207,9 @@ describe("cli-core.OUTPUT.1 cli-core.OUTPUT.2", () => {
 });
 
 describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-core.TARGETING.4 cli-core.TARGETING.5 cli-core.ERRORS.2", () => {
-  test("cli-core.TARGETING.1 normalizes commander values into work args", () => {
+  test("cli-core.TARGETING.1 normalizes commander values into features args", () => {
     expect(
-      normalizeWorkOptions({
+      normalizeFeaturesOptions({
         product: "example-product",
         impl: "main",
         status: ["todo", "doing"],
@@ -228,11 +228,11 @@ describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-cor
   test("cli-core.TARGETING.1 still reports a missing product selector before API config resolution", async () => {
     const output = { stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } };
 
-    const exitCode = await runCli(["work", "--impl", "main"], { output, env: {} });
+    const exitCode = await runCli(["features", "--impl", "main"], { output, env: {} });
 
     expect(exitCode).toBe(2);
     expect(readWrites(output.stderr.write)).toContain("required option '--product <name>' not specified");
-    expect(readWrites(output.stderr.write)).toContain("Usage: acai work");
+    expect(readWrites(output.stderr.write)).toContain("Usage: acai features");
   });
 
   test("cli-core.TARGETING.2 and cli-core.TARGETING.3 normalize git remote context", async () => {
@@ -262,7 +262,7 @@ describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-cor
       listImplementationFeatures: mock(async () => buildImplementationFeaturesResponse()),
     };
 
-    const result = await runWorkCommand(
+    const result = await runFeaturesCommand(
       apiClient as never,
       { productName: "example-product", statuses: [], json: false },
       {
@@ -286,7 +286,7 @@ describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-cor
     };
 
     await expect(
-      runWorkCommand(
+      runFeaturesCommand(
         ambiguousClient as never,
         { productName: "example-product", statuses: [], json: false },
         { readGitContext: async () => ({ repoUri: "github.com/my-org/my-repo", branchName: "main" }) },
@@ -307,9 +307,9 @@ describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-cor
   });
 });
 
-describe("work.MAIN.1 work.MAIN.3 work.MAIN.4 work.MAIN.5 work.MAIN.6 work.MAIN.7 work.MAIN.8 work.API.1 work.API.2 work.UX.1 work.UX.2 work.UX.3 work.UX.4 work.UX.5", () => {
-  test("formats the text worklist in API order and keeps counts visible", async () => {
-    const result = await runWorkCommand(
+describe("features.MAIN.1 features.MAIN.3 features.MAIN.4 features.MAIN.5 features.MAIN.6 features.MAIN.7 features.MAIN.8 features.API.1 features.API.2 features.UX.1 features.UX.2 features.UX.3 features.UX.4 features.UX.5", () => {
+  test("formats the text features list in API order and keeps counts visible", async () => {
+    const result = await runFeaturesCommand(
       {
         listImplementations: mock(async () => buildImplementationsResponse()),
         listImplementationFeatures: mock(async () => buildImplementationFeaturesResponse()),
@@ -323,10 +323,10 @@ describe("work.MAIN.1 work.MAIN.3 work.MAIN.4 work.MAIN.5 work.MAIN.6 work.MAIN.
     });
   });
 
-  test("work.MAIN.6 and work.UX.5 return the full JSON payload", async () => {
+  test("features.MAIN.6 and features.UX.5 return the full JSON payload", async () => {
     const payload = buildImplementationFeaturesResponse();
 
-    const result = await runWorkCommand(
+    const result = await runFeaturesCommand(
       {
         listImplementations: mock(async () => buildImplementationsResponse()),
         listImplementationFeatures: mock(async () => payload),
@@ -337,14 +337,14 @@ describe("work.MAIN.1 work.MAIN.3 work.MAIN.4 work.MAIN.5 work.MAIN.6 work.MAIN.
     expect(result).toEqual({ exitCode: 0, jsonPayload: payload });
   });
 
-  test("work.MAIN.7 and work.MAIN.8 forward repeated statuses and changed-since filters", async () => {
+  test("features.MAIN.7 and features.MAIN.8 forward repeated statuses and changed-since filters", async () => {
     const listImplementationFeatures = mock(async () => buildImplementationFeaturesResponse());
     const apiClient = {
       listImplementations: mock(async () => buildImplementationsResponse()),
       listImplementationFeatures,
     };
 
-    await runWorkCommand(
+    await runFeaturesCommand(
       apiClient as never,
       {
         productName: "example-product",
@@ -380,7 +380,7 @@ describe("cli-core.HELP.1 cli-core.HELP.2 cli-core.HELP.4", () => {
 
     expect(exitCode).toBe(0);
     expect(readWrites(output.stdout.write)).toContain("Usage: acai");
-    expect(readWrites(output.stdout.write)).toContain("work");
+    expect(readWrites(output.stdout.write)).toContain("features");
     expect(output.stderr.write).not.toHaveBeenCalled();
     expect(apiClient.listImplementations).not.toHaveBeenCalled();
     expect(apiClient.listImplementationFeatures).not.toHaveBeenCalled();
@@ -402,7 +402,7 @@ describe("cli-core.HELP.1 cli-core.HELP.2 cli-core.HELP.4", () => {
 });
 
 describe("cli-core.HELP.3 cli-core.HELP.5", () => {
-  test("runCli prints work help for --help and -h without calling the API", async () => {
+  test("runCli prints features help for --help and -h without calling the API", async () => {
     const makeOutput = () => ({ stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } });
     const apiClient = {
       listImplementations: mock(async () => {
@@ -416,12 +416,12 @@ describe("cli-core.HELP.3 cli-core.HELP.5", () => {
     const helpOutput = makeOutput();
     const shortHelpOutput = makeOutput();
 
-    const helpExit = await runCli(["work", "--help"], { output: helpOutput, apiClient: apiClient as never });
-    const shortHelpExit = await runCli(["work", "-h"], { output: shortHelpOutput, apiClient: apiClient as never });
+    const helpExit = await runCli(["features", "--help"], { output: helpOutput, apiClient: apiClient as never });
+    const shortHelpExit = await runCli(["features", "-h"], { output: shortHelpOutput, apiClient: apiClient as never });
 
     expect(helpExit).toBe(0);
     expect(shortHelpExit).toBe(0);
-    expect(readWrites(helpOutput.stdout.write)).toContain("Usage: acai work --product <name> [options]");
+    expect(readWrites(helpOutput.stdout.write)).toContain("Usage: acai features --product <name> [options]");
     expect(readWrites(helpOutput.stdout.write)).toContain("product name (required)");
     expect(readWrites(helpOutput.stdout.write)).toBe(readWrites(shortHelpOutput.stdout.write));
     expect(apiClient.listImplementations).not.toHaveBeenCalled();
@@ -440,20 +440,20 @@ describe("cli-core.ERRORS.3 cli-core.ERRORS.4 cli-core.ERRORS.5", () => {
     expect(readWrites(output.stderr.write)).toContain("Usage: acai");
   });
 
-  test("cli-core.ERRORS.4 reports unknown options with work help text", async () => {
+  test("cli-core.ERRORS.4 reports unknown options with features help text", async () => {
     const output = { stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } };
 
-    const exitCode = await runCli(["work", "--product", "example-product", "--unknown-option"], { output });
+    const exitCode = await runCli(["features", "--product", "example-product", "--unknown-option"], { output });
 
     expect(exitCode).toBe(2);
     expect(readWrites(output.stderr.write)).toContain("unknown option");
-    expect(readWrites(output.stderr.write)).toContain("Usage: acai work");
+    expect(readWrites(output.stderr.write)).toContain("Usage: acai features");
   });
 
-  test("cli-core.ERRORS.5 prints work help when usage validation fails inside the command", async () => {
+  test("cli-core.ERRORS.5 prints features help when usage validation fails inside the command", async () => {
     const output = { stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } };
 
-    const exitCode = await runCli(["work", "--product", "example-product", "--impl", "main"], {
+    const exitCode = await runCli(["features", "--product", "example-product", "--impl", "main"], {
       env: {},
       output,
     });
@@ -461,6 +461,6 @@ describe("cli-core.ERRORS.3 cli-core.ERRORS.4 cli-core.ERRORS.5", () => {
     expect(exitCode).toBe(2);
     const stderr = readWrites(output.stderr.write);
     expect(stderr).toContain("Missing API bearer token configuration.");
-    expect(stderr).toContain("Usage: acai work");
+    expect(stderr).toContain("Usage: acai features");
   });
 });

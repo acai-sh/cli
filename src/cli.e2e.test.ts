@@ -31,7 +31,7 @@ describe("cli-core.HELP.1 cli-core.HELP.2 cli-core.HELP.4 cli-core.HELP.5", () =
     expect(result.exitCode).toBe(0);
     expect(result.stderr.trim()).toBe("");
     expect(result.stdout).toContain("Usage: acai");
-    expect(result.stdout).toContain("work");
+    expect(result.stdout).toContain("features");
   });
 
   test("acai --help and acai -h produce the same top-level help", async () => {
@@ -45,14 +45,14 @@ describe("cli-core.HELP.1 cli-core.HELP.2 cli-core.HELP.4 cli-core.HELP.5", () =
     expect(shortHelp.stderr.trim()).toBe("");
   });
 
-  test("acai work --help and acai work -h produce the same command help", async () => {
-    const help = await runCliSubprocess(["work", "--help"]);
-    const shortHelp = await runCliSubprocess(["work", "-h"]);
+  test("acai features --help and acai features -h produce the same command help", async () => {
+    const help = await runCliSubprocess(["features", "--help"]);
+    const shortHelp = await runCliSubprocess(["features", "-h"]);
 
     expect(help.exitCode).toBe(0);
     expect(shortHelp.exitCode).toBe(0);
     expect(help.stdout).toBe(shortHelp.stdout);
-    expect(help.stdout).toContain("Usage: acai work --product <name> [options]");
+    expect(help.stdout).toContain("Usage: acai features --product <name> [options]");
     expect(help.stdout).toContain("product name (required)");
     expect(help.stderr.trim()).toBe("");
     expect(shortHelp.stderr.trim()).toBe("");
@@ -729,7 +729,7 @@ describe("set-status.MAIN.1 set-status.MAIN.2 set-status.MAIN.3 set-status.MAIN.
 });
 
 describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-core.UX.2", () => {
-  test("work.MAIN.1 work.MAIN.3 work.MAIN.4 work.MAIN.5 work.MAIN.7 work.MAIN.8 work.API.1 work.UX.1 prints text output for a direct target", async () => {
+  test("features.MAIN.1 features.MAIN.3 features.MAIN.4 features.MAIN.5 features.MAIN.7 features.MAIN.8 features.API.1 features.UX.1 prints text output for a direct target", async () => {
     const server = createMockApiServer((request) => {
       const url = new URL(request.url);
 
@@ -756,7 +756,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 
     try {
       const result = await runCliSubprocess(
-        ["work", "--product", "example-product", "--impl", "main", "--status", "todo", "--status", "doing", "--changed-since-commit", "abc123"],
+        ["features", "--product", "example-product", "--impl", "main", "--status", "todo", "--status", "doing", "--changed-since-commit", "abc123"],
         {
           ACAI_API_BASE_URL: server.url.toString(),
           ACAI_API_TOKEN: "secret",
@@ -774,7 +774,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
     }
   });
 
-  test("work.MAIN.2 work.MAIN.3 work.API.1 work.API.2 resolves exactly one implementation from git context", async () => {
+  test("features.MAIN.2 features.MAIN.3 features.API.1 features.API.2 resolves exactly one implementation from git context", async () => {
     const git = await createFakeGitContext({ remote: "git@github.com:my-org/my-repo.git", branch: "main" });
     const server = createMockApiServer((request) => {
       const url = new URL(request.url);
@@ -810,7 +810,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 
     try {
       const result = await runCliSubprocess(
-        ["work", "--product", "example-product"],
+        ["features", "--product", "example-product"],
         {
           ...git.env,
           ACAI_API_BASE_URL: server.url.toString(),
@@ -849,7 +849,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 
     try {
       const result = await runCliSubprocess(
-        ["work", "--product", "example-product"],
+        ["features", "--product", "example-product"],
         {
           ...git.env,
           ACAI_API_BASE_URL: server.url.toString(),
@@ -879,7 +879,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 
     try {
       const result = await runCliSubprocess(
-        ["work", "--product", "example-product"],
+        ["features", "--product", "example-product"],
         {
           ...git.env,
           ACAI_API_BASE_URL: server.url.toString(),
@@ -898,7 +898,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
   test("cli-core.ERRORS.2 exits non-zero when git context cannot be determined", async () => {
     const git = await createFakeGitContext({ remoteExitCode: 1 });
     const result = await runCliSubprocess(
-      ["work", "--product", "example-product"],
+      ["features", "--product", "example-product"],
       {
         ...git.env,
         ACAI_API_BASE_URL: "https://api.example.test",
@@ -913,32 +913,32 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 
   test("cli-core.CONFIG.2 exits with usage errors when the API token is missing", async () => {
     const result = await runCliSubprocess(
-      ["work", "--product", "example-product", "--impl", "main"],
+      ["features", "--product", "example-product", "--impl", "main"],
       { ACAI_API_TOKEN: "" },
     );
 
     expect(result.exitCode).toBe(2);
     expect(result.stderr).toContain("Missing API bearer token configuration.");
-    expect(result.stderr).toContain("Usage: acai work");
+    expect(result.stderr).toContain("Usage: acai features");
   });
 
-  test("work.MAIN.2 and cli-core.EXITS.2 require a product selector", async () => {
-    const result = await runCliSubprocess(["work", "--impl", "main"], {
+  test("features.MAIN.2 and cli-core.EXITS.2 require a product selector", async () => {
+    const result = await runCliSubprocess(["features", "--impl", "main"], {
       ACAI_API_BASE_URL: "https://api.example.test",
       ACAI_API_TOKEN: "secret",
     });
 
     expect(result.exitCode).toBe(2);
     expect(result.stderr).toContain("required option '--product <name>' not specified");
-    expect(result.stderr).toContain("Usage: acai work");
+    expect(result.stderr).toContain("Usage: acai features");
   });
 
   test("cli-core.TARGETING.1 still reports a missing product selector when API env is absent", async () => {
-    const result = await runCliSubprocess(["work", "--impl", "main"]);
+    const result = await runCliSubprocess(["features", "--impl", "main"]);
 
     expect(result.exitCode).toBe(2);
     expect(result.stderr).toContain("required option '--product <name>' not specified");
-    expect(result.stderr).toContain("Usage: acai work");
+    expect(result.stderr).toContain("Usage: acai features");
   });
 
   test("cli-core.ERRORS.3 exits non-zero for unknown commands", async () => {
@@ -950,11 +950,11 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
   });
 
   test("cli-core.ERRORS.4 exits non-zero for unknown work options", async () => {
-    const result = await runCliSubprocess(["work", "--product", "example-product", "--unknown-option"]);
+    const result = await runCliSubprocess(["features", "--product", "example-product", "--unknown-option"]);
 
     expect(result.exitCode).toBe(2);
     expect(result.stderr).toContain("unknown option");
-    expect(result.stderr).toContain("Usage: acai work");
+    expect(result.stderr).toContain("Usage: acai features");
   });
 
   test("cli-core.HTTP.2 surfaces API auth failures", async () => {
@@ -969,7 +969,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 
     try {
       const result = await runCliSubprocess(
-        ["work", "--product", "example-product", "--impl", "main"],
+        ["features", "--product", "example-product", "--impl", "main"],
         {
           ACAI_API_BASE_URL: server.url.toString(),
           ACAI_API_TOKEN: "secret",
@@ -995,7 +995,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 
     try {
       const result = await runCliSubprocess(
-        ["work", "--product", "example-product", "--impl", "main"],
+        ["features", "--product", "example-product", "--impl", "main"],
         {
           ACAI_API_BASE_URL: server.url.toString(),
           ACAI_API_TOKEN: "secret",
@@ -1021,7 +1021,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 
     try {
       const result = await runCliSubprocess(
-        ["work", "--product", "example-product", "--impl", "main"],
+        ["features", "--product", "example-product", "--impl", "main"],
         {
           ACAI_API_BASE_URL: server.url.toString(),
           ACAI_API_TOKEN: "secret",
@@ -1036,7 +1036,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
   });
 
   test("cli-core.HTTP.1 handles network failures", async () => {
-    const result = await runCliSubprocess(["work", "--product", "example-product", "--impl", "main"], {
+    const result = await runCliSubprocess(["features", "--product", "example-product", "--impl", "main"], {
       ACAI_API_BASE_URL: "http://127.0.0.1:65535",
       ACAI_API_TOKEN: "secret",
     });
@@ -1063,7 +1063,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 
     try {
       const result = await runCliSubprocess(
-        ["work", "--product", "example-product", "--impl", "main", "--json"],
+        ["features", "--product", "example-product", "--impl", "main", "--json"],
         {
           ACAI_API_BASE_URL: server.url.toString(),
           ACAI_API_TOKEN: "secret",
@@ -1078,7 +1078,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
     }
   });
 
-  test("work.UX.4 exits successfully when no features are returned", async () => {
+  test("features.UX.4 exits successfully when no features are returned", async () => {
     const server = createMockApiServer((request) => {
       const url = new URL(request.url);
       if (url.pathname === "/implementation-features") {
@@ -1090,7 +1090,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 
     try {
       const result = await runCliSubprocess(
-        ["work", "--product", "example-product", "--impl", "main"],
+        ["features", "--product", "example-product", "--impl", "main"],
         {
           ACAI_API_BASE_URL: server.url.toString(),
           ACAI_API_TOKEN: "secret",
@@ -1437,13 +1437,13 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
   });
 
   test("cli-core.EXITS.2 rejects missing values followed by another flag", async () => {
-    const result = await runCliSubprocess(["work", "--product", "example-product", "--changed-since-commit", "--json"], {
+    const result = await runCliSubprocess(["features", "--product", "example-product", "--changed-since-commit", "--json"], {
       ACAI_API_BASE_URL: "https://api.example.test",
       ACAI_API_TOKEN: "secret",
     });
 
     expect(result.exitCode).toBe(2);
     expect(result.stderr).toContain("Missing value for --changed-since-commit.");
-    expect(result.stderr).toContain("Usage: acai work");
+    expect(result.stderr).toContain("Usage: acai features");
   });
 });

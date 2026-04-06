@@ -11,10 +11,10 @@ import {
     type OutputPorts,
 } from "./output.ts";
 import {
-    normalizeWorkOptions,
-    runWorkCommand,
-    type WorkCommandOptions,
-} from "./work.ts";
+    normalizeFeaturesOptions,
+    runFeaturesCommand,
+    type FeaturesCommandOptions,
+} from "./features.ts";
 import {
     normalizeFeatureOptions,
     runFeatureCommand,
@@ -40,7 +40,7 @@ export interface CliDependencies {
 
 interface CliState {
     featureResult?: CommandResult;
-    workResult?: CommandResult;
+    featuresResult?: CommandResult;
     pushResult?: CommandResult;
     setStatusResult?: CommandResult;
     usageError?: CliError;
@@ -86,15 +86,15 @@ export async function runCli(
             [],
             [
                 state.usageError.message,
-                getCommandHelp(program, state.usageHelpCommand ?? "work"),
+                getCommandHelp(program, state.usageHelpCommand ?? "features"),
             ],
         );
         return state.usageError.exitCode;
     }
 
-    if (state?.workResult) {
-        await writeCommandResult(output, state.workResult);
-        return state.workResult.exitCode;
+    if (state?.featuresResult) {
+        await writeCommandResult(output, state.featuresResult);
+        return state.featuresResult.exitCode;
     }
 
     if (state?.featureResult) {
@@ -142,132 +142,20 @@ function createCliProgram(
 
   ${dim}Use these commands after editing specs, implementing code, or to identify and self-assign remaining work.${reset}`,
         )
+        // cli-core.HELP.1 / cli-core.HELP.2 / cli-core.HELP.3
         .showHelpAfterError(true)
         .exitOverride()
-        // cli-core.HELP.1 / cli-core.HELP.2 / cli-core.HELP.3 / cli-core.ERRORS.3 / cli-core.ERRORS.4 / cli-core.ERRORS.5
+        // cli-core.ERRORS.3 / cli-core.ERRORS.4 / cli-core.ERRORS.5
         .configureOutput({
             writeOut: (text) => void output.stdout.write(text),
             writeErr: (text) => void output.stderr.write(text),
         });
 
     program
-        .command("feature")
-        .usage("<feature-name> [options]")
-        .description(
-            "Load canonical feature context for one product + feature + implementation. When --impl is omitted, acai resolves the current implementation from the git branch. --product may also be inferred from --impl <product/implementation>.",
-        )
-        // feature.MAIN.1 / feature.MAIN.2 / feature.MAIN.3 / feature.MAIN.4 / feature.MAIN.5 / feature.MAIN.6
-        .argument("<feature-name>")
-        .option("--product <name>", "product name")
-        .option(
-            "--impl <name>",
-            "implementation name or namespaced selector <product/implementation>",
-        )
-        .option(
-            "--status <value>",
-            "status filter",
-            (value: string, previous: string[] = []) => [...previous, value],
-        )
-        .option("--include-refs", "include per-ACID refs")
-        .option("--json", "emit JSON output")
-        .action(async (featureName: string, options: FeatureCommandOptions) => {
-            try {
-                const featureArgs = normalizeFeatureOptions(featureName, options);
-                const apiClient =
-                    dependencies.apiClient ??
-                    createApiClient(resolveApiConfig(env));
-                state.featureResult = await runFeatureCommand(
-                    apiClient,
-                    featureArgs,
-                );
-            } catch (error) {
-                if (error instanceof CliError && error.kind === "usage") {
-                    state.usageHelpCommand = "feature";
-                    state.usageError = error;
-                    return;
-                }
-
-                throw error;
-            }
-        });
-
-    program
-        .command("work")
-        .usage("--product <name> [options]")
-        .description(
-            "Get a summary of features for the given product + implementation. The summary includes status & reference counts, inheritance, and metadata. Use this to understand what exists and what to work on next. When --impl is omitted, acai resolves the current implementation from the git branch.",
-        )
-        // work.MAIN.2
-        .requiredOption("--product <name>", "product name (required)")
-        .option(
-            "--impl <name>",
-            "implementation name (defaults to the current git-resolved implementation)",
-        )
-        .option(
-            "--status <value>",
-            "status filter",
-            (value: string, previous: string[] = []) => [...previous, value],
-        )
-        .option("--changed-since-commit <commit>", "filter by commit")
-        .option("--json", "emit JSON output")
-        .action(async (options: WorkCommandOptions) => {
-            try {
-                const workArgs = normalizeWorkOptions(options);
-                const apiClient =
-                    dependencies.apiClient ??
-                    createApiClient(resolveApiConfig(env));
-                state.workResult = await runWorkCommand(apiClient, workArgs);
-            } catch (error) {
-                if (error instanceof CliError && error.kind === "usage") {
-                    state.usageHelpCommand = "work";
-                    state.usageError = error;
-                    return;
-                }
-
-                throw error;
-            }
-        });
-
-    program
-        .command("set-status")
-        .usage("<json> [options]")
-        .description(
-            "Write one batch of ACID status updates for exactly one feature in one implementation. Accepts inline JSON, @file input, or - for stdin.",
-        )
-        // set-status.MAIN.1 / set-status.MAIN.2 / set-status.MAIN.3 / set-status.MAIN.4 / set-status.MAIN.5 / set-status.MAIN.6
-        .argument("<json>")
-        .option("--product <name>", "product name")
-        .option(
-            "--impl <name>",
-            "implementation name or namespaced selector <product/implementation>",
-        )
-        .option("--json", "emit JSON output")
-        .action(async (source: string, options: SetStatusCommandOptions) => {
-            try {
-                const setStatusArgs = normalizeSetStatusOptions(source, options);
-                const apiClient =
-                    dependencies.apiClient ??
-                    createApiClient(resolveApiConfig(env));
-                state.setStatusResult = await runSetStatusCommand(
-                    apiClient,
-                    setStatusArgs,
-                );
-            } catch (error) {
-                if (error instanceof CliError && error.kind === "usage") {
-                    state.usageHelpCommand = "set-status";
-                    state.usageError = error;
-                    return;
-                }
-
-                throw error;
-            }
-        });
-
-    program
         .command("push")
         .usage("[feature-names...] [options]")
         .description(
-            "Push local specs and ACID refs to the API. Use feature names to limit the scan, or --all to scan the full repo.",
+            `The ${dim}\`push\`${reset} command is used to scan your git repository and sync local specs and ACID refs to the server. Use feature names to limit the scan, or --all to scan the full repo.\n`,
         )
         // push.MAIN.1 / push.MAIN.2 / push.MAIN.3 / push.MAIN.4 / push.MAIN.5 / push.MAIN.6
         .argument("[feature-names...]")
@@ -312,6 +200,133 @@ function createCliProgram(
             } catch (error) {
                 if (error instanceof CliError && error.kind === "usage") {
                     state.usageHelpCommand = "push";
+                    state.usageError = error;
+                    return;
+                }
+
+                throw error;
+            }
+        });
+
+    program
+        .command("feature")
+        .usage("<feature-name> [options]")
+        .description(
+            `The ${dim}\`feature\`${reset} command fetches all context for the given Feature, including a list of all acceptance criteria in the spec. Each entry includes the ACID, status (for the chosen Implementation), comment, and a list of file paths to ACID references found in source code.\n`,
+        )
+        // feature.MAIN.1
+        .argument("<feature-name>")
+        // feature.MAIN.2
+        .option("--product <name>", "product name")
+        // feature.MAIN.3
+        .option(
+            "--impl <name>",
+            "implementation name or namespaced selector <product/implementation>",
+        )
+        // feature.MAIN.5
+        .option(
+            "--status <value>",
+            "status filter",
+            (value: string, previous: string[] = []) => [...previous, value],
+        )
+        // feature.MAIN.4
+        .option("--include-refs", "include per-ACID refs")
+        // feature.MAIN.6
+        .option("--json", "emit JSON output")
+        .action(async (featureName: string, options: FeatureCommandOptions) => {
+            try {
+                const featureArgs = normalizeFeatureOptions(
+                    featureName,
+                    options,
+                );
+                const apiClient =
+                    dependencies.apiClient ??
+                    createApiClient(resolveApiConfig(env));
+                state.featureResult = await runFeatureCommand(
+                    apiClient,
+                    featureArgs,
+                );
+            } catch (error) {
+                if (error instanceof CliError && error.kind === "usage") {
+                    state.usageHelpCommand = "feature";
+                    state.usageError = error;
+                    return;
+                }
+
+                throw error;
+            }
+        });
+
+    program
+        .command("features")
+        .usage("--product <name> [options]")
+        .description(
+            `The ${dim}\`features\`${reset} command fetches a summary list of known features for the given Product. The summary includes status & reference counts, inheritance, and metadata. Use this to understand what exists and what to work on next. When --impl is omitted, acai resolves the current implementation from the git branch.\n`,
+        )
+        // features.MAIN.2
+        .requiredOption("--product <name>", "product name (required)")
+        .option(
+            "--impl <name>",
+            "implementation name (defaults to the current git-resolved implementation)",
+        )
+        .option(
+            "--status <value>",
+            "status filter",
+            (value: string, previous: string[] = []) => [...previous, value],
+        )
+        .option("--changed-since-commit <commit>", "filter by commit")
+        .option("--json", "emit JSON output")
+        .action(async (options: FeaturesCommandOptions) => {
+            try {
+                const featuresArgs = normalizeFeaturesOptions(options);
+                const apiClient =
+                    dependencies.apiClient ??
+                    createApiClient(resolveApiConfig(env));
+                state.featuresResult = await runFeaturesCommand(
+                    apiClient,
+                    featuresArgs,
+                );
+            } catch (error) {
+                if (error instanceof CliError && error.kind === "usage") {
+                    state.usageHelpCommand = "features";
+                    state.usageError = error;
+                    return;
+                }
+
+                throw error;
+            }
+        });
+
+    program
+        .command("set-status")
+        .usage("<json> [options]")
+        .description(
+            `The ${dim}\`set-status\`${reset} command is used to write status updates to the server. This is useful for sharing work progress or flagging issues. Accepts status and comments for a batch of requirements (ACIDs) for a single Implementation of a single Feature.\n`,
+        )
+        // set-status.MAIN.1 / set-status.MAIN.2 / set-status.MAIN.3 / set-status.MAIN.4 / set-status.MAIN.5 / set-status.MAIN.6
+        .argument("<json>")
+        .option("--product <name>", "product name")
+        .option(
+            "--impl <name>",
+            "implementation name or namespaced selector <product/implementation>",
+        )
+        .option("--json", "emit JSON output")
+        .action(async (source: string, options: SetStatusCommandOptions) => {
+            try {
+                const setStatusArgs = normalizeSetStatusOptions(
+                    source,
+                    options,
+                );
+                const apiClient =
+                    dependencies.apiClient ??
+                    createApiClient(resolveApiConfig(env));
+                state.setStatusResult = await runSetStatusCommand(
+                    apiClient,
+                    setStatusArgs,
+                );
+            } catch (error) {
+                if (error instanceof CliError && error.kind === "usage") {
+                    state.usageHelpCommand = "set-status";
                     state.usageError = error;
                     return;
                 }
