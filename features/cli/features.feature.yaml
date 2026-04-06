@@ -1,16 +1,16 @@
 feature:
-    name: work
+    name: features
     product: cli
     version: 1.0.0
     description: |
-        The `acai work` command returns a lightweight worklist of features for one implementation.
+        The `acai features` command returns a lightweight worklist of features for one implementation.
         It helps AI agents discover what exists and prioritize what to work on next.
 
 components:
     MAIN:
         description: Primary command behavior
         requirements:
-            1: Exposes `acai work`
+            1: Exposes `acai features`
             2: Requires a product selector via `--product`
             3: Accepts optional `--impl <implementation-name>`
             4: Accepts optional `--status <value>` filters, repeatable

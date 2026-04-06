@@ -1,9 +1,9 @@
 import type { ApiClient } from "./api.ts";
-import { readGitContext } from "./git.ts";
-import { runtimeError, usageError } from "./errors.ts";
+import { usageError } from "./errors.ts";
 import type { CommandResult } from "./output.ts";
+import { resolveImplementationName, type OneImplementationResolverDependencies } from "./targeting.ts";
 
-export interface WorkArgs {
+export interface FeaturesArgs {
   productName: string;
   implementationName?: string;
   statuses: string[];
@@ -11,7 +11,7 @@ export interface WorkArgs {
   json: boolean;
 }
 
-export interface WorkCommandOptions {
+export interface FeaturesCommandOptions {
   product: string;
   impl?: string;
   status?: string[];
@@ -19,12 +19,10 @@ export interface WorkCommandOptions {
   json?: boolean;
 }
 
-export interface WorkTargetResolverDependencies {
-  readGitContext?: typeof readGitContext;
-}
+export type FeaturesTargetResolverDependencies = OneImplementationResolverDependencies;
 
-// work.MAIN.1 / cli-core.TARGETING.1
-export function normalizeWorkOptions(options: WorkCommandOptions): WorkArgs {
+// features.MAIN.1 / cli-core.TARGETING.1
+export function normalizeFeaturesOptions(options: FeaturesCommandOptions): FeaturesArgs {
   if (options.product.startsWith("-")) {
     throw usageError("Missing value for --product.");
   }
@@ -53,12 +51,15 @@ export function normalizeWorkOptions(options: WorkCommandOptions): WorkArgs {
   };
 }
 
-export async function runWorkCommand(
+export async function runFeaturesCommand(
   apiClient: ApiClient,
-  args: WorkArgs,
-  dependencies: WorkTargetResolverDependencies = {},
+  args: FeaturesArgs,
+  dependencies: FeaturesTargetResolverDependencies = {},
 ): Promise<CommandResult> {
-  const implementationName = args.implementationName ?? (await resolveImplementationName(apiClient, args.productName, dependencies));
+  const implementationName = await resolveImplementationName(apiClient, {
+    productName: args.productName,
+    implementationName: args.implementationName,
+  }, dependencies);
 
   const response = await apiClient.listImplementationFeatures({
     productName: args.productName,
@@ -83,31 +84,4 @@ export async function runWorkCommand(
     exitCode: 0,
     stdoutLines: features.map((feature) => `${feature.feature_name} ${feature.completed_count}/${feature.total_count} refs_count=${feature.refs_count}`),
   };
-}
-
-async function resolveImplementationName(
-  apiClient: ApiClient,
-  productName: string,
-  dependencies: WorkTargetResolverDependencies,
-): Promise<string> {
-  const contextReader = dependencies.readGitContext ?? readGitContext;
-  const gitContext = await contextReader();
-  const response = await apiClient.listImplementations({
-    productName,
-    repoUri: gitContext.repoUri,
-    branchName: gitContext.branchName,
-  });
-
-  const implementations = response.data.implementations;
-  if (implementations.length === 1) {
-    return implementations[0]!.implementation_name;
-  }
-
-  if (implementations.length === 0) {
-    throw runtimeError("No implementation matched the current repo, branch, and product.");
-  }
-
-  throw runtimeError(
-    `Multiple implementations matched the current repo, branch, and product: ${implementations.map((entry) => entry.implementation_name).join(", ")}`,
-  );
 }

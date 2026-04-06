@@ -45,6 +45,19 @@ export async function writeTextResult(
   }
 }
 
+// cli-core.OUTPUT.1 / cli-core.OUTPUT.2
+export async function writeCommandResult(
+  ports: OutputPorts,
+  result: CommandResult,
+): Promise<void> {
+  if (result.jsonPayload !== undefined) {
+    await writeJsonResult(ports, result.jsonPayload, result.stderrLines);
+    return;
+  }
+
+  await writeTextResult(ports, result.stdoutLines ?? [], result.stderrLines);
+}
+
 export interface CommandResult {
   exitCode: ExitCode;
   stdoutLines?: string[];
