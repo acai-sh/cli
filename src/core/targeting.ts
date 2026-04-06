@@ -90,7 +90,7 @@ export async function resolveImplementationName(
   }
 
   if (implementations.length === 0) {
-    throw runtimeError("No implementation matched the current repo, branch, and product.");
+    throw runtimeError("No implementation matched the current repo, branch, and product. This branch may not have been pushed yet. Try: acai push --all");
   }
 
   throw runtimeError(

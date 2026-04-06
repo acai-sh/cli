@@ -151,7 +151,7 @@ describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-cor
           readGitContext: async () => ({ repoUri: "github.com/my-org/my-repo", branchName: "main" }),
         },
       ),
-    ).rejects.toThrow("No implementation matched the current repo, branch, and product.");
+    ).rejects.toThrow("No implementation matched the current repo, branch, and product. This branch may not have been pushed yet. Try: acai push --all");
   });
 
   test("cli-core.ERRORS.2 surfaces missing git context", async () => {

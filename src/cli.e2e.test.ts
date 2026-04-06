@@ -577,7 +577,7 @@ describe("set-status.MAIN.1 set-status.MAIN.2 set-status.MAIN.3 set-status.MAIN.
       );
 
       expect(missingResult.exitCode).toBe(1);
-      expect(missingResult.stderr).toContain("No implementation matched the current repo, branch, and product.");
+      expect(missingResult.stderr).toContain("No implementation matched the current repo, branch, and product. This branch may not have been pushed yet. Try: acai push --all");
     } finally {
       missingServer.stop();
       await missingGit.cleanup();
@@ -888,7 +888,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
       );
 
       expect(result.exitCode).toBe(1);
-      expect(result.stderr).toContain("No implementation matched the current repo, branch, and product.");
+      expect(result.stderr).toContain("No implementation matched the current repo, branch, and product. This branch may not have been pushed yet. Try: acai push --all");
     } finally {
       server.stop();
       await git.cleanup();
