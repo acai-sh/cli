@@ -212,6 +212,30 @@ describe("push.MAIN.9 push.API.2 push.API.3 push.API.6 push.SAFETY.4 push.SAFETY
     ]);
   });
 
+  test("push.API.6 push.SAFETY.4 buildPushPayloads ignores parent selectors for unscoped refs-only payloads", () => {
+    expect(
+      buildPushPayloads(
+        {
+          specs: [],
+          references: [{ featureName: "gamma", acid: "gamma.MAIN.1", path: "src/gamma.ts:1", isTest: false }],
+        },
+        { repoUri: "github.com/my-org/my-repo", branchName: "main", commitHash: "c1", parent: "main" },
+      ),
+    ).toEqual([
+      {
+        branch_name: "main",
+        commit_hash: "c1",
+        repo_uri: "github.com/my-org/my-repo",
+        references: {
+          data: {
+            "gamma.MAIN.1": [{ path: "src/gamma.ts:1", is_test: false }],
+          },
+          override: false,
+        },
+      },
+    ]);
+  });
+
   test("push.API.6 buildPushPayloads keeps unmatched refs alongside matched product payloads", () => {
     expect(
       buildPushPayloads(

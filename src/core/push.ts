@@ -527,12 +527,7 @@ export function buildPushPayloads(
   for (const [productName, bucket] of buckets) {
     if (bucket.specs.length > 0 || bucket.references.size === 0) continue;
 
-    if (!productName) {
-      if (options.target || options.parent) {
-        throw usageError("Refs-only pushes require --product, --target, and --parent together.");
-      }
-      continue;
-    }
+    if (!productName) continue;
 
     const scopedTarget = resolveScopedSelector(options.target, productName);
     const scopedParent = resolveScopedSelector(options.parent, productName);
