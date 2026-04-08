@@ -4,6 +4,7 @@ import type { components } from "../generated/types.ts";
 import { runtimeError, usageError } from "./errors.ts";
 import type { CommandResult } from "./output.ts";
 import {
+  readGitCommitHash,
   readGitFileLastSeenCommit,
   readGitPushContext,
   readGitRepoRoot,
@@ -160,7 +161,7 @@ export async function parseFeatureSpecFile(
   const absolutePath = joinPath(cwd, relativePath);
   const raw = await Bun.file(absolutePath).text();
   const parsed = parseFeatureDocument(raw, relativePath);
-  const lastSeenCommit = await readGitFileLastSeenCommit(relativePath, { cwd, runner });
+  const lastSeenCommit = await resolveSpecLastSeenCommit(cwd, relativePath, runner);
   parsed.spec.meta.last_seen_commit = lastSeenCommit;
 
   return {
@@ -170,6 +171,13 @@ export async function parseFeatureSpecFile(
     lastSeenCommit,
     spec: parsed.spec,
   };
+}
+
+async function resolveSpecLastSeenCommit(cwd: string, relativePath: string, runner?: GitCommandRunner): Promise<string> {
+  const lastSeenCommit = await readGitFileLastSeenCommit(relativePath, { cwd, runner });
+  if (lastSeenCommit) return lastSeenCommit;
+
+  return readGitCommitHash({ cwd, runner });
 }
 
 // push.SCAN.2 / push.SCAN.4 / push.UX.2

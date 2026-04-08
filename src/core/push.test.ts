@@ -393,6 +393,48 @@ describe("push.MAIN.7 push.MAIN.8 push.SCAN.3 push.SAFETY.2", () => {
     ]);
   });
 
+  test("planPush falls back to HEAD for untracked specs with no file-specific commit", async () => {
+    const root = await createRepoFixture({
+      "features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: product-a\n  version: 1.0.0\ncomponents:\n  MAIN:\n    requirements:\n      1: Alpha requirement\n`,
+      "src/alpha.ts": `const ref = "alpha.MAIN.1";\n`,
+    });
+
+    const runner = createGitRunner({
+      "rev-parse --show-toplevel": root,
+      "remote get-url origin": "git@github.com:my-org/my-repo.git",
+      "branch --show-current": "main",
+      "rev-parse HEAD": "c0ffee0000000000000000000000000000000000",
+      "log -1 --format=%H -- features/alpha.feature.yaml": "",
+    });
+
+    const plan = await planPush({ cwd: root, runner: runner as never });
+
+    expect(plan.payloads).toEqual([
+      {
+        branch_name: "main",
+        commit_hash: "c0ffee0000000000000000000000000000000000",
+        repo_uri: "github.com/my-org/my-repo",
+        product_name: "product-a",
+        specs: [
+          {
+            feature: { name: "alpha", product: "product-a", version: "1.0.0" },
+            meta: {
+              last_seen_commit: "c0ffee0000000000000000000000000000000000",
+              path: "features/alpha.feature.yaml",
+            },
+            requirements: { "alpha.MAIN.1": { requirement: "Alpha requirement", deprecated: false } },
+          },
+        ],
+        references: {
+          data: {
+            "alpha.MAIN.1": [{ path: "src/alpha.ts:1", is_test: false }],
+          },
+          override: false,
+        },
+      },
+    ]);
+  });
+
   test("scanPushRepo respects feature-name filters for both specs and refs", async () => {
     const root = await createRepoFixture({
       "features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: product-a\ncomponents:\n  MAIN:\n    requirements:\n      1: Alpha requirement\n`,

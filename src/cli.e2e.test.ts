@@ -1224,6 +1224,66 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
     }
   });
 
+  test("push.SCAN.3 push.SAFETY.2 uses HEAD for a new untracked spec with no file-specific history", async () => {
+    const repo = await createPushRepo({
+      "features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: product-a\ncomponents:\n  MAIN:\n    requirements:\n      1: Alpha requirement\n`,
+      "src/alpha.ts": `const alpha = "alpha.MAIN.1";\n`,
+    });
+    const git = await createFakeGitContext({
+      remote: "git@github.com:my-org/my-repo.git",
+      branch: "main",
+      topLevel: repo.root,
+      head: "c0ffee0000000000000000000000000000000000",
+      fileCommits: {
+        "features/alpha.feature.yaml": "",
+      },
+    });
+
+    const requests: any[] = [];
+    const server = createMockApiServer(async (request) => {
+      requests.push(await request.clone().json());
+      return Response.json({
+        data: {
+          product_name: requests[requests.length - 1].product_name,
+          implementation_name: "main",
+          specs_created: 1,
+          specs_updated: 0,
+          warnings: [],
+        },
+      });
+    });
+
+    try {
+      const result = await runCliSubprocess(
+        ["push", "--all"],
+        {
+          ...git.env,
+          ACAI_API_BASE_URL: server.url.toString(),
+          ACAI_API_TOKEN: "secret",
+        },
+      );
+
+      expect(result.exitCode).toBe(0);
+      expect(requests).toHaveLength(1);
+      expect(requests[0]?.specs).toEqual([
+        {
+          feature: { name: "alpha", product: "product-a", version: "1.0.0" },
+          meta: {
+            last_seen_commit: "c0ffee0000000000000000000000000000000000",
+            path: "features/alpha.feature.yaml",
+          },
+          requirements: {
+            "alpha.MAIN.1": { requirement: "Alpha requirement", deprecated: false },
+          },
+        },
+      ]);
+    } finally {
+      server.stop();
+      await git.cleanup();
+      await repo.cleanup();
+    }
+  });
+
   test("push.MAIN.5 push.MAIN.6 push.API.2 push.SAFETY.5 splits namespaced target and parent selectors by product", async () => {
     const repo = await createPushRepo({
       "features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: product-a\ncomponents:\n  MAIN:\n    requirements:\n      1: Alpha requirement\n`,
