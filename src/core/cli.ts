@@ -166,12 +166,17 @@ function createCliProgram(
 		.description(
 			`The ${dim}\`push\`${reset} command is used to scan your git repository and sync local specs and ACID refs to the server. Use feature names to limit the scan, or --all to scan the full repo.\n`,
 		)
-		// push.MAIN.1 / push.MAIN.2 / push.MAIN.3 / push.MAIN.4 / push.MAIN.5 / push.MAIN.6
+		// push.MAIN.1
 		.argument("[feature-names...]")
+		// push.MAIN.3
 		.option("--all", "scan all eligible specs and refs from repo root")
+		// push.MAIN.5
 		.option("--product <name>", "explicit product name for refs-only pushes")
+		// push.MAIN.4
 		.option("--target <selector>", "target implementation selector")
+		// push.MAIN.6
 		.option("--parent <selector>", "parent implementation selector")
+		// push.MAIN.2
 		.option("--json", "emit JSON output")
 		.action(async (featureNames: string[], options: PushCommandOptions) => {
 			try {
@@ -298,7 +303,7 @@ function createCliProgram(
 		.description(
 			`The ${dim}\`skill\`${reset} command prints the canonical bundled acai agent skill markdown, or installs that same content into the current workspace with ${dim}--install${reset}.\n`,
 		)
-		// skill.MAIN.1 / skill.MAIN.4
+		// skill.MAIN.4
 		.option(
 			"--install",
 			"write the bundled acai skill to .agents/skills/acai/SKILL.md",
@@ -318,13 +323,16 @@ function createCliProgram(
 		.description(
 			`The ${dim}\`set-status\`${reset} command is used to write status updates to the server. This is useful for sharing work progress or flagging issues. Accepts status and comments for a batch of requirements (ACIDs) for a single Implementation of a single Feature.\n`,
 		)
-		// set-status.MAIN.1 / set-status.MAIN.2 / set-status.MAIN.3 / set-status.MAIN.4 / set-status.MAIN.5 / set-status.MAIN.6
+		// set-status.MAIN.1
 		.argument("<json>")
+		// set-status.MAIN.4
 		.option("--product <name>", "product name")
+		// set-status.MAIN.5
 		.option(
 			"--impl <name>",
 			"implementation name or namespaced selector <product/implementation>",
 		)
+		// set-status.MAIN.6
 		.option("--json", "emit JSON output")
 		.action(async (source: string, options: SetStatusCommandOptions) => {
 			try {

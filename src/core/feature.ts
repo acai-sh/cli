@@ -25,7 +25,7 @@ export interface FeatureCommandOptions {
 	json?: boolean;
 }
 
-// feature.MAIN.1 / feature.MAIN.2 / feature.MAIN.3 / feature.MAIN.4 / feature.MAIN.5 / feature.MAIN.6
+// feature.MAIN.1
 export function normalizeFeatureOptions(
 	featureName: string,
 	options: FeatureCommandOptions,
@@ -52,7 +52,7 @@ export function normalizeFeatureOptions(
 	};
 }
 
-// feature.API.1 / feature.API.2 / feature.API.3 / feature.UX.1 / feature.UX.2 / cli-core.OUTPUT.1 / cli-core.OUTPUT.2
+// feature.API.1
 export async function runFeatureCommand(
 	apiClient: ApiClient,
 	args: FeatureArgs,

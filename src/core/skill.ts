@@ -36,12 +36,12 @@ export function normalizeSkillOptions(
 	};
 }
 
-// skill.WRITE.1 / skill.WRITE.2
+// skill.WRITE.1
 export function resolveSkillInstallPath(cwd: string): string {
 	return join(cwd, ...SKILL_INSTALL_PATH_SEGMENTS);
 }
 
-// skill.WRITE.1 / skill.WRITE.2 / skill.WRITE.3 / skill.SAFETY.3
+// skill.WRITE.2
 export async function installSkill(
 	cwd: string,
 	dependencies: Omit<SkillDependencies, "cwd"> = {},
@@ -51,21 +51,24 @@ export async function installSkill(
 	const writeSkillFile = dependencies.writeFile ?? writeFile;
 
 	await createDirectory(dirname(destination), { recursive: true });
+	// skill.WRITE.3 skill.SAFETY.3
 	await writeSkillFile(destination, getCanonicalSkillContent());
 
 	return destination;
 }
 
-// skill.MAIN.1 / skill.MAIN.3 / skill.WRITE.1 / skill.SAFETY.1 / skill.SAFETY.2 / skill.UX.1 / skill.UX.2 / cli-core.EXITS.1 / cli-core.UX.1 / cli-core.UX.2
+// skill.MAIN.1
 export async function runSkillCommand(
 	args: SkillArgs,
 	dependencies: SkillDependencies = {},
 ): Promise<CommandResult> {
 	if (args.install) {
+		// skill.MAIN.3 skill.UX.2
 		await installSkill(dependencies.cwd ?? process.cwd(), dependencies);
 		return { exitCode: 0 };
 	}
 
+	// skill.SAFETY.1 skill.UX.1
 	return {
 		exitCode: 0,
 		stdoutText: getCanonicalSkillContent(),

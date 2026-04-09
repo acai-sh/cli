@@ -15,7 +15,7 @@ import {
 	runSetStatusCommand,
 } from "./core/set-status.ts";
 
-describe("set-status.MAIN.1 set-status.MAIN.4 set-status.MAIN.5 set-status.MAIN.6", () => {
+describe("set-status option normalization", () => {
 	test("set-status.MAIN.4 and set-status.MAIN.5 normalize direct selectors", () => {
 		expect(
 			normalizeSetStatusOptions(
@@ -50,7 +50,7 @@ describe("set-status.MAIN.1 set-status.MAIN.4 set-status.MAIN.5 set-status.MAIN.
 		});
 	});
 
-	test("set-status.MAIN.1 set-status.MAIN.4 set-status.MAIN.5 reject missing values and conflicts", () => {
+	test("set-status.MAIN.4 set-status.MAIN.5 reject missing values and conflicts", () => {
 		expect(() =>
 			normalizeSetStatusOptions("--product", { product: "example-product" }),
 		).toThrow("Missing value for <json>.");
@@ -75,7 +75,7 @@ describe("set-status.MAIN.1 set-status.MAIN.4 set-status.MAIN.5 set-status.MAIN.
 	});
 });
 
-describe("set-status.MAIN.2 set-status.MAIN.3 set-status.INPUT.5 set-status.SAFETY.1 set-status.UX.2", () => {
+describe("set-status input loading", () => {
 	test("set-status.MAIN.2 reads @file JSON input", async () => {
 		const dir = await mkdtemp(join(tmpdir(), "acai-set-status-"));
 		const filePath = join(dir, "states.json");
@@ -93,8 +93,8 @@ describe("set-status.MAIN.2 set-status.MAIN.3 set-status.INPUT.5 set-status.SAFE
 	});
 });
 
-describe("set-status.INPUT.1 set-status.INPUT.2 set-status.INPUT.2-1 set-status.INPUT.3 set-status.INPUT.4 set-status.INPUT.5 set-status.SAFETY.3", () => {
-	test("set-status.INPUT.1 set-status.INPUT.2 set-status.INPUT.3 and set-status.INPUT.4 validate one-feature ACID maps", () => {
+describe("set-status payload validation", () => {
+	test("set-status.INPUT.1 set-status.INPUT.3 validate one-feature ACID maps", () => {
 		expect(
 			parseFeatureStatesPayload(
 				JSON.stringify({
@@ -136,7 +136,7 @@ describe("set-status.INPUT.1 set-status.INPUT.2 set-status.INPUT.2-1 set-status.
 		).toThrow("All ACIDs in one payload must share the same feature prefix.");
 	});
 
-	test("set-status.INPUT.2 set-status.INPUT.2-1 set-status.INPUT.5 rejects invalid states", () => {
+	test("set-status.INPUT.2 set-status.INPUT.5 rejects invalid states", () => {
 		expect(() =>
 			parseFeatureStatesPayload(
 				JSON.stringify({ "set-status.MAIN.1": { comment: "missing" } }),
@@ -150,7 +150,7 @@ describe("set-status.INPUT.1 set-status.INPUT.2 set-status.INPUT.2-1 set-status.
 	});
 });
 
-describe("set-status.API.1 set-status.API.2 set-status.API.3 set-status.UX.1 set-status.UX.2 cli-core.OUTPUT.1 cli-core.OUTPUT.2", () => {
+describe("set-status API and output", () => {
 	test("set-status.API.1 sends PATCH /feature-states requests and normalizes errors", async () => {
 		const patch = mock(
 			async (path: string, options: Record<string, unknown>) => {

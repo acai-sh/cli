@@ -12,7 +12,7 @@ import {
 } from "./core/feature.ts";
 import { resolveImplementationName } from "./core/targeting.ts";
 
-describe("feature.MAIN.1 feature.MAIN.2 feature.MAIN.3 feature.MAIN.4 feature.MAIN.5 feature.MAIN.6", () => {
+describe("feature option normalization", () => {
 	test("feature.MAIN.2 and feature.MAIN.3 normalize direct selectors", () => {
 		expect(
 			normalizeFeatureOptions("feature", {
@@ -86,7 +86,7 @@ describe("feature.MAIN.1 feature.MAIN.2 feature.MAIN.3 feature.MAIN.4 feature.MA
 	});
 });
 
-describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-core.TARGETING.4 cli-core.TARGETING.5 cli-core.ERRORS.2", () => {
+describe("implementation targeting", () => {
 	test("cli-core.TARGETING.1 uses an explicit implementation directly", async () => {
 		const apiClient = {
 			listImplementations: mock(async () => {
@@ -202,7 +202,7 @@ describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-cor
 	});
 });
 
-describe("feature.API.1 feature.API.2 feature.API.3 feature.UX.1 feature.UX.2 cli-core.OUTPUT.1 cli-core.OUTPUT.2", () => {
+describe("feature API and formatting", () => {
 	test("feature.API.1 requests GET /feature-context and forwards filters", async () => {
 		const server = createMockApiServer((request) => {
 			const url = new URL(request.url);

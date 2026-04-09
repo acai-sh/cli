@@ -46,7 +46,7 @@ export interface ParsedFeatureStatesPayload {
 	states: FeatureStatesRequest["states"];
 }
 
-// set-status.MAIN.1 / set-status.MAIN.4 / set-status.MAIN.5 / set-status.MAIN.6
+// set-status.MAIN.1
 export function normalizeSetStatusOptions(
 	source: string,
 	options: SetStatusCommandOptions,
@@ -64,7 +64,7 @@ export function normalizeSetStatusOptions(
 	};
 }
 
-// set-status.MAIN.2 / set-status.MAIN.3 / set-status.INPUT.5 / set-status.SAFETY.1 / set-status.UX.2
+// set-status.MAIN.2
 export async function readSetStatusInput(source: string): Promise<string> {
 	if (source === "-") {
 		return await Bun.stdin.text();
@@ -86,7 +86,7 @@ export async function readSetStatusInput(source: string): Promise<string> {
 	return source;
 }
 
-// set-status.INPUT.1 / set-status.INPUT.2 / set-status.INPUT.2-1 / set-status.INPUT.3 / set-status.INPUT.4 / set-status.INPUT.5 / set-status.SAFETY.3
+// set-status.INPUT.1
 export function parseFeatureStatesPayload(
 	jsonText: string,
 ): ParsedFeatureStatesPayload {
@@ -161,7 +161,7 @@ export function parseFeatureStatesPayload(
 	return { featureName: featureName!, states: normalizedStates };
 }
 
-// set-status.API.1 / set-status.API.2 / set-status.API.3 / set-status.UX.1 / set-status.UX.2 / cli-core.OUTPUT.1 / cli-core.OUTPUT.2
+// set-status.API.1
 export async function runSetStatusCommand(
 	apiClient: ApiClient,
 	args: SetStatusArgs,

@@ -87,7 +87,7 @@ describe("push.SCAN.1 push.SCAN.5 push.SCAN.5-1", () => {
 	});
 });
 
-describe("push.SCAN.2 push.SCAN.2-1 push.SCAN.4 push.SAFETY.1 push.UX.2", () => {
+describe("push reference scanning", () => {
 	test("scanPushReferences extracts full ACIDs, records first-match lines, filters feature names, and skips state files", async () => {
 		const root = await createRepoFixture({
 			"src/app.ts": `const spec = "alpha.MAIN.1";\nconst duplicate = "alpha.MAIN.1";\nconst other = "beta.MAIN.1";\n`,
@@ -119,7 +119,7 @@ describe("push.SCAN.2 push.SCAN.2-1 push.SCAN.4 push.SAFETY.1 push.UX.2", () => 
 	});
 });
 
-describe("push.MAIN.9 push.API.2 push.API.3 push.API.6 push.SAFETY.4 push.SAFETY.5 push.UX.2 push.UX.3", () => {
+describe("push payload construction", () => {
 	const scan: PushScanResult = {
 		specs: [
 			{
@@ -442,7 +442,7 @@ describe("push.MAIN.9 push.API.2 push.API.3 push.API.6 push.SAFETY.4 push.SAFETY
 	});
 });
 
-describe("push.MAIN.7 push.MAIN.8 push.SCAN.3 push.SAFETY.2", () => {
+describe("push planning", () => {
 	test("planPush collects git metadata and per-file last seen commits from the repo root", async () => {
 		const root = await createRepoFixture({
 			"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: product-a\n  version: 1.0.0\ncomponents:\n  MAIN:\n    requirements:\n      1: Alpha requirement\n`,
@@ -624,7 +624,7 @@ describe("push.MAIN.7 push.MAIN.8 push.SCAN.3 push.SAFETY.2", () => {
 	});
 });
 
-describe("push.MAIN.2 push.MAIN.3 push.MAIN.4 push.MAIN.5 push.MAIN.6 push.UX.1", () => {
+describe("push option normalization", () => {
 	test("normalizePushOptions validates push selectors and preserves the json flag", () => {
 		expect(
 			normalizePushOptions({
@@ -656,7 +656,7 @@ describe("push.MAIN.2 push.MAIN.3 push.MAIN.4 push.MAIN.5 push.MAIN.6 push.UX.1"
 	});
 });
 
-describe("push.API.1 push.API.4 push.OUTPUT.1 push.OUTPUT.2 push.OUTPUT.3 push.OUTPUT.3-1 push.OUTPUT.4 push.OUTPUT.5 push.SAFETY.3", () => {
+describe("push command execution", () => {
 	test("runPushCommand keeps failures isolated, formats product blocks, and returns a machine payload", async () => {
 		const root = await createRepoFixture({
 			"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: product-a\ncomponents:\n  MAIN:\n    requirements:\n      1: Alpha requirement\n`,

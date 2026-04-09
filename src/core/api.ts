@@ -118,7 +118,7 @@ export function createApiClient(
 	};
 }
 
-// cli-core.HTTP.1 / cli-core.HTTP.2 / cli-core.HTTP.3 / cli-core.ERRORS.1 / cli-core.ERRORS.6
+// cli-core.HTTP.1
 async function request(
 	client: any,
 	method: "GET" | "POST" | "PATCH",

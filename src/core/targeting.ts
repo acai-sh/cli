@@ -74,7 +74,7 @@ export function parseScopedImplementationSelector(
 	return { productName, implementationName };
 }
 
-// cli-core.TARGETING.1 / cli-core.TARGETING.2 / cli-core.TARGETING.3 / cli-core.TARGETING.4 / cli-core.TARGETING.5 / cli-core.ERRORS.2
+// cli-core.TARGETING.1
 export async function resolveImplementationName(
 	apiClient: ApiClient,
 	target: OneImplementationTarget,

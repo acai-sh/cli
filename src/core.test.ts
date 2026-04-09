@@ -92,7 +92,7 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
 	});
 });
 
-describe("cli-core.AUTH.1 cli-core.HTTP.1 cli-core.HTTP.2 cli-core.HTTP.3 cli-core.ERRORS.1 cli-core.ERRORS.6", () => {
+describe("API client behavior", () => {
 	test("applies bearer auth on outgoing API requests", async () => {
 		const server = createMockApiServer((request) => {
 			expect(request.headers.get("authorization")).toBe("Bearer secret");
@@ -262,7 +262,7 @@ describe("cli-core.AUTH.1 cli-core.HTTP.1 cli-core.HTTP.2 cli-core.HTTP.3 cli-co
 		).resolves.toEqual(buildFeatureContextResponse());
 	});
 
-	test("push.API.1 push.API.4 sends POST /push requests and normalizes push errors", async () => {
+	test("push.API.1 sends POST /push requests and normalizes push errors", async () => {
 		const post = mock(
 			async (path: string, options: Record<string, unknown>) => {
 				expect(path).toBe("/push");
@@ -369,7 +369,7 @@ describe("cli-core.OUTPUT.1 cli-core.OUTPUT.2", () => {
 	});
 });
 
-describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-core.TARGETING.4 cli-core.TARGETING.5 cli-core.ERRORS.2", () => {
+describe("features command targeting", () => {
 	test("cli-core.TARGETING.1 normalizes commander values into features args", () => {
 		expect(
 			normalizeFeaturesOptions({
@@ -515,7 +515,7 @@ describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-cor
 	});
 });
 
-describe("features.MAIN.1 features.MAIN.3 features.MAIN.4 features.MAIN.5 features.MAIN.6 features.MAIN.7 features.MAIN.8 features.API.1 features.API.2 features.UX.1 features.UX.2 features.UX.3 features.UX.4 features.UX.5", () => {
+describe("features command output", () => {
 	test("formats the text features list in API order and keeps counts visible", async () => {
 		const result = await runFeaturesCommand(
 			{
@@ -674,7 +674,7 @@ describe("cli-core.HELP.3 cli-core.HELP.5", () => {
 		expect(apiClient.listImplementationFeatures).not.toHaveBeenCalled();
 	});
 
-	test("skill.MAIN.1 cli-core.HELP.3 cli-core.HELP.4 cli-core.HELP.5 prints skill help without calling the API", async () => {
+	test("skill.MAIN.1 prints skill help without calling the API", async () => {
 		const makeOutput = () => ({
 			stdout: { write: mock(() => {}) },
 			stderr: { write: mock(() => {}) },
@@ -756,7 +756,7 @@ describe("cli-core.ERRORS.3 cli-core.ERRORS.4 cli-core.ERRORS.5", () => {
 		expect(readWrites(output.stderr.write)).toContain("Usage: acai skill");
 	});
 
-	test("skill.SAFETY.1 skill.SAFETY.2 cli-core.EXITS.1 runs locally without API configuration", async () => {
+	test("skill.SAFETY.1 runs locally without API configuration", async () => {
 		const output = {
 			stdout: { write: mock(() => {}) },
 			stderr: { write: mock(() => {}) },

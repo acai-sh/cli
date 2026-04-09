@@ -33,7 +33,7 @@ async function createPushRepo(
 	};
 }
 
-describe("cli-core.HELP.1 cli-core.HELP.2 cli-core.HELP.4 cli-core.HELP.5", () => {
+describe("CLI help output", () => {
 	test("acai prints top-level help when invoked without a subcommand", async () => {
 		const result = await runCliSubprocess([]);
 
@@ -69,7 +69,7 @@ describe("cli-core.HELP.1 cli-core.HELP.2 cli-core.HELP.4 cli-core.HELP.5", () =
 		expect(shortHelp.stderr.trim()).toBe("");
 	});
 
-	test("feature.MAIN.1 cli-core.HELP.3 cli-core.HELP.5 keep feature --help and -h in sync", async () => {
+	test("feature.MAIN.1 keeps feature --help and -h in sync", async () => {
 		const help = await runCliSubprocess(["feature", "--help"]);
 		const shortHelp = await runCliSubprocess(["feature", "-h"]);
 
@@ -82,7 +82,7 @@ describe("cli-core.HELP.1 cli-core.HELP.2 cli-core.HELP.4 cli-core.HELP.5", () =
 		expect(help.stderr.trim()).toBe("");
 	});
 
-	test("skill.MAIN.1 cli-core.HELP.3 cli-core.HELP.4 cli-core.HELP.5 keep skill --help and -h in sync", async () => {
+	test("skill.MAIN.1 keeps skill --help and -h in sync", async () => {
 		const help = await runCliSubprocess(["skill", "--help"]);
 		const shortHelp = await runCliSubprocess(["skill", "-h"]);
 
@@ -94,7 +94,7 @@ describe("cli-core.HELP.1 cli-core.HELP.2 cli-core.HELP.4 cli-core.HELP.5", () =
 	});
 });
 
-describe("skill.MAIN.1 skill.MAIN.2 skill.MAIN.3 skill.MAIN.4 skill.WRITE.1 skill.WRITE.2 skill.WRITE.3 skill.SAFETY.1 skill.SAFETY.2 skill.SAFETY.3 skill.UX.1 skill.UX.2 cli-core.EXITS.1 cli-core.ERRORS.4 cli-core.UX.1 cli-core.UX.2", () => {
+describe("skill command", () => {
 	test("skill.MAIN.2 skill.MAIN.3 skill.UX.1 prints the canonical skill markdown and nothing else", async () => {
 		const root = await mkdtemp(join(tmpdir(), "acai-skill-print-"));
 
@@ -109,7 +109,7 @@ describe("skill.MAIN.1 skill.MAIN.2 skill.MAIN.3 skill.MAIN.4 skill.WRITE.1 skil
 		}
 	});
 
-	test("skill.WRITE.1 skill.WRITE.2 skill.WRITE.3 skill.SAFETY.3 installs and overwrites the canonical skill file in an isolated workspace", async () => {
+	test("skill.WRITE.1 skill.WRITE.3 installs and overwrites the canonical skill file in an isolated workspace", async () => {
 		const root = await mkdtemp(join(tmpdir(), "acai-skill-install-"));
 		const destination = join(root, ".agents", "skills", "acai", "SKILL.md");
 
@@ -136,7 +136,7 @@ describe("skill.MAIN.1 skill.MAIN.2 skill.MAIN.3 skill.MAIN.4 skill.WRITE.1 skil
 		}
 	});
 
-	test("skill.SAFETY.1 skill.SAFETY.2 skill.SAFETY.3 cli-core.UX.1 cli-core.UX.2 works without ACAI_API_TOKEN in a temp workspace", async () => {
+	test("skill.SAFETY.1 skill.SAFETY.3 works without ACAI_API_TOKEN in a temp workspace", async () => {
 		const root = await mkdtemp(join(tmpdir(), "acai-skill-parity-e2e-"));
 		const destination = join(root, ".agents", "skills", "acai", "SKILL.md");
 
@@ -168,8 +168,8 @@ describe("skill.MAIN.1 skill.MAIN.2 skill.MAIN.3 skill.MAIN.4 skill.WRITE.1 skil
 	});
 });
 
-describe("feature.MAIN.1 feature.MAIN.2 feature.MAIN.3 feature.MAIN.4 feature.MAIN.5 feature.MAIN.6 feature.API.1 feature.API.2 feature.API.3 feature.UX.1 feature.UX.2", () => {
-	test("feature.API.1 feature.API.2 feature.API.3 feature.UX.1 prints text output for a direct target with refs, statuses, and warnings", async () => {
+describe("feature command", () => {
+	test("feature.API.1 feature.UX.1 prints text output for a direct target with refs, statuses, and warnings", async () => {
 		const server = createMockApiServer((request) => {
 			const url = new URL(request.url);
 
@@ -518,8 +518,8 @@ describe("feature.MAIN.1 feature.MAIN.2 feature.MAIN.3 feature.MAIN.4 feature.MA
 	});
 });
 
-describe("set-status.MAIN.1 set-status.MAIN.2 set-status.MAIN.3 set-status.MAIN.4 set-status.MAIN.5 set-status.MAIN.6 set-status.API.1 set-status.API.2 set-status.API.3 set-status.UX.1 set-status.UX.2", () => {
-	test("set-status.API.1 set-status.API.2 writes inline JSON input for explicit --product and --impl", async () => {
+describe("set-status command", () => {
+	test("set-status.API.1 writes inline JSON input for explicit --product and --impl", async () => {
 		const server = createMockApiServer(async (request) => {
 			const url = new URL(request.url);
 			if (request.method === "PATCH" && url.pathname === "/feature-states") {
@@ -747,7 +747,7 @@ describe("set-status.MAIN.1 set-status.MAIN.2 set-status.MAIN.3 set-status.MAIN.
 		}
 	});
 
-	test("cli-core.TARGETING.4 cli-core.TARGETING.5 and set-status.SAFETY.2 fail on ambiguous or missing git-derived targets", async () => {
+	test("cli-core.TARGETING.4 set-status.SAFETY.2 fail on ambiguous or missing git-derived targets", async () => {
 		const ambiguousGit = await createFakeGitContext({
 			remote: "git@github.com:my-org/my-repo.git",
 			branch: "main",
@@ -842,7 +842,7 @@ describe("set-status.MAIN.1 set-status.MAIN.2 set-status.MAIN.3 set-status.MAIN.
 		}
 	});
 
-	test("set-status.MAIN.6 cli-core.OUTPUT.1 cli-core.OUTPUT.2 keeps --json payload on stdout and warnings on stderr", async () => {
+	test("set-status.MAIN.6 keeps --json payload on stdout and warnings on stderr", async () => {
 		const server = createMockApiServer((request) => {
 			const url = new URL(request.url);
 			if (request.method === "PATCH" && url.pathname === "/feature-states") {
@@ -905,7 +905,7 @@ describe("set-status.MAIN.1 set-status.MAIN.2 set-status.MAIN.3 set-status.MAIN.
 		expect(result.stderr).toContain("Usage: acai set-status");
 	});
 
-	test("cli-core.HTTP.1 cli-core.HTTP.2 cli-core.HTTP.3 and set-status.INPUT.5 surface API and input failures", async () => {
+	test("cli-core.HTTP.1 set-status.INPUT.5 surface API and input failures", async () => {
 		const inputResult = await runCliSubprocess([
 			"set-status",
 			"{",
@@ -1035,8 +1035,8 @@ describe("set-status.MAIN.1 set-status.MAIN.2 set-status.MAIN.3 set-status.MAIN.
 	});
 });
 
-describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-core.UX.2", () => {
-	test("features.MAIN.1 features.MAIN.3 features.MAIN.4 features.MAIN.5 features.MAIN.7 features.MAIN.8 features.API.1 features.UX.1 prints text output for a direct target", async () => {
+describe("CLI command exits", () => {
+	test("features.MAIN.1 features.API.1 prints text output for a direct target", async () => {
 		const server = createMockApiServer((request) => {
 			const url = new URL(request.url);
 
@@ -1103,7 +1103,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 		}
 	});
 
-	test("features.MAIN.2 features.MAIN.3 features.API.1 features.API.2 resolves exactly one implementation from git context", async () => {
+	test("features.MAIN.2 features.API.2 resolves exactly one implementation from git context", async () => {
 		const git = await createFakeGitContext({
 			remote: "git@github.com:my-org/my-repo.git",
 			branch: "main",
@@ -1508,7 +1508,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 		}
 	});
 
-	test("push.MAIN.1 push.MAIN.2 push.MAIN.3 push.MAIN.7 push.MAIN.8 push.SCAN.1 push.SCAN.2 push.SCAN.3 push.SCAN.4 push.API.1 push.OUTPUT.1 push.OUTPUT.2 push.OUTPUT.3 push.OUTPUT.4 push.SAFETY.1 push.SAFETY.2 push.SAFETY.3 push.UX.1 push.UX.2 prints one block per product for a full repo push", async () => {
+	test("push.MAIN.1 push.API.1 prints one block per product for a full repo push", async () => {
 		const repo = await createPushRepo({
 			"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: product-a\ncomponents:\n  MAIN:\n    requirements:\n      1: Alpha requirement\n`,
 			"features/beta.feature.yaml": `feature:\n  name: beta\n  product: product-b\ncomponents:\n  MAIN:\n    requirements:\n      1: Beta requirement\n`,
@@ -1697,7 +1697,7 @@ describe("cli-core.EXITS.1 cli-core.EXITS.2 cli-core.EXITS.3 cli-core.UX.1 cli-c
 		}
 	});
 
-	test("push.MAIN.5 push.MAIN.6 push.API.2 push.SAFETY.5 splits namespaced target and parent selectors by product", async () => {
+	test("push.MAIN.5 push.API.2 splits namespaced target and parent selectors by product", async () => {
 		const repo = await createPushRepo({
 			"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: product-a\ncomponents:\n  MAIN:\n    requirements:\n      1: Alpha requirement\n`,
 			"features/beta.feature.yaml": `feature:\n  name: beta\n  product: product-b\ncomponents:\n  MAIN:\n    requirements:\n      1: Beta requirement\n`,

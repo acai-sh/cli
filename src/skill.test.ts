@@ -32,7 +32,7 @@ async function runProcess(
 	return { exitCode, stdout, stderr };
 }
 
-describe("skill.MAIN.2 skill.MAIN.3 skill.SAFETY.3 skill.UX.1", () => {
+describe("skill command output", () => {
 	test("skill.MAIN.2 loads the canonical bundled skill markdown verbatim", async () => {
 		const canonicalFile = await readFile(
 			new URL("../.agents/skills/acai/SKILL.md", import.meta.url),
@@ -52,7 +52,7 @@ describe("skill.MAIN.2 skill.MAIN.3 skill.SAFETY.3 skill.UX.1", () => {
 	});
 });
 
-describe("skill.MAIN.4 skill.WRITE.1 skill.WRITE.2 skill.WRITE.3 skill.SAFETY.3", () => {
+describe("skill installation helpers", () => {
 	test("skill.MAIN.4 normalizes the optional --install flag", () => {
 		expect(normalizeSkillOptions()).toEqual({ install: false });
 		expect(normalizeSkillOptions({ install: true })).toEqual({ install: true });
@@ -64,7 +64,7 @@ describe("skill.MAIN.4 skill.WRITE.1 skill.WRITE.2 skill.WRITE.3 skill.SAFETY.3"
 		);
 	});
 
-	test("skill.WRITE.1 skill.WRITE.2 skill.WRITE.3 installs and overwrites the canonical skill file", async () => {
+	test("skill.WRITE.1 skill.WRITE.3 installs and overwrites the canonical skill file", async () => {
 		const root = await mkdtemp(join(tmpdir(), "acai-skill-unit-"));
 		const destination = resolveSkillInstallPath(root);
 
@@ -115,7 +115,7 @@ describe("skill.MAIN.4 skill.WRITE.1 skill.WRITE.2 skill.WRITE.3 skill.SAFETY.3"
 	});
 });
 
-describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3 skill.MAIN.2 skill.MAIN.3", () => {
+describe("skill distribution packaging", () => {
 	test("cli-core.DIST.1 bundles the canonical skill content into the node distribution", async () => {
 		const workspaceRoot = new URL("..", import.meta.url).pathname;
 		const outputRoot = await mkdtemp(join(tmpdir(), "acai-skill-dist-js-"));

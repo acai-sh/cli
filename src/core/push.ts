@@ -130,7 +130,7 @@ const REF_SCAN_EXCLUDED_SUFFIXES = new Set([
 const FULL_ACID_PATTERN =
 	/\b([A-Za-z0-9_-]+\.[A-Z][A-Z0-9_-]*\.[0-9]+(?:-[0-9]+)?)\b/g;
 
-// push.MAIN.7 / push.MAIN.8 / push.SCAN.3 / push.SAFETY.2
+// push.MAIN.7
 export async function planPush(
 	options: PushCommandOptions = {},
 ): Promise<PushPlan> {
@@ -158,7 +158,7 @@ export async function planPush(
 	return { ...gitContext, payloads };
 }
 
-// push.SCAN.1 / push.SCAN.3 / push.SCAN.5 / push.SCAN.5-1 / push.MAIN.8
+// push.SCAN.1
 export async function scanPushRepo(
 	options: {
 		cwd?: string;
@@ -286,7 +286,7 @@ function getLineNumberForMatch(
 	return line;
 }
 
-// push.MAIN.2 / push.MAIN.3 / push.MAIN.4 / push.MAIN.5 / push.MAIN.6 / push.UX.1
+// push.MAIN.2
 export function normalizePushOptions(
 	options: PushCommandOptions,
 ): NormalizedPushOptions {
@@ -319,7 +319,7 @@ export function normalizePushOptions(
 	};
 }
 
-// push.API.1 / push.API.4 / push.OUTPUT.1 / push.OUTPUT.2 / push.OUTPUT.3 / push.OUTPUT.4 / push.OUTPUT.5 / push.SAFETY.3
+// push.API.1
 export async function runPushCommand(
 	apiClient: ApiClient,
 	options: NormalizedPushOptions,
@@ -511,7 +511,7 @@ function aggregatePushFailures(
 		}));
 }
 
-// push.SCAN.1 / push.SCAN.2 / push.SCAN.5 / push.SCAN.5-1
+// push.SCAN.1
 export function parseFeatureDocument(
 	raw: string,
 	relativePath: string,
@@ -614,7 +614,7 @@ export function parseFeatureDocument(
 	return { spec };
 }
 
-// push.MAIN.9 / push.API.2 / push.API.3 / push.SAFETY.2 / push.SAFETY.4 / push.SAFETY.5 / push.UX.2
+// push.MAIN.9
 export function buildPushPayloads(
 	scan: PushScanResult,
 	options: GitPushContext & {
