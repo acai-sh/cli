@@ -463,7 +463,11 @@ describe("features command targeting", () => {
 			},
 		);
 
-		expect(result.stdoutLines).toEqual(["example-feature 1/3 refs_count=2"]);
+		expect(result.stdoutLines).toEqual([
+			"FEATURE          DONE  REFS  TESTS  SPEC   STATES  LAST_SEEN",
+			"---------------  ----  ----  -----  -----  ------  ---------",
+			"example-feature  1/3   2     1      local  none    abc123   ",
+		]);
 		expect(apiClient.listImplementations).toHaveBeenCalledWith({
 			productName: "example-product",
 			repoUri: "github.com/my-org/my-repo",
@@ -535,7 +539,11 @@ describe("features command output", () => {
 
 		expect(result).toEqual({
 			exitCode: 0,
-			stdoutLines: ["example-feature 1/3 refs_count=2"],
+			stdoutLines: [
+				"FEATURE          DONE  REFS  TESTS  SPEC   STATES  LAST_SEEN",
+				"---------------  ----  ----  -----  -----  ------  ---------",
+				"example-feature  1/3   2     1      local  none    abc123   ",
+			],
 		});
 	});
 

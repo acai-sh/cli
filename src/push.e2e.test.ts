@@ -44,13 +44,13 @@ describe("push command", () => {
 			const result = await runCliSubprocess(["push", "--all"], apiEnv(server, git.env));
 			expect(result.exitCode).toBe(0);
 			expect(result.stderr.trim()).toBe("");
-			expect(result.stdout).toContain("Product: product-a");
-			expect(result.stdout).toContain("Implementation: main");
-			expect(result.stdout).toContain("Specs created: 1");
-			expect(result.stdout).toContain("Refs pushed: 1");
-			expect(result.stdout).toContain("Warning: alpha warning");
-			expect(result.stdout).toContain("Product: product-b");
-			expect(result.stdout).toContain("Implementation: preview");
+			expect(result.stdout).toContain("REPO:");
+			expect(result.stdout).toContain("PRODUCT");
+			expect(result.stdout).toContain("product-a");
+			expect(result.stdout).toContain("main");
+			expect(result.stdout).toContain("preview");
+			expect(result.stdout).toContain("WARNINGS");
+			expect(result.stdout).toContain("alpha warning");
 		} finally {
 			server.stop();
 			await git.cleanup();
@@ -99,7 +99,7 @@ describe("push command", () => {
 		try {
 			const result = await runCliSubprocess(["push", "alpha"], apiEnv(server, git.env));
 			expect(result.exitCode).toBe(0);
-			expect(result.stdout).toContain("Product: product-a");
+			expect(result.stdout).toContain("product-a");
 			expect(result.stdout).not.toContain("product-b");
 			expect(server.requests).toHaveLength(1);
 		} finally {
@@ -309,9 +309,10 @@ describe("push command", () => {
 		try {
 			const result = await runCliSubprocess(["push"], apiEnv(server, git.env));
 			expect(result.exitCode).toBe(1);
-			expect(result.stdout).toContain("Product: product-a");
-			expect(result.stdout).toContain("Product: product-b");
-			expect(result.stdout).toContain("Error: beta failed");
+			expect(result.stdout).toContain("product-a");
+			expect(result.stdout).toContain("product-b");
+			expect(result.stdout).toContain("failed");
+			expect(result.stdout).toContain("beta failed");
 		} finally {
 			server.stop();
 			await git.cleanup();

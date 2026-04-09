@@ -2,7 +2,7 @@ import { load as loadYaml } from "js-yaml";
 import type { ApiClient } from "./api.ts";
 import type { components } from "../generated/types.ts";
 import { runtimeError, usageError } from "./errors.ts";
-import type { CommandResult } from "./output.ts";
+import { formatTextTable, type CommandResult } from "./output.ts";
 import {
 	readGitCommitHash,
 	readGitFileLastSeenCommit,
@@ -413,30 +413,41 @@ export async function runPushCommand(
 }
 
 function formatPushTextResult(payload: PushCommandPayload): string[] {
-	const lines: string[] = [];
+	const lines = [
+		`REPO: ${payload.repoUri}`,
+		`BRANCH: ${payload.branchName}`,
+		`COMMIT: ${payload.commitHash}`,
+		"",
+		...formatTextTable(
+			["PRODUCT", "IMPL", "CREATED", "UPDATED", "REFS", "STATUS", "ERROR"],
+			[
+				...payload.results.map((result) => [
+					result.productName,
+					result.implementationName,
+					result.specsCreated,
+					result.specsUpdated,
+					result.refsPushed,
+					"ok",
+					undefined,
+				]),
+				...payload.failures.map((failure) => [
+					failure.productName,
+					undefined,
+					0,
+					0,
+					0,
+					"failed",
+					failure.error,
+				]),
+			],
+		),
+	];
 
-	for (const result of payload.results) {
-		lines.push(`Product: ${result.productName}`);
-		if (result.implementationName) {
-			lines.push(`Implementation: ${result.implementationName}`);
-		}
-		lines.push(`Specs created: ${result.specsCreated}`);
-		lines.push(`Specs updated: ${result.specsUpdated}`);
-		lines.push(`Refs pushed: ${result.refsPushed}`);
-		for (const warning of result.warnings) {
-			lines.push(`Warning: ${warning}`);
-		}
-		lines.push("");
-	}
-
-	for (const failure of payload.failures) {
-		lines.push(`Product: ${failure.productName}`);
-		lines.push(`Error: ${failure.error}`);
-		lines.push("");
-	}
-
-	while (lines.length > 0 && lines[lines.length - 1] === "") {
-		lines.pop();
+	const warnings = payload.results.flatMap((result) =>
+		result.warnings.map((warning) => [result.productName, warning]),
+	);
+	if (warnings.length > 0) {
+		lines.push("", "WARNINGS", ...formatTextTable(["PRODUCT", "WARNING"], warnings));
 	}
 
 	return lines;

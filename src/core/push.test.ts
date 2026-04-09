@@ -704,15 +704,19 @@ describe("push command execution", () => {
 
 		expect(textResult.exitCode).toBe(1);
 		expect(textResult.stdoutLines).toEqual([
-			"Product: product-a",
-			"Implementation: main",
-			"Specs created: 1",
-			"Specs updated: 0",
-			"Refs pushed: 1",
-			"Warning: alpha warning",
+			"REPO: github.com/my-org/my-repo",
+			"BRANCH: main",
+			"COMMIT: c0ffee0000000000000000000000000000000000",
 			"",
-			"Product: product-b",
-			"Error: beta failed",
+			"PRODUCT    IMPL  CREATED  UPDATED  REFS  STATUS  ERROR      ",
+			"---------  ----  -------  -------  ----  ------  -----------",
+			"product-a  main  1        0        1     ok      -          ",
+			"product-b  -     0        0        0     failed  beta failed",
+			"",
+			"WARNINGS",
+			"PRODUCT    WARNING      ",
+			"---------  -------------",
+			"product-a  alpha warning",
 		]);
 
 		const jsonResult = await runPushCommand(
@@ -906,13 +910,19 @@ describe("push command execution", () => {
 		);
 
 		expect(result.stdoutLines).toEqual([
-			"Product: cli",
-			"Implementation: feat/push-cli",
-			"Specs created: 5",
-			"Specs updated: 2",
-			"Refs pushed: 1",
-			"Warning: refs warning",
-			"Warning: spec warning",
+			"REPO: github.com/my-org/my-repo",
+			"BRANCH: main",
+			"COMMIT: c0ffee0000000000000000000000000000000000",
+			"",
+			"PRODUCT  IMPL           CREATED  UPDATED  REFS  STATUS  ERROR",
+			"-------  -------------  -------  -------  ----  ------  -----",
+			"cli      feat/push-cli  5        2        1     ok      -    ",
+			"",
+			"WARNINGS",
+			"PRODUCT  WARNING     ",
+			"-------  ------------",
+			"cli      refs warning",
+			"cli      spec warning",
 		]);
 		expect(result.jsonPayload).toEqual({
 			repoUri: "github.com/my-org/my-repo",

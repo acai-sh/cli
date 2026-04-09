@@ -1,6 +1,6 @@
 import type { ApiClient } from "./api.ts";
 import { usageError } from "./errors.ts";
-import type { CommandResult } from "./output.ts";
+import { formatTextTable, type CommandResult } from "./output.ts";
 import {
 	resolveImplementationName,
 	type OneImplementationResolverDependencies,
@@ -92,9 +92,21 @@ export async function runFeaturesCommand(
 
 	return {
 		exitCode: 0,
-		stdoutLines: features.map(
-			(feature) =>
-				`${feature.feature_name} ${feature.completed_count}/${feature.total_count} refs_count=${feature.refs_count}`,
+		stdoutLines: formatTextTable(
+			["FEATURE", "DONE", "REFS", "TESTS", "SPEC", "STATES", "LAST_SEEN"],
+			features.map((feature) => [
+				feature.feature_name,
+				`${feature.completed_count}/${feature.total_count}`,
+				feature.refs_count,
+				feature.test_refs_count,
+				feature.has_local_spec ? "local" : "inherited",
+				feature.has_local_states
+					? feature.states_inherited
+						? "inherited"
+						: "local"
+					: "none",
+				feature.spec_last_seen_commit,
+			]),
 		),
 	};
 }

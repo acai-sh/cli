@@ -93,3 +93,37 @@ export interface CommandResult {
 	jsonPayload?: unknown;
 	stderrLines?: string[];
 }
+
+export function formatTextTable(
+	headers: string[],
+	rows: Array<Array<string | number | boolean | null | undefined>>,
+): string[] {
+	if (headers.length === 0) return [];
+
+	const normalizedRows = rows.map((row) =>
+		headers.map((_, index) => formatTableCell(row[index])),
+	);
+	const widths = headers.map((header, index) =>
+		Math.max(
+			header.length,
+			...normalizedRows.map((row) => row[index]?.length ?? 0),
+		),
+	);
+
+	return [
+		formatTableRow(headers, widths),
+		formatTableRow(widths.map((width) => "-".repeat(width)), widths),
+		...normalizedRows.map((row) => formatTableRow(row, widths)),
+	];
+}
+
+function formatTableCell(
+	value: string | number | boolean | null | undefined,
+): string {
+	if (value === null || value === undefined || value === "") return "-";
+	return String(value);
+}
+
+function formatTableRow(cells: string[], widths: number[]): string {
+	return cells.map((cell, index) => cell.padEnd(widths[index] ?? 0)).join("  ");
+}

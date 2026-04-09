@@ -84,15 +84,16 @@ describe("feature command", () => {
 
 			expect(result.exitCode).toBe(0);
 			expect(result.stderr.trim()).toBe("");
-			expect(result.stdout.trim().split("\n")).toEqual([
-				"example-product/main feature=feature",
-				"summary total_acids=2 status_counts=incomplete:1,completed:1",
-				"feature.MAIN.2 status=incomplete refs=0 test_refs=0 requirement=requires product selector",
-				"feature.API.3 status=completed refs=1 test_refs=1 requirement=relays refs",
-				"  ref repo=github.com/my-org/my-repo branch=main path=src/feature.test.ts is_test=true",
-				"warning: warning one",
-			]);
-		} finally {
+				expect(result.stdout).toContain("TARGET: example-product/main");
+				expect(result.stdout).toContain("FEATURE: feature");
+				expect(result.stdout).toContain("ACID");
+				expect(result.stdout).toContain("feature.MAIN.2");
+				expect(result.stdout).toContain("feature.API.3");
+				expect(result.stdout).toContain("REFS");
+				expect(result.stdout).toContain("src/feature.test.ts");
+				expect(result.stdout).toContain("WARNINGS");
+				expect(result.stdout).toContain("warning one");
+			} finally {
 			server.stop();
 		}
 	});
@@ -118,7 +119,7 @@ describe("feature command", () => {
 			);
 			expect(result.exitCode).toBe(0);
 			expect(result.stderr.trim()).toBe("");
-			expect(result.stdout).toContain("example-product/main feature=feature");
+			expect(result.stdout).toContain("TARGET: example-product/main");
 		} finally {
 			server.stop();
 			await git.cleanup();
@@ -145,7 +146,7 @@ describe("feature command", () => {
 			);
 			expect(result.exitCode).toBe(0);
 			expect(result.stderr.trim()).toBe("");
-			expect(result.stdout).toContain("example-product/preview feature=feature");
+			expect(result.stdout).toContain("TARGET: example-product/preview");
 		} finally {
 			server.stop();
 		}

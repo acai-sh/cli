@@ -1,7 +1,7 @@
 import type { FeatureContextResponse } from "../generated/types.ts";
 import type { ApiClient } from "./api.ts";
 import { usageError } from "./errors.ts";
-import type { CommandResult } from "./output.ts";
+import { formatTextTable, type CommandResult } from "./output.ts";
 import {
 	normalizeOneImplementationTarget,
 	resolveImplementationName,
@@ -95,26 +95,44 @@ export function formatFeatureContext(
 ): string[] {
 	const { data } = response;
 	const lines = [
-		`${data.product_name}/${data.implementation_name} feature=${data.feature_name}`,
-		`summary total_acids=${data.summary.total_acids} status_counts=${formatStatusCounts(data.summary.status_counts as Record<string, number>)}`,
+		`TARGET: ${data.product_name}/${data.implementation_name}`,
+		`FEATURE: ${data.feature_name}`,
+		`TOTAL: ${data.summary.total_acids}`,
+		`STATUS: ${formatStatusCounts(data.summary.status_counts as Record<string, number>)}`,
+		"",
+		...formatTextTable(
+			["ACID", "STATUS", "REFS", "TESTS", "REQUIREMENT"],
+			data.acids.map((acid) => [
+				acid.acid,
+				acid.state.status ?? "null",
+				acid.refs_count,
+				acid.test_refs_count,
+				acid.requirement,
+			]),
+		),
 	];
 
-	for (const acid of data.acids) {
-		lines.push(
-			`${acid.acid} status=${acid.state.status ?? "null"} refs=${acid.refs_count} test_refs=${acid.test_refs_count} requirement=${acid.requirement}`,
+	if (includeRefs) {
+		const refs = data.acids.flatMap((acid) =>
+			(acid.refs ?? []).map((ref) => [
+				acid.acid,
+				ref.is_test ? "test" : "code",
+				ref.repo_uri,
+				ref.branch_name,
+				ref.path,
+			]),
 		);
-
-		if (includeRefs) {
-			for (const ref of acid.refs ?? []) {
-				lines.push(
-					`  ref repo=${ref.repo_uri} branch=${ref.branch_name} path=${ref.path} is_test=${ref.is_test}`,
-				);
-			}
+		if (refs.length > 0) {
+			lines.push(
+				"",
+				"REFS",
+				...formatTextTable(["ACID", "TYPE", "REPO", "BRANCH", "PATH"], refs),
+			);
 		}
 	}
 
-	for (const warning of data.warnings) {
-		lines.push(`warning: ${warning}`);
+	if (data.warnings.length > 0) {
+		lines.push("", "WARNINGS", ...data.warnings);
 	}
 
 	return lines;

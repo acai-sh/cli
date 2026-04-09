@@ -236,8 +236,9 @@ describe("set-status API and output", () => {
 		});
 
 		expect(direct.stdoutLines).toEqual([
-			"example-product/main feature=set-status",
-			"states_written=2",
+			"PRODUCT          IMPL  FEATURE     STATES_WRITTEN",
+			"---------------  ----  ----------  --------------",
+			"example-product  main  set-status  2             ",
 		]);
 		expect(setFeatureStates).toHaveBeenCalledWith({
 			product_name: "example-product",
@@ -266,10 +267,13 @@ describe("set-status API and output", () => {
 			json: false,
 		});
 		expect(textResult.stdoutLines).toEqual([
-			"example-product/main feature=set-status",
-			"states_written=1",
-			"warning: warning one",
-			"warning: warning two",
+			"PRODUCT          IMPL  FEATURE     STATES_WRITTEN",
+			"---------------  ----  ----------  --------------",
+			"example-product  main  set-status  1             ",
+			"",
+			"WARNINGS",
+			"warning one",
+			"warning two",
 		]);
 
 		const jsonResult = await runSetStatusCommand(apiClient as never, {
@@ -324,9 +328,12 @@ describe("set-status API and output", () => {
 				}),
 			),
 		).toEqual([
-			"example-product/preview feature=set-status",
-			"states_written=3",
-			"warning: warn",
+			"PRODUCT          IMPL     FEATURE     STATES_WRITTEN",
+			"---------------  -------  ----------  --------------",
+			"example-product  preview  set-status  3             ",
+			"",
+			"WARNINGS",
+			"warn",
 		]);
 	});
 });

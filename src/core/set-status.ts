@@ -4,7 +4,7 @@ import type {
 } from "../generated/types.ts";
 import type { ApiClient } from "./api.ts";
 import { usageError } from "./errors.ts";
-import type { CommandResult } from "./output.ts";
+import { formatTextTable, type CommandResult } from "./output.ts";
 import {
 	normalizeOneImplementationTarget,
 	resolveImplementationName,
@@ -202,13 +202,13 @@ export async function runSetStatusCommand(
 
 export function formatSetStatusText(response: FeatureStatesResponse): string[] {
 	const { data } = response;
-	const lines = [
-		`${data.product_name}/${data.implementation_name} feature=${data.feature_name}`,
-		`states_written=${data.states_written}`,
-	];
+	const lines = formatTextTable(
+		["PRODUCT", "IMPL", "FEATURE", "STATES_WRITTEN"],
+		[[data.product_name, data.implementation_name, data.feature_name, data.states_written]],
+	);
 
-	for (const warning of data.warnings) {
-		lines.push(`warning: ${warning}`);
+	if (data.warnings.length > 0) {
+		lines.push("", "WARNINGS", ...data.warnings);
 	}
 
 	return lines;

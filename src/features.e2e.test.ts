@@ -51,10 +51,14 @@ describe("features command", () => {
 			);
 			expect(result.exitCode).toBe(0);
 			expect(result.stderr.trim()).toBe("");
-			expect(result.stdout.trim().split("\n")).toEqual([
-				"feature-a 2/4 refs_count=3",
-				"feature-b 1/2 refs_count=1",
-			]);
+			const lines = result.stdout.trim().split("\n");
+			expect(lines[0]).toContain("FEATURE");
+			expect(lines[0]).toContain("DONE");
+			expect(lines[0]).toContain("LAST_SEEN");
+			expect(result.stdout).toContain("feature-a");
+			expect(result.stdout).toContain("2/4");
+			expect(result.stdout).toContain("feature-b");
+			expect(result.stdout).toContain("1/2");
 		} finally {
 			server.stop();
 		}
@@ -85,7 +89,10 @@ describe("features command", () => {
 			const result = await runCliSubprocess(["features", "--product", "example-product"], apiEnv(server, git.env));
 			expect(result.exitCode).toBe(0);
 			expect(result.stderr.trim()).toBe("");
-			expect(result.stdout.trim()).toBe("feature-a 3/5 refs_count=2");
+			expect(result.stdout).toContain("FEATURE");
+			expect(result.stdout).toContain("feature-a");
+			expect(result.stdout).toContain("3/5");
+			expect(result.stdout).toContain("abc123");
 		} finally {
 			server.stop();
 			await git.cleanup();

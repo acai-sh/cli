@@ -274,12 +274,23 @@ describe("feature API and formatting", () => {
 		});
 
 		expect(formatFeatureContext(payload, true)).toEqual([
-			"example-product/main feature=feature",
-			"summary total_acids=2 status_counts=incomplete:1,completed:1",
-			"feature.MAIN.2 status=incomplete refs=0 test_refs=0 requirement=second",
-			"feature.MAIN.1 status=completed refs=1 test_refs=1 requirement=first",
-			"  ref repo=github.com/my-org/my-repo branch=main path=src/feature.test.ts is_test=true",
-			"warning: warning one",
+			"TARGET: example-product/main",
+			"FEATURE: feature",
+			"TOTAL: 2",
+			"STATUS: incomplete:1,completed:1",
+			"",
+			"ACID            STATUS      REFS  TESTS  REQUIREMENT",
+			"--------------  ----------  ----  -----  -----------",
+			"feature.MAIN.2  incomplete  0     0      second     ",
+			"feature.MAIN.1  completed   1     1      first      ",
+			"",
+			"REFS",
+			"ACID            TYPE  REPO                       BRANCH  PATH               ",
+			"--------------  ----  -------------------------  ------  -------------------",
+			"feature.MAIN.1  test  github.com/my-org/my-repo  main    src/feature.test.ts",
+			"",
+			"WARNINGS",
+			"warning one",
 		]);
 	});
 

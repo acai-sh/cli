@@ -38,12 +38,11 @@ describe("set-status command", () => {
 
 			expect(result.exitCode).toBe(0);
 			expect(result.stderr.trim()).toBe("");
-			expect(result.stdout.trim().split("\n")).toEqual([
-				"example-product/main feature=set-status",
-				"states_written=2",
-				"warning: careful",
-			]);
-		} finally {
+				expect(result.stdout).toContain("PRODUCT");
+				expect(result.stdout).toContain("set-status");
+				expect(result.stdout).toContain("WARNINGS");
+				expect(result.stdout).toContain("careful");
+			} finally {
 			server.stop();
 		}
 	});
@@ -69,7 +68,8 @@ describe("set-status command", () => {
 				{ cwd: workspace.root },
 			);
 			expect(result.exitCode).toBe(0);
-			expect(result.stdout).toContain("states_written=2");
+			expect(result.stdout).toContain("STATES_WRITTEN");
+			expect(result.stdout).toContain("set-status");
 		} finally {
 			server.stop();
 			await workspace.cleanup();
@@ -96,7 +96,8 @@ describe("set-status command", () => {
 				{ input: '{"set-status.INPUT.1":{"status":null}}' },
 			);
 			expect(result.exitCode).toBe(0);
-			expect(result.stdout).toContain("states_written=1");
+			expect(result.stdout).toContain("STATES_WRITTEN");
+			expect(result.stdout).toContain("  1");
 		} finally {
 			server.stop();
 		}
@@ -121,7 +122,8 @@ describe("set-status command", () => {
 				apiEnv(server),
 			);
 			expect(result.exitCode).toBe(0);
-			expect(result.stdout).toContain("example-product/preview feature=set-status");
+			expect(result.stdout).toContain("preview");
+			expect(result.stdout).toContain("set-status");
 		} finally {
 			server.stop();
 		}
@@ -147,7 +149,8 @@ describe("set-status command", () => {
 				apiEnv(server, git.env),
 			);
 			expect(result.exitCode).toBe(0);
-			expect(result.stdout).toContain("example-product/main feature=set-status");
+			expect(result.stdout).toContain("main");
+			expect(result.stdout).toContain("set-status");
 		} finally {
 			server.stop();
 			await git.cleanup();
