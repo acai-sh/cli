@@ -28,7 +28,7 @@ components:
 constraints:
     UX:
         requirements:
-            1: The default text output prints one line per feature with feature_name, completed_count/total_count, and refs_count
+            1: The default text output presents each returned feature with its name, completion counts, and ref counts
             2: The command is read-only and never mutates specs, refs, or states
             3: The default text output preserves the feature order returned by the API response
             4: When no features match, the command still exits successfully and indicates that no features were returned

@@ -27,5 +27,5 @@ components:
 constraints:
     UX:
         requirements:
-            1: The default text output includes feature summary counts and one line per returned ACID
+            1: The default text output includes feature summary counts and presents each returned ACID with its resolved state and ref counts
             2: The command never performs status writes or branch pushes

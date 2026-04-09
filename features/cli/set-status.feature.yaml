@@ -43,5 +43,5 @@ constraints:
 
     UX:
         requirements:
-            1: The default text output includes the resolved product, implementation, feature, and states written count
+            1: The default text output includes the resolved product, implementation, feature, and states written count for the write result
             2: The command works in non-interactive environments such as CI and agent runtimes

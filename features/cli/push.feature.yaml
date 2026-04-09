@@ -46,8 +46,8 @@ components:
     OUTPUT:
         description: Human and machine readable results
         requirements:
-            1: Prints one result block per product
-            1-note: Multiple push requests that resolve to the same product are combined into one result block
+            1: The default text output presents one result entry per product included in the push result
+            1-note: Multiple push requests that resolve to the same product are combined into one product result
             2: Each result block includes the resolved implementation name when available
             3: Each result block includes specs created and specs updated counts
             3-1: Each result block includes the number of refs pushed for that product
