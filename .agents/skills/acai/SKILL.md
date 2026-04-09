@@ -4,7 +4,7 @@ description: Mandatory - you must load the acai skill to learn the acai.sh proce
 ---
 
 We follow spec-driven development using acai.sh conventions.
-We we write feature.yaml spec docs as the source of truth for intended behavior, acceptance criteria, and important constraints.
+We write feature.yaml spec docs as the source of truth for intended behavior, acceptance criteria, and important constraints.
 
 Specs are law. Derive all code, tests, and docs from these specs.
 
@@ -49,7 +49,7 @@ As shown above;
 
 # The process
 
-1. Write or modify the spec first, always. 
+1. Write or modify the spec first, always.
 2. Align code to spec.
 3. Liberally reference the spec requirement ID (aka ACID) in code comments and test names. These references help us review and search the codebase. They should be co-located with the behavior or test that implements or validates that specific requirement in the spec.
 For feature completion, every requirement should have at least 1 reference in the codebase.
@@ -59,7 +59,7 @@ Importantly: After implementation, if you found the acai process useful and rele
 
 When planning tasks:
 -> Review the state of the implementation; search by ACID to understand how well-aligned the code is to the spec.
-->  **Always** lists every ACID to be satisfied in that task, with their complete ACID and requirement text.
+->  **Always** list every ACID to be satisfied in that task, with their complete ACID and requirement text.
 
 When writing code:
 -> For important code blocks, include ACID references in comments, to help us understand "why" that code was written.

@@ -4,1118 +4,1132 @@
  */
 
 export interface paths {
-    "/feature-context": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Read canonical feature context
-         * @description Return the complete context for one feature in one implementation.
-         *
-         *     This is the main read endpoint for spec-driven work. It returns the complete list of acceptance criteria, including the requirement definitions, lists of existing references in code, and additional metadata.
-         *
-         *     Agents should call this before making additional code changes so they work from the same inherited source of truth that reviewers and dashboards use.
-         */
-        get: operations["AcaiWeb.Api.FeatureContextController.show"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/feature-states": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Write feature states
-         * @description Record implementation-specific progress for one feature in one implementation. State writes do not change requirement text or code refs; they only capture how this implementation currently evaluates each requirement, for example assigned, blocked, completed, or accepted. On first write, local state starts from the parent implementation when one exists, then applies the incoming changes. Use this after analysis, coding, review, or QA to record progress without changing branch-derived truth.
-         */
-        patch: operations["AcaiWeb.Api.FeatureStatesController.update"];
-        trace?: never;
-    };
-    "/implementation-features": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List implementation features
-         * @description Return a summary list of Features that are visible to a given Implementation.
-         *     These features may be defined in specs that were pushed directly to that Implementation, or inherited from a parent Implementation.
-         *     The response is a summary list of features, containing some metadata and a summary of code references. This is useful to quickly identify features that may have changed or are missing references.
-         */
-        get: operations["AcaiWeb.Api.ImplementationFeaturesController.index"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/implementations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List implementations
-         * @description Discover which Implementations exist for a Product. Filter by Repo + Branch name, and by Feature name.
-         *           This is the orientation endpoint: when you know the current repo and branch, and need to identify the relevant Implementations that track it.
-         */
-        get: operations["AcaiWeb.Api.ImplementationsController.index"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/push": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Push from branch
-         * @description Sync data from your current git branch to the server.
-         *     - Upload specs (feature.yaml files) and the requirements and metadata defined in them.
-         *     - Upload code references (ACID tags) found in source code, and their file paths.
-         *
-         *     This endpoint can create or link implementations while syncing specs and refs, but it does not
-         *     accept feature-state writes or configure implementation settings directly.
-         *
-         *     Use this when source code or specs have changed on a branch.
-         *     This endpoint is primarily intended to serve the `acai push` CLI command.
-         */
-        post: operations["AcaiWeb.Api.PushController.create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
+	"/feature-context": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Read canonical feature context
+		 * @description Return the complete context for one feature in one implementation.
+		 *
+		 *     This is the main read endpoint for spec-driven work. It returns the complete list of acceptance criteria, including the requirement definitions, lists of existing references in code, and additional metadata.
+		 *
+		 *     Agents should call this before making additional code changes so they work from the same inherited source of truth that reviewers and dashboards use.
+		 */
+		get: operations["AcaiWeb.Api.FeatureContextController.show"];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/feature-states": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		/**
+		 * Write feature states
+		 * @description Record implementation-specific progress for one feature in one implementation. State writes do not change requirement text or code refs; they only capture how this implementation currently evaluates each requirement, for example assigned, blocked, completed, or accepted. On first write, local state starts from the parent implementation when one exists, then applies the incoming changes. Use this after analysis, coding, review, or QA to record progress without changing branch-derived truth.
+		 */
+		patch: operations["AcaiWeb.Api.FeatureStatesController.update"];
+		trace?: never;
+	};
+	"/implementation-features": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * List implementation features
+		 * @description Return a summary list of Features that are visible to a given Implementation.
+		 *     These features may be defined in specs that were pushed directly to that Implementation, or inherited from a parent Implementation.
+		 *     The response is a summary list of features, containing some metadata and a summary of code references. This is useful to quickly identify features that may have changed or are missing references.
+		 */
+		get: operations["AcaiWeb.Api.ImplementationFeaturesController.index"];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/implementations": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * List implementations
+		 * @description Discover which Implementations exist for a Product. Filter by Repo + Branch name, and by Feature name.
+		 *           This is the orientation endpoint: when you know the current repo and branch, and need to identify the relevant Implementations that track it.
+		 */
+		get: operations["AcaiWeb.Api.ImplementationsController.index"];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/push": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Push from branch
+		 * @description Sync data from your current git branch to the server.
+		 *     - Upload specs (feature.yaml files) and the requirements and metadata defined in them.
+		 *     - Upload code references (ACID tags) found in source code, and their file paths.
+		 *
+		 *     This endpoint can create or link implementations while syncing specs and refs, but it does not
+		 *     accept feature-state writes or configure implementation settings directly.
+		 *
+		 *     Use this when source code or specs have changed on a branch.
+		 *     This endpoint is primarily intended to serve the `acai push` CLI command.
+		 */
+		post: operations["AcaiWeb.Api.PushController.create"];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        /** AcidEntry */
-        AcidEntry: {
-            acid: string;
-            deprecated?: boolean;
-            note?: string;
-            refs?: {
-                branch_name: string;
-                is_test: boolean;
-                path: string;
-                repo_uri: string;
-            }[];
-            refs_count: number;
-            replaced_by?: string[];
-            requirement: string;
-            state: {
-                comment?: string;
-                status?: string | null;
-                updated_at?: string;
-            };
-            test_refs_count: number;
-        };
-        /** DanglingStateEntry */
-        DanglingStateEntry: {
-            acid: string;
-            state: {
-                comment?: string;
-                status?: string | null;
-                updated_at?: string;
-            };
-        };
-        /** ErrorResponse */
-        ErrorResponse: {
-            errors: {
-                detail: string;
-                status?: string;
-            };
-        };
-        /**
-         * Feature
-         * @description Feature metadata
-         * @example {
-         *       "description": "Authentication feature",
-         *       "name": "auth-feature",
-         *       "prerequisites": [],
-         *       "product": "my-app",
-         *       "version": "1.0.0"
-         *     }
-         */
-        Feature: {
-            /** @description Optional feature description */
-            description?: string;
-            /** @description Feature name (alphanumeric, hyphens, underscores only) */
-            name: string;
-            /** @description Optional list of prerequisite feature names */
-            prerequisites?: string[];
-            /** @description Product name */
-            product: string;
-            /**
-             * @description Optional version string (SemVer)
-             * @default 1.0.0
-             */
-            version: string;
-        };
-        /** FeatureContextData */
-        FeatureContextData: {
-            acids: {
-                acid: string;
-                deprecated?: boolean;
-                note?: string;
-                refs?: {
-                    branch_name: string;
-                    is_test: boolean;
-                    path: string;
-                    repo_uri: string;
-                }[];
-                refs_count: number;
-                replaced_by?: string[];
-                requirement: string;
-                state: {
-                    comment?: string;
-                    status?: string | null;
-                    updated_at?: string;
-                };
-                test_refs_count: number;
-            }[];
-            dangling_states?: {
-                acid: string;
-                state: {
-                    comment?: string;
-                    status?: string | null;
-                    updated_at?: string;
-                };
-            }[];
-            feature_name: string;
-            implementation_id: string;
-            implementation_name: string;
-            product_name: string;
-            refs_source: {
-                branch_names?: string[];
-                implementation_name?: string;
-                /** @enum {string} */
-                source_type: "local" | "inherited" | "none";
-            };
-            spec_source: {
-                branch_names?: string[];
-                implementation_name?: string;
-                /** @enum {string} */
-                source_type: "local" | "inherited" | "none";
-            };
-            states_source: {
-                branch_names?: string[];
-                implementation_name?: string;
-                /** @enum {string} */
-                source_type: "local" | "inherited" | "none";
-            };
-            summary: {
-                status_counts: Record<string, never>;
-                total_acids: number;
-            };
-            warnings: string[];
-        };
-        /** FeatureContextResponse */
-        FeatureContextResponse: {
-            data: {
-                acids: {
-                    acid: string;
-                    deprecated?: boolean;
-                    note?: string;
-                    refs?: {
-                        branch_name: string;
-                        is_test: boolean;
-                        path: string;
-                        repo_uri: string;
-                    }[];
-                    refs_count: number;
-                    replaced_by?: string[];
-                    requirement: string;
-                    state: {
-                        comment?: string;
-                        status?: string | null;
-                        updated_at?: string;
-                    };
-                    test_refs_count: number;
-                }[];
-                dangling_states?: {
-                    acid: string;
-                    state: {
-                        comment?: string;
-                        status?: string | null;
-                        updated_at?: string;
-                    };
-                }[];
-                feature_name: string;
-                implementation_id: string;
-                implementation_name: string;
-                product_name: string;
-                refs_source: {
-                    branch_names?: string[];
-                    implementation_name?: string;
-                    /** @enum {string} */
-                    source_type: "local" | "inherited" | "none";
-                };
-                spec_source: {
-                    branch_names?: string[];
-                    implementation_name?: string;
-                    /** @enum {string} */
-                    source_type: "local" | "inherited" | "none";
-                };
-                states_source: {
-                    branch_names?: string[];
-                    implementation_name?: string;
-                    /** @enum {string} */
-                    source_type: "local" | "inherited" | "none";
-                };
-                summary: {
-                    status_counts: Record<string, never>;
-                    total_acids: number;
-                };
-                warnings: string[];
-            };
-        };
-        /**
-         * FeatureMeta
-         * @description Metadata about the feature file location
-         * @example {
-         *       "last_seen_commit": "abc123def456",
-         *       "path": "features/auth.feature.yaml"
-         *     }
-         */
-        FeatureMeta: {
-            /** @description Commit hash when this feature was last seen */
-            last_seen_commit: string;
-            /** @description Path from repo root (e.g., features/auth.feature.yaml) */
-            path: string;
-            /** @description Optional raw content of the feature file */
-            raw_content?: string;
-        };
-        /** FeatureStateObject */
-        FeatureStateObject: {
-            /** @description Optional state comment */
-            comment?: string;
-            /**
-             * @description Nullable state status
-             * @enum {string|null}
-             */
-            status: "assigned" | "blocked" | "incomplete" | "completed" | "rejected" | "accepted" | null;
-        };
-        /** FeatureStatesRequest */
-        FeatureStatesRequest: {
-            feature_name: string;
-            implementation_name: string;
-            product_name: string;
-            states: {
-                [key: string]: {
-                    /** @description Optional state comment */
-                    comment?: string;
-                    /**
-                     * @description Nullable state status
-                     * @enum {string|null}
-                     */
-                    status: "assigned" | "blocked" | "incomplete" | "completed" | "rejected" | "accepted" | null;
-                };
-            };
-        };
-        /** FeatureStatesResponse */
-        FeatureStatesResponse: {
-            data: {
-                feature_name: string;
-                implementation_id: string;
-                implementation_name: string;
-                product_name: string;
-                states_written: number;
-                warnings: string[];
-            };
-        };
-        /** FeatureStatesResponseData */
-        FeatureStatesResponseData: {
-            feature_name: string;
-            implementation_id: string;
-            implementation_name: string;
-            product_name: string;
-            states_written: number;
-            warnings: string[];
-        };
-        /** ImplementationEntry */
-        ImplementationEntry: {
-            implementation_id: string;
-            implementation_name: string;
-        };
-        /** ImplementationFeatureEntry */
-        ImplementationFeatureEntry: {
-            completed_count: number;
-            description: string | null;
-            feature_name: string;
-            has_local_spec: boolean;
-            has_local_states: boolean;
-            refs_count: number;
-            refs_inherited: boolean;
-            spec_last_seen_commit: string | null;
-            states_inherited: boolean;
-            test_refs_count: number;
-            total_count: number;
-        };
-        /** ImplementationFeaturesData */
-        ImplementationFeaturesData: {
-            features: {
-                completed_count: number;
-                description: string | null;
-                feature_name: string;
-                has_local_spec: boolean;
-                has_local_states: boolean;
-                refs_count: number;
-                refs_inherited: boolean;
-                spec_last_seen_commit: string | null;
-                states_inherited: boolean;
-                test_refs_count: number;
-                total_count: number;
-            }[];
-            implementation_id: string;
-            implementation_name: string;
-            product_name: string;
-        };
-        /** ImplementationFeaturesResponse */
-        ImplementationFeaturesResponse: {
-            data: {
-                features: {
-                    completed_count: number;
-                    description: string | null;
-                    feature_name: string;
-                    has_local_spec: boolean;
-                    has_local_states: boolean;
-                    refs_count: number;
-                    refs_inherited: boolean;
-                    spec_last_seen_commit: string | null;
-                    states_inherited: boolean;
-                    test_refs_count: number;
-                    total_count: number;
-                }[];
-                implementation_id: string;
-                implementation_name: string;
-                product_name: string;
-            };
-        };
-        /** ImplementationsData */
-        ImplementationsData: {
-            branch_name?: string;
-            implementations: {
-                implementation_id: string;
-                implementation_name: string;
-            }[];
-            product_name: string;
-            repo_uri?: string;
-        };
-        /** ImplementationsResponse */
-        ImplementationsResponse: {
-            data: {
-                branch_name?: string;
-                implementations: {
-                    implementation_id: string;
-                    implementation_name: string;
-                }[];
-                product_name: string;
-                repo_uri?: string;
-            };
-        };
-        /**
-         * PushRequest
-         * @description Request body for pushing specs and refs
-         * @example {
-         *       "branch_name": "main",
-         *       "commit_hash": "abc123def456",
-         *       "repo_uri": "github.com/my-org/my-repo",
-         *       "specs": [
-         *         {
-         *           "feature": {
-         *             "name": "auth-feature",
-         *             "product": "my-app"
-         *           },
-         *           "meta": {
-         *             "last_seen_commit": "abc123def456",
-         *             "path": "features/auth.feature.yaml"
-         *           },
-         *           "requirements": {
-         *             "auth-feature.AUTH.1": {
-         *               "requirement": "Must validate credentials"
-         *             }
-         *           }
-         *         }
-         *       ]
-         *     }
-         */
-        PushRequest: {
-            /** @description Git branch name being pushed (e.g., 'main', 'feature/auth-123') */
-            branch_name: string;
-            /** @description Full 40-character Git commit SHA that this push represents (e.g., 'abc123def456...') */
-            commit_hash: string;
-            /** @description Name of a parent implementation for inheritance. When creating a new implementation, it will inherit the parent's baseline and refs (e.g., create 'feature-branch-impl' with parent 'main' to start with main's baseline). Useful for short-lived branches that extend an existing implementation */
-            parent_impl_name?: string;
-            /** @description Optional product name used for refs-only implementation creation or linking */
-            product_name?: string;
-            /** @description Optional code references */
-            references?: {
-                /** @description Map of requirement IDs to arrays of ref objects */
-                data: {
-                    [key: string]: {
-                        /**
-                         * @description Whether this reference is a test
-                         * @default false
-                         */
-                        is_test: boolean;
-                        /** @description Path to the code reference (e.g., lib/foo.ex:42) */
-                        path: string;
-                    }[];
-                };
-                /**
-                 * @description If true, replaces all existing refs instead of merging
-                 * @default false
-                 */
-                override: boolean;
-            };
-            /** @description `repo_uri` should be in the format `host/owner/repo` (e.g. `github.com/my-org/my-repo`). Supported hosts for deep linking are `github.com`, `gitlab.com`, and `bitbucket.org`. Self-hosted instances may work for tracking but deep links are not guaranteed yet. */
-            repo_uri: string;
-            /** @description Optional list of specs to push */
-            specs?: {
-                /** @description Feature metadata */
-                feature: {
-                    /** @description Optional feature description */
-                    description?: string;
-                    /** @description Feature name (alphanumeric, hyphens, underscores only) */
-                    name: string;
-                    /** @description Optional list of prerequisite feature names */
-                    prerequisites?: string[];
-                    /** @description Product name */
-                    product: string;
-                    /**
-                     * @description Optional version string (SemVer)
-                     * @default 1.0.0
-                     */
-                    version: string;
-                };
-                /** @description Feature file metadata */
-                meta: {
-                    /** @description Commit hash when this feature was last seen */
-                    last_seen_commit: string;
-                    /** @description Path from repo root (e.g., features/auth.feature.yaml) */
-                    path: string;
-                    /** @description Optional raw content of the feature file */
-                    raw_content?: string;
-                };
-                /** @description Map of requirement IDs to requirement definitions */
-                requirements: {
-                    [key: string]: {
-                        /**
-                         * @description Whether this requirement is deprecated
-                         * @default false
-                         */
-                        deprecated: boolean;
-                        /** @description Optional note about this requirement */
-                        note?: string;
-                        /** @description Optional list of requirement IDs that replace this one */
-                        replaced_by?: string[];
-                        /** @description The requirement text describing the acceptance criteria */
-                        requirement: string;
-                    };
-                };
-            }[];
-            /** @description Name of the implementation (deployment environment) to associate this branch with. An implementation represents a deployable instance of your product (e.g., 'production', 'staging', 'mobile-app-v2'). For spec-push creation flows, a missing implementation may be auto-created within the product. For refs-only pushes, `product_name` + `target_impl_name` must resolve to an existing implementation unless `parent_impl_name` is also provided to create a new child implementation. */
-            target_impl_name?: string;
-        };
-        /**
-         * PushResponse
-         * @description Successful push response
-         * @example {
-         *       "data": {
-         *         "branch_id": "123e4567-e89b-12d3-a456-426614174001",
-         *         "implementation_id": "123e4567-e89b-12d3-a456-426614174000",
-         *         "implementation_name": "production",
-         *         "product_name": "my-app",
-         *         "specs_created": 1,
-         *         "specs_updated": 0,
-         *         "warnings": []
-         *       }
-         *     }
-         */
-        PushResponse: {
-            /** @description Push response data */
-            data: {
-                /** @description ID of the branch */
-                branch_id?: string;
-                /** @description Unique ID of the implementation. Null if the branch is not tracked by any implementation */
-                implementation_id?: string | null;
-                /** @description Name of the implementation (deployment environment) this branch is linked to, such as 'production' or 'staging'. Null if the branch is not tracked by any implementation */
-                implementation_name?: string | null;
-                /** @description Name of the product (null if untracked) */
-                product_name?: string | null;
-                /** @description Number of specs created */
-                specs_created?: number;
-                /** @description Number of specs updated */
-                specs_updated?: number;
-                /** @description List of non-fatal warnings */
-                warnings?: string[];
-            };
-        };
-        /**
-         * PushResponseData
-         * @description Response data for a successful push
-         * @example {
-         *       "branch_id": "123e4567-e89b-12d3-a456-426614174001",
-         *       "implementation_id": "123e4567-e89b-12d3-a456-426614174000",
-         *       "implementation_name": "production",
-         *       "product_name": "my-app",
-         *       "specs_created": 1,
-         *       "specs_updated": 0,
-         *       "warnings": []
-         *     }
-         */
-        PushResponseData: {
-            /** @description ID of the branch */
-            branch_id?: string;
-            /** @description Unique ID of the implementation. Null if the branch is not tracked by any implementation */
-            implementation_id?: string | null;
-            /** @description Name of the implementation (deployment environment) this branch is linked to, such as 'production' or 'staging'. Null if the branch is not tracked by any implementation */
-            implementation_name?: string | null;
-            /** @description Name of the product (null if untracked) */
-            product_name?: string | null;
-            /** @description Number of specs created */
-            specs_created?: number;
-            /** @description Number of specs updated */
-            specs_updated?: number;
-            /** @description List of non-fatal warnings */
-            warnings?: string[];
-        };
-        /**
-         * RefObject
-         * @description A code reference
-         * @example {
-         *       "is_test": false,
-         *       "path": "lib/my_app/auth.ex:42"
-         *     }
-         */
-        RefObject: {
-            /**
-             * @description Whether this reference is a test
-             * @default false
-             */
-            is_test: boolean;
-            /** @description Path to the code reference (e.g., lib/foo.ex:42) */
-            path: string;
-        };
-        /**
-         * References
-         * @description Code references grouped by requirement ID
-         * @example {
-         *       "data": {
-         *         "auth-feature.AUTH.1": [
-         *           {
-         *             "is_test": false,
-         *             "path": "lib/my_app/auth.ex:42"
-         *           }
-         *         ]
-         *       },
-         *       "override": false
-         *     }
-         */
-        References: {
-            /** @description Map of requirement IDs to arrays of ref objects */
-            data: {
-                [key: string]: {
-                    /**
-                     * @description Whether this reference is a test
-                     * @default false
-                     */
-                    is_test: boolean;
-                    /** @description Path to the code reference (e.g., lib/foo.ex:42) */
-                    path: string;
-                }[];
-            };
-            /**
-             * @description If true, replaces all existing refs instead of merging
-             * @default false
-             */
-            override: boolean;
-        };
-        /**
-         * RequirementDefinition
-         * @description Definition of a single requirement (acceptance criteria)
-         * @example {
-         *       "deprecated": false,
-         *       "requirement": "System must validate email format"
-         *     }
-         */
-        RequirementDefinition: {
-            /**
-             * @description Whether this requirement is deprecated
-             * @default false
-             */
-            deprecated: boolean;
-            /** @description Optional note about this requirement */
-            note?: string;
-            /** @description Optional list of requirement IDs that replace this one */
-            replaced_by?: string[];
-            /** @description The requirement text describing the acceptance criteria */
-            requirement: string;
-        };
-        /** SourceObject */
-        SourceObject: {
-            branch_names?: string[];
-            implementation_name?: string;
-            /** @enum {string} */
-            source_type: "local" | "inherited" | "none";
-        };
-        /**
-         * SpecObject
-         * @description A single spec to push
-         * @example {
-         *       "feature": {
-         *         "name": "auth-feature",
-         *         "product": "my-app",
-         *         "version": "1.0.0"
-         *       },
-         *       "meta": {
-         *         "last_seen_commit": "abc123",
-         *         "path": "features/auth.feature.yaml"
-         *       },
-         *       "requirements": {
-         *         "auth-feature.AUTH.1": {
-         *           "requirement": "Must validate credentials"
-         *         }
-         *       }
-         *     }
-         */
-        SpecObject: {
-            /** @description Feature metadata */
-            feature: {
-                /** @description Optional feature description */
-                description?: string;
-                /** @description Feature name (alphanumeric, hyphens, underscores only) */
-                name: string;
-                /** @description Optional list of prerequisite feature names */
-                prerequisites?: string[];
-                /** @description Product name */
-                product: string;
-                /**
-                 * @description Optional version string (SemVer)
-                 * @default 1.0.0
-                 */
-                version: string;
-            };
-            /** @description Feature file metadata */
-            meta: {
-                /** @description Commit hash when this feature was last seen */
-                last_seen_commit: string;
-                /** @description Path from repo root (e.g., features/auth.feature.yaml) */
-                path: string;
-                /** @description Optional raw content of the feature file */
-                raw_content?: string;
-            };
-            /** @description Map of requirement IDs to requirement definitions */
-            requirements: {
-                [key: string]: {
-                    /**
-                     * @description Whether this requirement is deprecated
-                     * @default false
-                     */
-                    deprecated: boolean;
-                    /** @description Optional note about this requirement */
-                    note?: string;
-                    /** @description Optional list of requirement IDs that replace this one */
-                    replaced_by?: string[];
-                    /** @description The requirement text describing the acceptance criteria */
-                    requirement: string;
-                };
-            };
-        };
-        /** StateObject */
-        StateObject: {
-            comment?: string;
-            status?: string | null;
-            updated_at?: string;
-        };
-        /** Summary */
-        Summary: {
-            status_counts: Record<string, never>;
-            total_acids: number;
-        };
-    };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+	schemas: {
+		/** AcidEntry */
+		AcidEntry: {
+			acid: string;
+			deprecated?: boolean;
+			note?: string;
+			refs?: {
+				branch_name: string;
+				is_test: boolean;
+				path: string;
+				repo_uri: string;
+			}[];
+			refs_count: number;
+			replaced_by?: string[];
+			requirement: string;
+			state: {
+				comment?: string;
+				status?: string | null;
+				updated_at?: string;
+			};
+			test_refs_count: number;
+		};
+		/** DanglingStateEntry */
+		DanglingStateEntry: {
+			acid: string;
+			state: {
+				comment?: string;
+				status?: string | null;
+				updated_at?: string;
+			};
+		};
+		/** ErrorResponse */
+		ErrorResponse: {
+			errors: {
+				detail: string;
+				status?: string;
+			};
+		};
+		/**
+		 * Feature
+		 * @description Feature metadata
+		 * @example {
+		 *       "description": "Authentication feature",
+		 *       "name": "auth-feature",
+		 *       "prerequisites": [],
+		 *       "product": "my-app",
+		 *       "version": "1.0.0"
+		 *     }
+		 */
+		Feature: {
+			/** @description Optional feature description */
+			description?: string;
+			/** @description Feature name (alphanumeric, hyphens, underscores only) */
+			name: string;
+			/** @description Optional list of prerequisite feature names */
+			prerequisites?: string[];
+			/** @description Product name */
+			product: string;
+			/**
+			 * @description Optional version string (SemVer)
+			 * @default 1.0.0
+			 */
+			version: string;
+		};
+		/** FeatureContextData */
+		FeatureContextData: {
+			acids: {
+				acid: string;
+				deprecated?: boolean;
+				note?: string;
+				refs?: {
+					branch_name: string;
+					is_test: boolean;
+					path: string;
+					repo_uri: string;
+				}[];
+				refs_count: number;
+				replaced_by?: string[];
+				requirement: string;
+				state: {
+					comment?: string;
+					status?: string | null;
+					updated_at?: string;
+				};
+				test_refs_count: number;
+			}[];
+			dangling_states?: {
+				acid: string;
+				state: {
+					comment?: string;
+					status?: string | null;
+					updated_at?: string;
+				};
+			}[];
+			feature_name: string;
+			implementation_id: string;
+			implementation_name: string;
+			product_name: string;
+			refs_source: {
+				branch_names?: string[];
+				implementation_name?: string;
+				/** @enum {string} */
+				source_type: "local" | "inherited" | "none";
+			};
+			spec_source: {
+				branch_names?: string[];
+				implementation_name?: string;
+				/** @enum {string} */
+				source_type: "local" | "inherited" | "none";
+			};
+			states_source: {
+				branch_names?: string[];
+				implementation_name?: string;
+				/** @enum {string} */
+				source_type: "local" | "inherited" | "none";
+			};
+			summary: {
+				status_counts: Record<string, never>;
+				total_acids: number;
+			};
+			warnings: string[];
+		};
+		/** FeatureContextResponse */
+		FeatureContextResponse: {
+			data: {
+				acids: {
+					acid: string;
+					deprecated?: boolean;
+					note?: string;
+					refs?: {
+						branch_name: string;
+						is_test: boolean;
+						path: string;
+						repo_uri: string;
+					}[];
+					refs_count: number;
+					replaced_by?: string[];
+					requirement: string;
+					state: {
+						comment?: string;
+						status?: string | null;
+						updated_at?: string;
+					};
+					test_refs_count: number;
+				}[];
+				dangling_states?: {
+					acid: string;
+					state: {
+						comment?: string;
+						status?: string | null;
+						updated_at?: string;
+					};
+				}[];
+				feature_name: string;
+				implementation_id: string;
+				implementation_name: string;
+				product_name: string;
+				refs_source: {
+					branch_names?: string[];
+					implementation_name?: string;
+					/** @enum {string} */
+					source_type: "local" | "inherited" | "none";
+				};
+				spec_source: {
+					branch_names?: string[];
+					implementation_name?: string;
+					/** @enum {string} */
+					source_type: "local" | "inherited" | "none";
+				};
+				states_source: {
+					branch_names?: string[];
+					implementation_name?: string;
+					/** @enum {string} */
+					source_type: "local" | "inherited" | "none";
+				};
+				summary: {
+					status_counts: Record<string, never>;
+					total_acids: number;
+				};
+				warnings: string[];
+			};
+		};
+		/**
+		 * FeatureMeta
+		 * @description Metadata about the feature file location
+		 * @example {
+		 *       "last_seen_commit": "abc123def456",
+		 *       "path": "features/auth.feature.yaml"
+		 *     }
+		 */
+		FeatureMeta: {
+			/** @description Commit hash when this feature was last seen */
+			last_seen_commit: string;
+			/** @description Path from repo root (e.g., features/auth.feature.yaml) */
+			path: string;
+			/** @description Optional raw content of the feature file */
+			raw_content?: string;
+		};
+		/** FeatureStateObject */
+		FeatureStateObject: {
+			/** @description Optional state comment */
+			comment?: string;
+			/**
+			 * @description Nullable state status
+			 * @enum {string|null}
+			 */
+			status:
+				| "assigned"
+				| "blocked"
+				| "incomplete"
+				| "completed"
+				| "rejected"
+				| "accepted"
+				| null;
+		};
+		/** FeatureStatesRequest */
+		FeatureStatesRequest: {
+			feature_name: string;
+			implementation_name: string;
+			product_name: string;
+			states: {
+				[key: string]: {
+					/** @description Optional state comment */
+					comment?: string;
+					/**
+					 * @description Nullable state status
+					 * @enum {string|null}
+					 */
+					status:
+						| "assigned"
+						| "blocked"
+						| "incomplete"
+						| "completed"
+						| "rejected"
+						| "accepted"
+						| null;
+				};
+			};
+		};
+		/** FeatureStatesResponse */
+		FeatureStatesResponse: {
+			data: {
+				feature_name: string;
+				implementation_id: string;
+				implementation_name: string;
+				product_name: string;
+				states_written: number;
+				warnings: string[];
+			};
+		};
+		/** FeatureStatesResponseData */
+		FeatureStatesResponseData: {
+			feature_name: string;
+			implementation_id: string;
+			implementation_name: string;
+			product_name: string;
+			states_written: number;
+			warnings: string[];
+		};
+		/** ImplementationEntry */
+		ImplementationEntry: {
+			implementation_id: string;
+			implementation_name: string;
+		};
+		/** ImplementationFeatureEntry */
+		ImplementationFeatureEntry: {
+			completed_count: number;
+			description: string | null;
+			feature_name: string;
+			has_local_spec: boolean;
+			has_local_states: boolean;
+			refs_count: number;
+			refs_inherited: boolean;
+			spec_last_seen_commit: string | null;
+			states_inherited: boolean;
+			test_refs_count: number;
+			total_count: number;
+		};
+		/** ImplementationFeaturesData */
+		ImplementationFeaturesData: {
+			features: {
+				completed_count: number;
+				description: string | null;
+				feature_name: string;
+				has_local_spec: boolean;
+				has_local_states: boolean;
+				refs_count: number;
+				refs_inherited: boolean;
+				spec_last_seen_commit: string | null;
+				states_inherited: boolean;
+				test_refs_count: number;
+				total_count: number;
+			}[];
+			implementation_id: string;
+			implementation_name: string;
+			product_name: string;
+		};
+		/** ImplementationFeaturesResponse */
+		ImplementationFeaturesResponse: {
+			data: {
+				features: {
+					completed_count: number;
+					description: string | null;
+					feature_name: string;
+					has_local_spec: boolean;
+					has_local_states: boolean;
+					refs_count: number;
+					refs_inherited: boolean;
+					spec_last_seen_commit: string | null;
+					states_inherited: boolean;
+					test_refs_count: number;
+					total_count: number;
+				}[];
+				implementation_id: string;
+				implementation_name: string;
+				product_name: string;
+			};
+		};
+		/** ImplementationsData */
+		ImplementationsData: {
+			branch_name?: string;
+			implementations: {
+				implementation_id: string;
+				implementation_name: string;
+			}[];
+			product_name: string;
+			repo_uri?: string;
+		};
+		/** ImplementationsResponse */
+		ImplementationsResponse: {
+			data: {
+				branch_name?: string;
+				implementations: {
+					implementation_id: string;
+					implementation_name: string;
+				}[];
+				product_name: string;
+				repo_uri?: string;
+			};
+		};
+		/**
+		 * PushRequest
+		 * @description Request body for pushing specs and refs
+		 * @example {
+		 *       "branch_name": "main",
+		 *       "commit_hash": "abc123def456",
+		 *       "repo_uri": "github.com/my-org/my-repo",
+		 *       "specs": [
+		 *         {
+		 *           "feature": {
+		 *             "name": "auth-feature",
+		 *             "product": "my-app"
+		 *           },
+		 *           "meta": {
+		 *             "last_seen_commit": "abc123def456",
+		 *             "path": "features/auth.feature.yaml"
+		 *           },
+		 *           "requirements": {
+		 *             "auth-feature.AUTH.1": {
+		 *               "requirement": "Must validate credentials"
+		 *             }
+		 *           }
+		 *         }
+		 *       ]
+		 *     }
+		 */
+		PushRequest: {
+			/** @description Git branch name being pushed (e.g., 'main', 'feature/auth-123') */
+			branch_name: string;
+			/** @description Full 40-character Git commit SHA that this push represents (e.g., 'abc123def456...') */
+			commit_hash: string;
+			/** @description Name of a parent implementation for inheritance. When creating a new implementation, it will inherit the parent's baseline and refs (e.g., create 'feature-branch-impl' with parent 'main' to start with main's baseline). Useful for short-lived branches that extend an existing implementation */
+			parent_impl_name?: string;
+			/** @description Optional product name used for refs-only implementation creation or linking */
+			product_name?: string;
+			/** @description Optional code references */
+			references?: {
+				/** @description Map of requirement IDs to arrays of ref objects */
+				data: {
+					[key: string]: {
+						/**
+						 * @description Whether this reference is a test
+						 * @default false
+						 */
+						is_test: boolean;
+						/** @description Path to the code reference (e.g., lib/foo.ex:42) */
+						path: string;
+					}[];
+				};
+				/**
+				 * @description If true, replaces all existing refs instead of merging
+				 * @default false
+				 */
+				override: boolean;
+			};
+			/** @description `repo_uri` should be in the format `host/owner/repo` (e.g. `github.com/my-org/my-repo`). Supported hosts for deep linking are `github.com`, `gitlab.com`, and `bitbucket.org`. Self-hosted instances may work for tracking but deep links are not guaranteed yet. */
+			repo_uri: string;
+			/** @description Optional list of specs to push */
+			specs?: {
+				/** @description Feature metadata */
+				feature: {
+					/** @description Optional feature description */
+					description?: string;
+					/** @description Feature name (alphanumeric, hyphens, underscores only) */
+					name: string;
+					/** @description Optional list of prerequisite feature names */
+					prerequisites?: string[];
+					/** @description Product name */
+					product: string;
+					/**
+					 * @description Optional version string (SemVer)
+					 * @default 1.0.0
+					 */
+					version: string;
+				};
+				/** @description Feature file metadata */
+				meta: {
+					/** @description Commit hash when this feature was last seen */
+					last_seen_commit: string;
+					/** @description Path from repo root (e.g., features/auth.feature.yaml) */
+					path: string;
+					/** @description Optional raw content of the feature file */
+					raw_content?: string;
+				};
+				/** @description Map of requirement IDs to requirement definitions */
+				requirements: {
+					[key: string]: {
+						/**
+						 * @description Whether this requirement is deprecated
+						 * @default false
+						 */
+						deprecated: boolean;
+						/** @description Optional note about this requirement */
+						note?: string;
+						/** @description Optional list of requirement IDs that replace this one */
+						replaced_by?: string[];
+						/** @description The requirement text describing the acceptance criteria */
+						requirement: string;
+					};
+				};
+			}[];
+			/** @description Name of the implementation (deployment environment) to associate this branch with. An implementation represents a deployable instance of your product (e.g., 'production', 'staging', 'mobile-app-v2'). For spec-push creation flows, a missing implementation may be auto-created within the product. For refs-only pushes, `product_name` + `target_impl_name` must resolve to an existing implementation unless `parent_impl_name` is also provided to create a new child implementation. */
+			target_impl_name?: string;
+		};
+		/**
+		 * PushResponse
+		 * @description Successful push response
+		 * @example {
+		 *       "data": {
+		 *         "branch_id": "123e4567-e89b-12d3-a456-426614174001",
+		 *         "implementation_id": "123e4567-e89b-12d3-a456-426614174000",
+		 *         "implementation_name": "production",
+		 *         "product_name": "my-app",
+		 *         "specs_created": 1,
+		 *         "specs_updated": 0,
+		 *         "warnings": []
+		 *       }
+		 *     }
+		 */
+		PushResponse: {
+			/** @description Push response data */
+			data: {
+				/** @description ID of the branch */
+				branch_id?: string;
+				/** @description Unique ID of the implementation. Null if the branch is not tracked by any implementation */
+				implementation_id?: string | null;
+				/** @description Name of the implementation (deployment environment) this branch is linked to, such as 'production' or 'staging'. Null if the branch is not tracked by any implementation */
+				implementation_name?: string | null;
+				/** @description Name of the product (null if untracked) */
+				product_name?: string | null;
+				/** @description Number of specs created */
+				specs_created?: number;
+				/** @description Number of specs updated */
+				specs_updated?: number;
+				/** @description List of non-fatal warnings */
+				warnings?: string[];
+			};
+		};
+		/**
+		 * PushResponseData
+		 * @description Response data for a successful push
+		 * @example {
+		 *       "branch_id": "123e4567-e89b-12d3-a456-426614174001",
+		 *       "implementation_id": "123e4567-e89b-12d3-a456-426614174000",
+		 *       "implementation_name": "production",
+		 *       "product_name": "my-app",
+		 *       "specs_created": 1,
+		 *       "specs_updated": 0,
+		 *       "warnings": []
+		 *     }
+		 */
+		PushResponseData: {
+			/** @description ID of the branch */
+			branch_id?: string;
+			/** @description Unique ID of the implementation. Null if the branch is not tracked by any implementation */
+			implementation_id?: string | null;
+			/** @description Name of the implementation (deployment environment) this branch is linked to, such as 'production' or 'staging'. Null if the branch is not tracked by any implementation */
+			implementation_name?: string | null;
+			/** @description Name of the product (null if untracked) */
+			product_name?: string | null;
+			/** @description Number of specs created */
+			specs_created?: number;
+			/** @description Number of specs updated */
+			specs_updated?: number;
+			/** @description List of non-fatal warnings */
+			warnings?: string[];
+		};
+		/**
+		 * RefObject
+		 * @description A code reference
+		 * @example {
+		 *       "is_test": false,
+		 *       "path": "lib/my_app/auth.ex:42"
+		 *     }
+		 */
+		RefObject: {
+			/**
+			 * @description Whether this reference is a test
+			 * @default false
+			 */
+			is_test: boolean;
+			/** @description Path to the code reference (e.g., lib/foo.ex:42) */
+			path: string;
+		};
+		/**
+		 * References
+		 * @description Code references grouped by requirement ID
+		 * @example {
+		 *       "data": {
+		 *         "auth-feature.AUTH.1": [
+		 *           {
+		 *             "is_test": false,
+		 *             "path": "lib/my_app/auth.ex:42"
+		 *           }
+		 *         ]
+		 *       },
+		 *       "override": false
+		 *     }
+		 */
+		References: {
+			/** @description Map of requirement IDs to arrays of ref objects */
+			data: {
+				[key: string]: {
+					/**
+					 * @description Whether this reference is a test
+					 * @default false
+					 */
+					is_test: boolean;
+					/** @description Path to the code reference (e.g., lib/foo.ex:42) */
+					path: string;
+				}[];
+			};
+			/**
+			 * @description If true, replaces all existing refs instead of merging
+			 * @default false
+			 */
+			override: boolean;
+		};
+		/**
+		 * RequirementDefinition
+		 * @description Definition of a single requirement (acceptance criteria)
+		 * @example {
+		 *       "deprecated": false,
+		 *       "requirement": "System must validate email format"
+		 *     }
+		 */
+		RequirementDefinition: {
+			/**
+			 * @description Whether this requirement is deprecated
+			 * @default false
+			 */
+			deprecated: boolean;
+			/** @description Optional note about this requirement */
+			note?: string;
+			/** @description Optional list of requirement IDs that replace this one */
+			replaced_by?: string[];
+			/** @description The requirement text describing the acceptance criteria */
+			requirement: string;
+		};
+		/** SourceObject */
+		SourceObject: {
+			branch_names?: string[];
+			implementation_name?: string;
+			/** @enum {string} */
+			source_type: "local" | "inherited" | "none";
+		};
+		/**
+		 * SpecObject
+		 * @description A single spec to push
+		 * @example {
+		 *       "feature": {
+		 *         "name": "auth-feature",
+		 *         "product": "my-app",
+		 *         "version": "1.0.0"
+		 *       },
+		 *       "meta": {
+		 *         "last_seen_commit": "abc123",
+		 *         "path": "features/auth.feature.yaml"
+		 *       },
+		 *       "requirements": {
+		 *         "auth-feature.AUTH.1": {
+		 *           "requirement": "Must validate credentials"
+		 *         }
+		 *       }
+		 *     }
+		 */
+		SpecObject: {
+			/** @description Feature metadata */
+			feature: {
+				/** @description Optional feature description */
+				description?: string;
+				/** @description Feature name (alphanumeric, hyphens, underscores only) */
+				name: string;
+				/** @description Optional list of prerequisite feature names */
+				prerequisites?: string[];
+				/** @description Product name */
+				product: string;
+				/**
+				 * @description Optional version string (SemVer)
+				 * @default 1.0.0
+				 */
+				version: string;
+			};
+			/** @description Feature file metadata */
+			meta: {
+				/** @description Commit hash when this feature was last seen */
+				last_seen_commit: string;
+				/** @description Path from repo root (e.g., features/auth.feature.yaml) */
+				path: string;
+				/** @description Optional raw content of the feature file */
+				raw_content?: string;
+			};
+			/** @description Map of requirement IDs to requirement definitions */
+			requirements: {
+				[key: string]: {
+					/**
+					 * @description Whether this requirement is deprecated
+					 * @default false
+					 */
+					deprecated: boolean;
+					/** @description Optional note about this requirement */
+					note?: string;
+					/** @description Optional list of requirement IDs that replace this one */
+					replaced_by?: string[];
+					/** @description The requirement text describing the acceptance criteria */
+					requirement: string;
+				};
+			};
+		};
+		/** StateObject */
+		StateObject: {
+			comment?: string;
+			status?: string | null;
+			updated_at?: string;
+		};
+		/** Summary */
+		Summary: {
+			status_counts: Record<string, never>;
+			total_acids: number;
+		};
+	};
+	responses: never;
+	parameters: never;
+	requestBodies: never;
+	headers: never;
+	pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    "AcaiWeb.Api.FeatureContextController.show": {
-        parameters: {
-            query: {
-                /** @description Product name */
-                product_name: string;
-                /** @description Feature name */
-                feature_name: string;
-                /** @description Implementation name */
-                implementation_name: string;
-                /** @description Include per-ACID ref details */
-                include_refs?: boolean;
-                /** @description Include dangling stored states */
-                include_dangling_states?: boolean;
-                /** @description Include deprecated ACIDs */
-                include_deprecated?: boolean;
-                /** @description Repeated status filter values; the literal string `null` means a null status */
-                statuses?: string[];
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Feature context */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FeatureContextResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    "AcaiWeb.Api.FeatureStatesController.update": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Feature states request body */
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["FeatureStatesRequest"];
-            };
-        };
-        responses: {
-            /** @description Feature states written */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FeatureStatesResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Payload too large */
-            413: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Rate limit exceeded */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    "AcaiWeb.Api.ImplementationFeaturesController.index": {
-        parameters: {
-            query: {
-                /** @description Product name */
-                product_name: string;
-                /** @description Implementation name */
-                implementation_name: string;
-                /** @description Repeated status filter values; the literal string `null` means a null status */
-                statuses?: string[];
-                /** @description Filter by feature's last_seen_commit (simple equality) */
-                changed_since_commit?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Implementation features */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ImplementationFeaturesResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    "AcaiWeb.Api.ImplementationsController.index": {
-        parameters: {
-            query: {
-                /** @description Product name */
-                product_name: string;
-                /** @description Exact repository URI */
-                repo_uri?: string;
-                /** @description Exact branch name */
-                branch_name?: string;
-                /** @description Filter to implementations that can resolve this feature */
-                feature_name?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Implementation list */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ImplementationsResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    "AcaiWeb.Api.PushController.create": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Push request body */
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PushRequest"];
-            };
-        };
-        responses: {
-            /** @description Push successful */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PushResponse"];
-                };
-            };
-            /** @description Unauthorized - invalid or missing token */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Forbidden - token missing required scopes */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Payload too large */
-            413: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Validation error - invalid request body */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Rate limit exceeded */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
+	"AcaiWeb.Api.FeatureContextController.show": {
+		parameters: {
+			query: {
+				/** @description Product name */
+				product_name: string;
+				/** @description Feature name */
+				feature_name: string;
+				/** @description Implementation name */
+				implementation_name: string;
+				/** @description Include per-ACID ref details */
+				include_refs?: boolean;
+				/** @description Include dangling stored states */
+				include_dangling_states?: boolean;
+				/** @description Include deprecated ACIDs */
+				include_deprecated?: boolean;
+				/** @description Repeated status filter values; the literal string `null` means a null status */
+				statuses?: string[];
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Feature context */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["FeatureContextResponse"];
+				};
+			};
+			/** @description Unauthorized */
+			401: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Forbidden */
+			403: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Not found */
+			404: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Validation error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+		};
+	};
+	"AcaiWeb.Api.FeatureStatesController.update": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** @description Feature states request body */
+		requestBody?: {
+			content: {
+				"application/json": components["schemas"]["FeatureStatesRequest"];
+			};
+		};
+		responses: {
+			/** @description Feature states written */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["FeatureStatesResponse"];
+				};
+			};
+			/** @description Unauthorized */
+			401: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Forbidden */
+			403: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Not found */
+			404: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Payload too large */
+			413: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Validation error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Rate limit exceeded */
+			429: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+		};
+	};
+	"AcaiWeb.Api.ImplementationFeaturesController.index": {
+		parameters: {
+			query: {
+				/** @description Product name */
+				product_name: string;
+				/** @description Implementation name */
+				implementation_name: string;
+				/** @description Repeated status filter values; the literal string `null` means a null status */
+				statuses?: string[];
+				/** @description Filter by feature's last_seen_commit (simple equality) */
+				changed_since_commit?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Implementation features */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ImplementationFeaturesResponse"];
+				};
+			};
+			/** @description Unauthorized */
+			401: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Forbidden */
+			403: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Not found */
+			404: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Validation error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+		};
+	};
+	"AcaiWeb.Api.ImplementationsController.index": {
+		parameters: {
+			query: {
+				/** @description Product name */
+				product_name: string;
+				/** @description Exact repository URI */
+				repo_uri?: string;
+				/** @description Exact branch name */
+				branch_name?: string;
+				/** @description Filter to implementations that can resolve this feature */
+				feature_name?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Implementation list */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ImplementationsResponse"];
+				};
+			};
+			/** @description Unauthorized */
+			401: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Forbidden */
+			403: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Validation error */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+		};
+	};
+	"AcaiWeb.Api.PushController.create": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** @description Push request body */
+		requestBody?: {
+			content: {
+				"application/json": components["schemas"]["PushRequest"];
+			};
+		};
+		responses: {
+			/** @description Push successful */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["PushResponse"];
+				};
+			};
+			/** @description Unauthorized - invalid or missing token */
+			401: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Forbidden - token missing required scopes */
+			403: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Payload too large */
+			413: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Validation error - invalid request body */
+			422: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+			/** @description Rate limit exceeded */
+			429: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ErrorResponse"];
+				};
+			};
+		};
+	};
 }

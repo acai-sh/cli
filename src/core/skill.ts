@@ -3,69 +3,71 @@ import { dirname, join } from "node:path";
 import type { CommandResult } from "./output.ts";
 
 import canonicalSkillContent from "../../.agents/skills/acai/SKILL.md" with {
-  type: "text",
+	type: "text",
 };
 
 export interface SkillArgs {
-  install: boolean;
+	install: boolean;
 }
 
 export interface SkillCommandOptions {
-  install?: boolean;
+	install?: boolean;
 }
 
 export interface SkillDependencies {
-  cwd?: string;
-  createDirectory?: typeof mkdir;
-  writeFile?: typeof writeFile;
+	cwd?: string;
+	createDirectory?: typeof mkdir;
+	writeFile?: typeof writeFile;
 }
 
-const SKILL_INSTALL_PATH_SEGMENTS = [".agents", "skills", "acai", "SKILL.md"];
+const SKILL_INSTALL_PATH_SEGMENTS = [".agents", "skills", "acai", "SKILL2.md"];
 
 // skill.MAIN.2 / skill.SAFETY.3
 export function getCanonicalSkillContent(): string {
-  return canonicalSkillContent;
+	return canonicalSkillContent;
 }
 
 // skill.MAIN.4
-export function normalizeSkillOptions(options: SkillCommandOptions = {}): SkillArgs {
-  return {
-    install: options.install ?? false,
-  };
+export function normalizeSkillOptions(
+	options: SkillCommandOptions = {},
+): SkillArgs {
+	return {
+		install: options.install ?? false,
+	};
 }
 
 // skill.WRITE.1 / skill.WRITE.2
 export function resolveSkillInstallPath(cwd: string): string {
-  return join(cwd, ...SKILL_INSTALL_PATH_SEGMENTS);
+	return join(cwd, ...SKILL_INSTALL_PATH_SEGMENTS);
 }
 
 // skill.WRITE.1 / skill.WRITE.2 / skill.WRITE.3 / skill.SAFETY.3
 export async function installSkill(
-  cwd: string,
-  dependencies: Omit<SkillDependencies, "cwd"> = {},
+	cwd: string,
+	dependencies: Omit<SkillDependencies, "cwd"> = {},
 ): Promise<string> {
-  const destination = resolveSkillInstallPath(cwd);
-  const createDirectory = dependencies.createDirectory ?? mkdir;
-  const writeSkillFile = dependencies.writeFile ?? writeFile;
+	const destination = resolveSkillInstallPath(cwd);
+	const createDirectory = dependencies.createDirectory ?? mkdir;
+	const writeSkillFile = dependencies.writeFile ?? writeFile;
 
-  await createDirectory(dirname(destination), { recursive: true });
-  await writeSkillFile(destination, getCanonicalSkillContent());
+	await createDirectory(dirname(destination), { recursive: true });
+	await writeSkillFile(destination, getCanonicalSkillContent());
 
-  return destination;
+	return destination;
 }
 
 // skill.MAIN.1 / skill.MAIN.3 / skill.WRITE.1 / skill.SAFETY.1 / skill.SAFETY.2 / skill.UX.1 / skill.UX.2 / cli-core.EXITS.1 / cli-core.UX.1 / cli-core.UX.2
 export async function runSkillCommand(
-  args: SkillArgs,
-  dependencies: SkillDependencies = {},
+	args: SkillArgs,
+	dependencies: SkillDependencies = {},
 ): Promise<CommandResult> {
-  if (args.install) {
-    await installSkill(dependencies.cwd ?? process.cwd(), dependencies);
-    return { exitCode: 0 };
-  }
+	if (args.install) {
+		await installSkill(dependencies.cwd ?? process.cwd(), dependencies);
+		return { exitCode: 0 };
+	}
 
-  return {
-    exitCode: 0,
-    stdoutText: getCanonicalSkillContent(),
-  };
+	return {
+		exitCode: 0,
+		stdoutText: getCanonicalSkillContent(),
+	};
 }
