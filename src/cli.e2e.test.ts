@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { getCanonicalSkillContent } from "./core/skill.ts";
 import { buildFeatureContextResponse, buildFeatureStatesResponse, buildImplementationFeatureEntry, buildImplementationFeaturesResponse, buildImplementationsResponse } from "../test/support/fixtures.ts";
 import { createFakeGitContext } from "../test/support/fake-git.ts";
 import { createMockApiServer } from "../test/support/mock-api.ts";
@@ -67,6 +68,79 @@ describe("cli-core.HELP.1 cli-core.HELP.2 cli-core.HELP.4 cli-core.HELP.5", () =
     expect(help.stdout).toBe(shortHelp.stdout);
     expect(help.stdout).toContain("Usage: acai feature <feature-name> [options]");
     expect(help.stderr.trim()).toBe("");
+  });
+
+  test("skill.MAIN.1 cli-core.HELP.3 cli-core.HELP.4 cli-core.HELP.5 keep skill --help and -h in sync", async () => {
+    const help = await runCliSubprocess(["skill", "--help"]);
+    const shortHelp = await runCliSubprocess(["skill", "-h"]);
+
+    expect(help.exitCode).toBe(0);
+    expect(shortHelp.exitCode).toBe(0);
+    expect(help.stdout).toBe(shortHelp.stdout);
+    expect(help.stdout).toContain("Usage: acai skill [options]");
+    expect(help.stderr.trim()).toBe("");
+  });
+});
+
+describe("skill.MAIN.1 skill.MAIN.2 skill.MAIN.3 skill.MAIN.4 skill.WRITE.1 skill.WRITE.2 skill.WRITE.3 skill.SAFETY.1 skill.SAFETY.2 skill.SAFETY.3 skill.UX.1 skill.UX.2 cli-core.EXITS.1 cli-core.ERRORS.4 cli-core.UX.1 cli-core.UX.2", () => {
+  test("skill.MAIN.2 skill.MAIN.3 skill.UX.1 prints the canonical skill markdown and nothing else", async () => {
+    const root = await mkdtemp(join(tmpdir(), "acai-skill-print-"));
+
+    try {
+      const result = await runCliSubprocess(["skill"], {}, { cwd: root });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBe(getCanonicalSkillContent());
+      expect(result.stderr).toBe("");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("skill.WRITE.1 skill.WRITE.2 skill.WRITE.3 skill.SAFETY.3 installs and overwrites the canonical skill file in an isolated workspace", async () => {
+    const root = await mkdtemp(join(tmpdir(), "acai-skill-install-"));
+    const destination = join(root, ".agents", "skills", "acai", "SKILL.md");
+
+    try {
+      await mkdir(join(root, ".agents", "skills", "acai"), { recursive: true });
+      await writeFile(destination, "stale content");
+
+      const result = await runCliSubprocess(["skill", "--install"], {}, { cwd: root });
+
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toBe("");
+      expect(result.stderr).toBe("");
+      expect(await readFile(destination, "utf8")).toBe(getCanonicalSkillContent());
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("skill.SAFETY.1 skill.SAFETY.2 skill.SAFETY.3 cli-core.UX.1 cli-core.UX.2 works without ACAI_API_TOKEN in a temp workspace", async () => {
+    const root = await mkdtemp(join(tmpdir(), "acai-skill-parity-e2e-"));
+    const destination = join(root, ".agents", "skills", "acai", "SKILL.md");
+
+    try {
+      const printResult = await runCliSubprocess(["skill"], {}, { cwd: root });
+      const installResult = await runCliSubprocess(["skill", "--install"], {}, { cwd: root });
+
+      expect(printResult.exitCode).toBe(0);
+      expect(installResult.exitCode).toBe(0);
+      expect(printResult.stdout).toBe(await readFile(destination, "utf8"));
+      expect(printResult.stderr).toBe("");
+      expect(installResult.stdout).toBe("");
+      expect(installResult.stderr).toBe("");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("skill.MAIN.1 cli-core.ERRORS.4 returns exit code 2 for unknown skill options", async () => {
+    const result = await runCliSubprocess(["skill", "--unknown-option"]);
+
+    expect(result.exitCode).toBe(2);
+    expect(result.stderr).toContain("unknown option");
+    expect(result.stderr).toContain("Usage: acai skill");
   });
 });
 

@@ -3,7 +3,8 @@ import { readFile } from "node:fs/promises";
 import { createApiClient } from "./core/api.ts";
 import { resolveApiConfig } from "./core/config.ts";
 import { runCli } from "./core/cli.ts";
-import { writeJsonResult, writeTextResult } from "./core/output.ts";
+import { writeJsonResult, writeRawTextResult, writeTextResult } from "./core/output.ts";
+import { getCanonicalSkillContent } from "./core/skill.ts";
 import { normalizeRepoUri, readGitContext } from "./core/git.ts";
 import { normalizeFeaturesOptions, runFeaturesCommand } from "./core/features.ts";
 import { buildFeatureContextResponse, buildImplementationFeaturesResponse, buildImplementationsResponse } from "../test/support/fixtures.ts";
@@ -231,6 +232,16 @@ describe("cli-core.OUTPUT.1 cli-core.OUTPUT.2", () => {
     expect(stdout.write).toHaveBeenCalledWith("line one\n");
     expect(stdout.write).toHaveBeenCalledWith("line two\n");
   });
+
+  test("skill.UX.1 preserves raw text bytes without appending a newline", async () => {
+    const stdout = { write: mock(() => {}) };
+    const stderr = { write: mock(() => {}) };
+
+    await writeRawTextResult({ stdout, stderr }, "line one\nline two");
+
+    expect(stderr.write).not.toHaveBeenCalled();
+    expect(stdout.write).toHaveBeenCalledWith("line one\nline two");
+  });
 });
 
 describe("cli-core.TARGETING.1 cli-core.TARGETING.2 cli-core.TARGETING.3 cli-core.TARGETING.4 cli-core.TARGETING.5 cli-core.ERRORS.2", () => {
@@ -454,6 +465,31 @@ describe("cli-core.HELP.3 cli-core.HELP.5", () => {
     expect(apiClient.listImplementations).not.toHaveBeenCalled();
     expect(apiClient.listImplementationFeatures).not.toHaveBeenCalled();
   });
+
+  test("skill.MAIN.1 cli-core.HELP.3 cli-core.HELP.4 cli-core.HELP.5 prints skill help without calling the API", async () => {
+    const makeOutput = () => ({ stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } });
+    const apiClient = {
+      listImplementations: mock(async () => {
+        throw new Error("should not be called");
+      }),
+      listImplementationFeatures: mock(async () => {
+        throw new Error("should not be called");
+      }),
+    };
+
+    const helpOutput = makeOutput();
+    const shortHelpOutput = makeOutput();
+
+    const helpExit = await runCli(["skill", "--help"], { output: helpOutput, apiClient: apiClient as never });
+    const shortHelpExit = await runCli(["skill", "-h"], { output: shortHelpOutput, apiClient: apiClient as never });
+
+    expect(helpExit).toBe(0);
+    expect(shortHelpExit).toBe(0);
+    expect(readWrites(helpOutput.stdout.write)).toContain("Usage: acai skill [options]");
+    expect(readWrites(helpOutput.stdout.write)).toBe(readWrites(shortHelpOutput.stdout.write));
+    expect(apiClient.listImplementations).not.toHaveBeenCalled();
+    expect(apiClient.listImplementationFeatures).not.toHaveBeenCalled();
+  });
 });
 
 describe("cli-core.ERRORS.3 cli-core.ERRORS.4 cli-core.ERRORS.5", () => {
@@ -475,6 +511,26 @@ describe("cli-core.ERRORS.3 cli-core.ERRORS.4 cli-core.ERRORS.5", () => {
     expect(exitCode).toBe(2);
     expect(readWrites(output.stderr.write)).toContain("unknown option");
     expect(readWrites(output.stderr.write)).toContain("Usage: acai features");
+  });
+
+  test("skill.MAIN.1 cli-core.ERRORS.4 rejects unknown skill options", async () => {
+    const output = { stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } };
+
+    const exitCode = await runCli(["skill", "--unknown-option"], { output });
+
+    expect(exitCode).toBe(2);
+    expect(readWrites(output.stderr.write)).toContain("unknown option");
+    expect(readWrites(output.stderr.write)).toContain("Usage: acai skill");
+  });
+
+  test("skill.SAFETY.1 skill.SAFETY.2 cli-core.EXITS.1 runs locally without API configuration", async () => {
+    const output = { stdout: { write: mock(() => {}) }, stderr: { write: mock(() => {}) } };
+
+    const exitCode = await runCli(["skill"], { output, env: {} });
+
+    expect(exitCode).toBe(0);
+    expect(readWrites(output.stdout.write)).toBe(getCanonicalSkillContent());
+    expect(output.stderr.write).not.toHaveBeenCalled();
   });
 
   test("cli-core.ERRORS.5 prints features help when usage validation fails inside the command", async () => {

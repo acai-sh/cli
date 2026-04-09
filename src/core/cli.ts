@@ -31,6 +31,11 @@ import {
     runSetStatusCommand,
     type SetStatusCommandOptions,
 } from "./set-status.ts";
+import {
+    normalizeSkillOptions,
+    runSkillCommand,
+    type SkillCommandOptions,
+} from "./skill.ts";
 
 export interface CliDependencies {
     env?: Record<string, string | undefined>;
@@ -43,6 +48,7 @@ interface CliState {
     featuresResult?: CommandResult;
     pushResult?: CommandResult;
     setStatusResult?: CommandResult;
+    skillResult?: CommandResult;
     usageError?: CliError;
     usageHelpCommand?: string;
 }
@@ -110,6 +116,11 @@ export async function runCli(
     if (state?.setStatusResult) {
         await writeCommandResult(output, state.setStatusResult);
         return state.setStatusResult.exitCode;
+    }
+
+    if (state?.skillResult) {
+        await writeCommandResult(output, state.skillResult);
+        return state.skillResult.exitCode;
     }
 
     return 0;
@@ -295,6 +306,26 @@ function createCliProgram(
 
                 throw error;
             }
+        });
+
+    program
+        .command("skill")
+        .usage("[options]")
+        .description(
+            `The ${dim}\`skill\`${reset} command prints the canonical bundled acai agent skill markdown, or installs that same content into the current workspace with ${dim}--install${reset}.\n`,
+        )
+        // skill.MAIN.1 / skill.MAIN.4
+        .option(
+            "--install",
+            "write the bundled acai skill to .agents/skills/acai/SKILL.md",
+        )
+        .action(async (options: SkillCommandOptions) => {
+            state.skillResult = await runSkillCommand(
+                normalizeSkillOptions(options),
+                {
+                    cwd: process.cwd(),
+                },
+            );
         });
 
     program

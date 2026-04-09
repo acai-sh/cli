@@ -45,6 +45,18 @@ export async function writeTextResult(
   }
 }
 
+export async function writeRawTextResult(
+  ports: OutputPorts,
+  text: string,
+  diagnostics: string[] = [],
+): Promise<void> {
+  for (const diagnostic of diagnostics) {
+    await writeLine(ports.stderr, diagnostic);
+  }
+
+  await ports.stdout.write(text);
+}
+
 // cli-core.OUTPUT.1 / cli-core.OUTPUT.2
 export async function writeCommandResult(
   ports: OutputPorts,
@@ -55,11 +67,17 @@ export async function writeCommandResult(
     return;
   }
 
+  if (result.stdoutText !== undefined) {
+    await writeRawTextResult(ports, result.stdoutText, result.stderrLines);
+    return;
+  }
+
   await writeTextResult(ports, result.stdoutLines ?? [], result.stderrLines);
 }
 
 export interface CommandResult {
   exitCode: ExitCode;
+  stdoutText?: string;
   stdoutLines?: string[];
   jsonPayload?: unknown;
   stderrLines?: string[];

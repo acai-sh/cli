@@ -1,0 +1,35 @@
+feature:
+    name: skill
+    product: cli
+    version: 1.0.0
+    description: |
+        The `acai skill` command exposes the canonical bundled acai skill instructions for AI agents.
+        It can either print the skill text for prompt context or install the same text into a workspace skill file.
+
+components:
+    MAIN:
+        description: Primary command behavior
+        requirements:
+            1: Exposes `acai skill`
+            2: Reads the canonical bundled acai skill content from the CLI package
+            3: When invoked without `--install`, writes the canonical skill content to stdout
+            4: Accepts optional `--install`
+
+    WRITE:
+        description: Installing the skill into the current workspace
+        requirements:
+            1: When `--install` is provided, writes the canonical skill content to `.agents/skills/acai/SKILL.md`
+            2: Creates the destination parent directories when they do not already exist
+            3: Replaces the destination file contents with the canonical skill content when the file already exists
+
+constraints:
+    SAFETY:
+        requirements:
+            1: The command never calls the API
+            2: The command never requires interactive input
+            3: The content written by `--install` is byte-for-byte identical to the content printed by default
+
+    UX:
+        requirements:
+            1: The default stdout output is the raw skill markdown text with no added framing or diagnostics
+            2: The command works in non-interactive environments such as CI and agent runtimes
