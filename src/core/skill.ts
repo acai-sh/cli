@@ -20,7 +20,7 @@ export interface SkillDependencies {
 	writeFile?: typeof writeFile;
 }
 
-const SKILL_INSTALL_PATH_SEGMENTS = [".agents", "skills", "acai", "SKILL2.md"];
+const SKILL_INSTALL_PATH_SEGMENTS = [".agents", "skills", "acai", "SKILL.md"];
 
 // skill.MAIN.2 / skill.SAFETY.3
 export function getCanonicalSkillContent(): string {
