@@ -3,15 +3,28 @@ import type { paths } from "../generated/types.ts";
 import { runtimeError } from "./errors.ts";
 import type { ApiConfig } from "./config.ts";
 
+export interface ListImplementationEntry {
+	implementation_id: string;
+	implementation_name: string;
+	product_name?: string;
+}
+
+export interface ListImplementationsResponse {
+	data: {
+		product_name?: string;
+		repo_uri?: string;
+		branch_name?: string;
+		implementations: ListImplementationEntry[];
+	};
+}
+
 export interface ApiClient {
 	listImplementations(input: {
-		productName: string;
+		productName?: string;
 		repoUri?: string;
 		branchName?: string;
 		featureName?: string;
-	}): Promise<
-		paths["/implementations"]["get"]["responses"][200]["content"]["application/json"]
-	>;
+	}): Promise<ListImplementationsResponse>;
 	listImplementationFeatures(input: {
 		productName: string;
 		implementationName: string;
@@ -72,7 +85,9 @@ export function createApiClient(
 			return request(client, "GET", "/implementations", {
 				params: {
 					query: {
-						product_name: input.productName,
+						...(input.productName === undefined
+							? {}
+							: { product_name: input.productName }),
 						repo_uri: input.repoUri,
 						branch_name: input.branchName,
 						feature_name: input.featureName,

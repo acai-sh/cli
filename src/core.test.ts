@@ -16,6 +16,7 @@ import {
 } from "./core/features.ts";
 import {
 	buildFeatureContextResponse,
+	buildImplementationFeatureEntry,
 	buildImplementationFeaturesResponse,
 	buildImplementationsResponse,
 } from "../test/support/fixtures.ts";
@@ -93,7 +94,7 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
 });
 
 describe("API client behavior", () => {
-	test("applies bearer auth on outgoing API requests", async () => {
+	test("cli-core.AUTH.1 applies bearer auth on outgoing API requests", async () => {
 		const server = createMockApiServer((request) => {
 			expect(request.headers.get("authorization")).toBe("Bearer secret");
 			expect(new URL(request.url).searchParams.get("product_name")).toBe(
@@ -116,6 +117,72 @@ describe("API client behavior", () => {
 		} finally {
 			server.stop();
 		}
+	});
+
+	test("feature.MAIN.2-1 sends GET /implementations requests without product_name when product is unknown", async () => {
+		const get = mock(async (path: string, options: Record<string, unknown>) => {
+			expect(path).toBe("/implementations");
+			expect(options).toMatchObject({
+				params: {
+					query: {
+						repo_uri: "github.com/my-org/my-repo",
+						branch_name: "main",
+						feature_name: "feature",
+					},
+				},
+			});
+			expect(
+				(options as { params: { query: Record<string, unknown> } }).params.query,
+			).not.toHaveProperty("product_name");
+
+			return {
+				data: buildImplementationsResponse({
+					data: {
+						product_name: undefined,
+						implementations: [
+							{
+								implementation_id: "impl-1",
+								implementation_name: "main",
+								product_name: "example-product",
+							},
+						],
+					},
+				}),
+			};
+		});
+
+		const client = createApiClient(
+			{ baseUrl: "https://api.example.test", token: "secret" },
+			{
+				client: {
+					GET: get,
+					POST: mock(async () => {
+						throw new Error("unexpected");
+					}),
+				} as never,
+			},
+		);
+
+		await expect(
+			client.listImplementations({
+				repoUri: "github.com/my-org/my-repo",
+				branchName: "main",
+				featureName: "feature",
+			}),
+		).resolves.toEqual(
+			buildImplementationsResponse({
+				data: {
+					product_name: undefined,
+					implementations: [
+						{
+							implementation_id: "impl-1",
+							implementation_name: "main",
+							product_name: "example-product",
+						},
+					],
+				},
+			}),
+		);
 	});
 
 	test("normalizes network failures", async () => {
@@ -369,8 +436,8 @@ describe("cli-core.OUTPUT.1 cli-core.OUTPUT.2", () => {
 	});
 });
 
-describe("features command targeting", () => {
-	test("cli-core.TARGETING.1 normalizes commander values into features args", () => {
+	describe("features command targeting", () => {
+	test("features.MAIN.2 features.MAIN.3 normalize direct selectors into features args", () => {
 		expect(
 			normalizeFeaturesOptions({
 				product: "example-product",
@@ -382,28 +449,73 @@ describe("features command targeting", () => {
 		).toEqual({
 			productName: "example-product",
 			implementationName: "main",
+			implementationFilter: undefined,
 			statuses: ["todo", "doing"],
 			changedSinceCommit: "abc123",
 			json: true,
 		});
 	});
 
-	test("cli-core.TARGETING.1 still reports a missing product selector before API config resolution", async () => {
-		const output = {
-			stdout: { write: mock(() => {}) },
-			stderr: { write: mock(() => {}) },
-		};
-
-		const exitCode = await runCli(["features", "--impl", "main"], {
-			output,
-			env: {},
+	test("features.MAIN.4 features.MAIN.5 normalize repeated statuses and changed-since filters", () => {
+		expect(
+			normalizeFeaturesOptions({
+				product: "example-product",
+				impl: "main",
+				status: ["todo", "doing"],
+				changedSinceCommit: "abc123",
+				json: true,
+			}),
+		).toEqual({
+			productName: "example-product",
+			implementationName: "main",
+			implementationFilter: undefined,
+			statuses: ["todo", "doing"],
+			changedSinceCommit: "abc123",
+			json: true,
 		});
+	});
 
-		expect(exitCode).toBe(2);
-		expect(readWrites(output.stderr.write)).toContain(
-			"required option '--product <name>' not specified",
-		);
-		expect(readWrites(output.stderr.write)).toContain("Usage: acai features");
+	test("features.MAIN.4 features.MAIN.5 reject missing filter values", () => {
+		expect(() =>
+			normalizeFeaturesOptions({
+				status: ["-bad"],
+			}),
+		).toThrow("Missing value for --status.");
+		expect(() =>
+			normalizeFeaturesOptions({
+				changedSinceCommit: "-bad",
+			}),
+		).toThrow("Missing value for --changed-since-commit.");
+	});
+
+	test("features.MAIN.2-1 features.MAIN.3 resolves product from a namespaced implementation selector", () => {
+		expect(
+			normalizeFeaturesOptions({
+				impl: "example-product/main",
+			}),
+		).toEqual({
+			productName: "example-product",
+			implementationName: "main",
+			implementationFilter: undefined,
+			statuses: [],
+			changedSinceCommit: undefined,
+			json: false,
+		});
+	});
+
+	test("features.MAIN.2-1 features.MAIN.3 treats omitted-product --impl as a discovery filter", () => {
+		expect(
+			normalizeFeaturesOptions({
+				impl: "main",
+			}),
+		).toEqual({
+			productName: undefined,
+			implementationName: undefined,
+			implementationFilter: "main",
+			statuses: [],
+			changedSinceCommit: undefined,
+			json: false,
+		});
 	});
 
 	test("cli-core.TARGETING.2 and cli-core.TARGETING.3 normalize git remote context", async () => {
@@ -436,7 +548,7 @@ describe("features command targeting", () => {
 		);
 	});
 
-	test("cli-core.TARGETING.4 and cli-core.TARGETING.5 resolve branch matches and fail on ambiguity", async () => {
+	test("features.MAIN.2-1 cli-core.TARGETING.2 cli-core.TARGETING.3 resolve one git-derived implementation context", async () => {
 		const apiClient = {
 			listImplementations: mock(async () =>
 				buildImplementationsResponse({
@@ -447,9 +559,9 @@ describe("features command targeting", () => {
 					},
 				}),
 			),
-			listImplementationFeatures: mock(async () =>
-				buildImplementationFeaturesResponse(),
-			),
+				listImplementationFeatures: mock(async () =>
+					buildImplementationFeaturesResponse(),
+				),
 		};
 
 		const result = await runFeaturesCommand(
@@ -473,14 +585,106 @@ describe("features command targeting", () => {
 			repoUri: "github.com/my-org/my-repo",
 			branchName: "main",
 		});
+		expect(apiClient.listImplementationFeatures).toHaveBeenCalledWith({
+			productName: "example-product",
+			implementationName: "main",
+			statuses: undefined,
+			changedSinceCommit: undefined,
+		});
+	});
 
+	test("features.MAIN.2-1 cli-core.TARGETING.3 narrows omitted-product discovery with an --impl filter before listing features", async () => {
+		const apiClient = {
+			listImplementations: mock(async () =>
+				buildImplementationsResponse({
+					data: {
+						product_name: undefined,
+						implementations: [
+							{ implementation_id: "impl-1", implementation_name: "main", product_name: "product-a" },
+							{ implementation_id: "impl-2", implementation_name: "preview", product_name: "product-b" },
+						],
+					},
+				}),
+			),
+			listImplementationFeatures: mock(async () =>
+				buildImplementationFeaturesResponse({
+					data: {
+						product_name: "product-a",
+						implementation_name: "main",
+					},
+				}),
+			),
+		};
+
+		await runFeaturesCommand(
+			apiClient as never,
+			{
+				implementationFilter: "main",
+				statuses: [],
+				json: false,
+			},
+			{
+				readGitContext: async () => ({
+					repoUri: "github.com/my-org/my-repo",
+					branchName: "main",
+				}),
+			},
+		);
+
+		expect(apiClient.listImplementations).toHaveBeenCalledWith({
+			productName: undefined,
+			repoUri: "github.com/my-org/my-repo",
+			branchName: "main",
+		});
+		expect(apiClient.listImplementationFeatures).toHaveBeenCalledWith({
+			productName: "product-a",
+			implementationName: "main",
+			statuses: undefined,
+			changedSinceCommit: undefined,
+		});
+	});
+
+	test("features.MAIN.2-2 cli-core.TARGETING.4 rejects omitted-product ambiguity across products", async () => {
 		const ambiguousClient = {
 			listImplementations: mock(async () =>
 				buildImplementationsResponse({
 					data: {
 						implementations: [
-							{ implementation_id: "impl-1", implementation_name: "main" },
-							{ implementation_id: "impl-2", implementation_name: "preview" },
+							{ implementation_id: "impl-1", implementation_name: "main", product_name: "product-b" },
+							{ implementation_id: "impl-2", implementation_name: "main", product_name: "product-a" },
+						],
+					},
+				}),
+			),
+			listImplementationFeatures: mock(async () =>
+				buildImplementationFeaturesResponse(),
+			),
+		};
+
+		await expect(
+			runFeaturesCommand(
+				ambiguousClient as never,
+				{ statuses: [], json: false },
+				{
+					readGitContext: async () => ({
+						repoUri: "github.com/my-org/my-repo",
+						branchName: "main",
+					}),
+				},
+			),
+		).rejects.toThrow(
+			"Multiple implementations matched the current repo, branch, and filters: product-a/main, product-b/main",
+		);
+	});
+
+	test("features.MAIN.2-2 cli-core.TARGETING.4 rejects omitted-product ambiguity within one product with qualified candidates", async () => {
+		const ambiguousClient = {
+			listImplementations: mock(async () =>
+				buildImplementationsResponse({
+					data: {
+						implementations: [
+							{ implementation_id: "impl-1", implementation_name: "main", product_name: "example-product" },
+							{ implementation_id: "impl-2", implementation_name: "preview", product_name: "example-product" },
 						],
 					},
 				}),
@@ -502,7 +706,7 @@ describe("features command targeting", () => {
 				},
 			),
 		).rejects.toThrow(
-			"Multiple implementations matched the current repo, branch, and product: main, preview",
+			"Multiple implementations matched the current repo, branch, and filters: example-product/main, example-product/preview",
 		);
 	});
 
@@ -520,12 +724,39 @@ describe("features command targeting", () => {
 });
 
 describe("features command output", () => {
-	test("formats the text features list in API order and keeps counts visible", async () => {
+	test("features.API.2 features.UX.3 format the text features list in API order with counts and inheritance metadata", async () => {
 		const result = await runFeaturesCommand(
 			{
 				listImplementations: mock(async () => buildImplementationsResponse()),
 				listImplementationFeatures: mock(async () =>
-					buildImplementationFeaturesResponse(),
+					buildImplementationFeaturesResponse({
+						data: {
+							features: [
+								buildImplementationFeatureEntry({
+									feature_name: "feature-b",
+									completed_count: 1,
+									total_count: 4,
+									refs_count: 2,
+									test_refs_count: 1,
+									has_local_spec: false,
+									has_local_states: true,
+									states_inherited: true,
+									spec_last_seen_commit: "commit-b",
+								}),
+								buildImplementationFeatureEntry({
+									feature_name: "feature-a",
+									completed_count: 3,
+									total_count: 3,
+									refs_count: 5,
+									test_refs_count: 2,
+									has_local_spec: true,
+									has_local_states: true,
+									states_inherited: false,
+									spec_last_seen_commit: "commit-a",
+								}),
+							],
+						},
+					}),
 				),
 			} as never,
 			{
@@ -540,9 +771,10 @@ describe("features command output", () => {
 		expect(result).toEqual({
 			exitCode: 0,
 			stdoutLines: [
-				"FEATURE          DONE  REFS  TESTS  SPEC   STATES  LAST_SEEN",
-				"---------------  ----  ----  -----  -----  ------  ---------",
-				"example-feature  1/3   2     1      local  none    abc123   ",
+				"FEATURE    DONE  REFS  TESTS  SPEC       STATES     LAST_SEEN",
+				"---------  ----  ----  -----  ---------  ---------  ---------",
+				"feature-b  1/4   2     1      inherited  inherited  commit-b ",
+				"feature-a  3/3   5     2      local      local      commit-a ",
 			],
 		});
 	});
@@ -589,6 +821,44 @@ describe("features command output", () => {
 			statuses: ["todo", "doing"],
 			changedSinceCommit: "abc123",
 		});
+	});
+
+	test("features.UX.2 only performs targeting reads and implementation-features reads", async () => {
+		const listImplementations = mock(async () => buildImplementationsResponse());
+		const listImplementationFeatures = mock(async () =>
+			buildImplementationFeaturesResponse(),
+		);
+		const setFeatureStates = mock(async () => {
+			throw new Error("should not be called");
+		});
+		const push = mock(async () => {
+			throw new Error("should not be called");
+		});
+
+		await runFeaturesCommand(
+			{
+				listImplementations,
+				listImplementationFeatures,
+				setFeatureStates,
+				push,
+			} as never,
+			{
+				productName: "example-product",
+				statuses: [],
+				json: false,
+			},
+			{
+				readGitContext: async () => ({
+					repoUri: "github.com/my-org/my-repo",
+					branchName: "main",
+				}),
+			},
+		);
+
+		expect(listImplementations).toHaveBeenCalledTimes(1);
+		expect(listImplementationFeatures).toHaveBeenCalledTimes(1);
+		expect(setFeatureStates).not.toHaveBeenCalled();
+		expect(push).not.toHaveBeenCalled();
 	});
 });
 
@@ -670,10 +940,16 @@ describe("cli-core.HELP.3 cli-core.HELP.5", () => {
 		expect(helpExit).toBe(0);
 		expect(shortHelpExit).toBe(0);
 		expect(readWrites(helpOutput.stdout.write)).toContain(
-			"Usage: acai features --product <name> [options]",
+			"Usage: acai features [options]",
 		);
 		expect(readWrites(helpOutput.stdout.write)).toContain(
-			"product name (required)",
+			"product name",
+		);
+		expect(readWrites(helpOutput.stdout.write)).toContain(
+			"implementation name or namespaced selector",
+		);
+		expect(readWrites(helpOutput.stdout.write)).toContain(
+			"<product/implementation>",
 		);
 		expect(readWrites(helpOutput.stdout.write)).toBe(
 			readWrites(shortHelpOutput.stdout.write),

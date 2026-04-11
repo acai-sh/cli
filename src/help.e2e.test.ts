@@ -30,9 +30,13 @@ describe("CLI help output", () => {
 		expect(shortHelp.exitCode).toBe(0);
 		expect(help.stdout).toBe(shortHelp.stdout);
 		expect(help.stdout).toContain(
-			"Usage: acai features --product <name> [options]",
+			"Usage: acai features [options]",
 		);
-		expect(help.stdout).toContain("product name (required)");
+		expect(help.stdout).toContain("product name");
+		expect(help.stdout).toContain(
+			"implementation name or namespaced selector",
+		);
+		expect(help.stdout).toContain("<product/implementation>");
 		expect(help.stderr.trim()).toBe("");
 		expect(shortHelp.stderr.trim()).toBe("");
 	});

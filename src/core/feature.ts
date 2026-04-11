@@ -4,14 +4,15 @@ import { usageError } from "./errors.ts";
 import { formatTextTable, type CommandResult } from "./output.ts";
 import {
 	normalizeOneImplementationTarget,
-	resolveImplementationName,
+	resolveImplementationTarget,
 	type OneImplementationResolverDependencies,
 } from "./targeting.ts";
 
 export interface FeatureArgs {
 	featureName: string;
-	productName: string;
+	productName?: string;
 	implementationName?: string;
+	implementationFilter?: string;
 	statuses: string[];
 	includeRefs: boolean;
 	json: boolean;
@@ -34,7 +35,9 @@ export function normalizeFeatureOptions(
 		throw usageError("Missing value for <feature-name>.");
 	}
 
-	const target = normalizeOneImplementationTarget(options);
+	const target = normalizeOneImplementationTarget(options, {
+		requireProduct: false,
+	});
 	const statuses = options.status ?? [];
 	for (const status of statuses) {
 		if (status.startsWith("-")) {
@@ -46,6 +49,7 @@ export function normalizeFeatureOptions(
 		featureName,
 		productName: target.productName,
 		implementationName: target.implementationName,
+		implementationFilter: target.implementationFilter,
 		statuses,
 		includeRefs: options.includeRefs ?? false,
 		json: options.json ?? false,
@@ -58,19 +62,23 @@ export async function runFeatureCommand(
 	args: FeatureArgs,
 	dependencies: OneImplementationResolverDependencies = {},
 ): Promise<CommandResult> {
-	const implementationName = await resolveImplementationName(
+	// feature.UX.2
+	const target = await resolveImplementationTarget(
 		apiClient,
 		{
 			productName: args.productName,
 			implementationName: args.implementationName,
+			implementationFilter: args.implementationFilter,
+			featureName: args.featureName,
 		},
 		dependencies,
 	);
 
+	// feature.API.1 / feature.UX.2
 	const response = await apiClient.getFeatureContext({
-		productName: args.productName,
+		productName: target.productName,
 		featureName: args.featureName,
-		implementationName,
+		implementationName: target.implementationName,
 		statuses: args.statuses.length > 0 ? args.statuses : undefined,
 		includeRefs: args.includeRefs,
 	});

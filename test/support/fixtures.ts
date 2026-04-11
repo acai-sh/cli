@@ -1,4 +1,8 @@
-import type { FeatureContextAcidEntry, FeatureContextResponse, FeatureStatesResponse, ImplementationFeatureEntry, ImplementationFeaturesResponse, ImplementationEntry, ImplementationsResponse } from "../../src/generated/types.ts";
+import type { FeatureContextAcidEntry, FeatureContextResponse, FeatureStatesResponse, ImplementationFeatureEntry, ImplementationFeaturesResponse } from "../../src/generated/types.ts";
+import type {
+	ListImplementationEntry,
+	ListImplementationsResponse,
+} from "../../src/core/api.ts";
 
 export function buildImplementationFeatureEntry(
   overrides: Partial<ImplementationFeatureEntry> = {},
@@ -33,17 +37,18 @@ export function buildImplementationFeaturesResponse(
   };
 }
 
-export function buildImplementationEntry(overrides: Partial<ImplementationEntry> = {}): ImplementationEntry {
+export function buildImplementationEntry(overrides: Partial<ListImplementationEntry> = {}): ListImplementationEntry {
   return {
     implementation_id: "impl-1",
     implementation_name: "main",
+    product_name: "example-product",
     ...overrides,
   };
 }
 
 export function buildImplementationsResponse(
-  overrides: { data?: Partial<ImplementationsResponse["data"]> } = {},
-): ImplementationsResponse {
+  overrides: { data?: Partial<ListImplementationsResponse["data"]> } = {},
+): ListImplementationsResponse {
   return {
     data: {
       product_name: "example-product",

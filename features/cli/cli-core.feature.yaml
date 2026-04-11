@@ -11,10 +11,10 @@ components:
         description: Shared implementation resolution behavior for commands that target one implementation
         requirements:
             1: A command that accepts `--impl` uses that implementation directly when it is provided
-            2: A command that omits `--impl` and supports branch-based targeting reads the current repo remote and branch name from git
-            3: If branch-based targeting yields exactly one implementation, that implementation is used automatically
-            4: If branch-based targeting yields multiple implementations, the command exits with an ambiguity error and lists the candidate names
-            5: If branch-based targeting yields no implementations, the command exits non-zero and states that no implementation matched the current repo, branch, and product
+            2: A command that relies on branch-based implementation discovery reads the current repo remote and branch name from git
+            3: If branch-based implementation discovery yields exactly one matching implementation context after applying the command's filters, that context is used automatically
+            4: If branch-based implementation discovery yields multiple matching implementation contexts, the command exits with an ambiguity error and lists the product-qualified candidates
+            5: If branch-based implementation discovery yields no matching implementation context, the command exits non-zero and states that no implementation matched the current repo, branch, and filters
 
     AUTH:
         description: Shared API authentication behavior

@@ -11,8 +11,10 @@ components:
         description: Primary command behavior
         requirements:
             1: Exposes `acai features`
-            2: Requires a product selector via `--product`
-            3: Accepts optional `--impl <implementation-name>`
+            2: Accepts optional `--product <product-name>`
+            2-1: When `--product` is omitted and no namespaced `--impl` supplies it, the command resolves a target product from the current repo and branch before listing features
+            2-2: When `--product` is omitted and no namespaced `--impl` supplies it, and branch-based discovery does not narrow to exactly one product, the command exits non-zero with a targeting error
+            3: Accepts optional `--impl <implementation-name>` or namespaced selector `<product/implementation>`
             4: Accepts optional `--status <value>` filters, repeatable
             5: Accepts optional `--changed-since-commit <commit>`
             6: Supports `--json` output for machine consumption

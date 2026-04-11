@@ -10,7 +10,10 @@ import {
 	normalizeFeatureOptions,
 	runFeatureCommand,
 } from "./core/feature.ts";
-import { resolveImplementationName } from "./core/targeting.ts";
+import {
+	resolveImplementationName,
+	resolveImplementationTarget,
+} from "./core/targeting.ts";
 
 describe("feature option normalization", () => {
 	test("feature.MAIN.2 and feature.MAIN.3 normalize direct selectors", () => {
@@ -26,13 +29,14 @@ describe("feature option normalization", () => {
 			featureName: "feature",
 			productName: "example-product",
 			implementationName: "main",
+			implementationFilter: undefined,
 			statuses: ["completed", "incomplete"],
 			includeRefs: true,
 			json: true,
 		});
 	});
 
-	test("feature.MAIN.2 resolves product from a namespaced implementation selector", () => {
+	test("feature.MAIN.2-1 feature.MAIN.3 resolves product from a namespaced implementation selector", () => {
 		expect(
 			normalizeFeatureOptions("feature", {
 				impl: "example-product/main",
@@ -41,6 +45,37 @@ describe("feature option normalization", () => {
 			featureName: "feature",
 			productName: "example-product",
 			implementationName: "main",
+			implementationFilter: undefined,
+			statuses: [],
+			includeRefs: false,
+			json: false,
+		});
+	});
+
+	test("feature.MAIN.2-1 allows omitted --product so feature can use branch discovery", () => {
+		expect(
+			normalizeFeatureOptions("feature", {}),
+		).toEqual({
+			featureName: "feature",
+			productName: undefined,
+			implementationName: undefined,
+			implementationFilter: undefined,
+			statuses: [],
+			includeRefs: false,
+			json: false,
+		});
+	});
+
+	test("feature.MAIN.2-1 feature.MAIN.3 treats omitted-product --impl as a discovery filter", () => {
+		expect(
+			normalizeFeatureOptions("feature", {
+				impl: "main",
+			}),
+		).toEqual({
+			featureName: "feature",
+			productName: undefined,
+			implementationName: undefined,
+			implementationFilter: "main",
 			statuses: [],
 			includeRefs: false,
 			json: false,
@@ -54,14 +89,6 @@ describe("feature option normalization", () => {
 				impl: "other-product/main",
 			}),
 		).toThrow("Conflicting product selectors");
-	});
-
-	test("feature.MAIN.2 rejects missing product selection", () => {
-		expect(() =>
-			normalizeFeatureOptions("feature", {
-				impl: "main",
-			}),
-		).toThrow("Missing product selector");
 	});
 
 	test("feature.MAIN.1 and feature.MAIN.5 reject missing values", () => {
@@ -103,13 +130,17 @@ describe("implementation targeting", () => {
 		expect(apiClient.listImplementations).not.toHaveBeenCalled();
 	});
 
-	test("cli-core.TARGETING.2 and cli-core.TARGETING.3 resolve one git-derived implementation", async () => {
+	test("feature.MAIN.2-1 cli-core.TARGETING.2 cli-core.TARGETING.3 resolve one git-derived implementation context with feature filtering", async () => {
 		const apiClient = {
 			listImplementations: mock(async () =>
 				buildImplementationsResponse({
 					data: {
 						implementations: [
-							{ implementation_id: "impl-1", implementation_name: "main" },
+							{
+								implementation_id: "impl-1",
+								implementation_name: "main",
+								product_name: "example-product",
+							},
 						],
 					},
 				}),
@@ -117,9 +148,9 @@ describe("implementation targeting", () => {
 		};
 
 		await expect(
-			resolveImplementationName(
+			resolveImplementationTarget(
 				apiClient as never,
-				{ productName: "example-product" },
+				{ featureName: "feature" },
 				{
 					readGitContext: async () => ({
 						repoUri: "github.com/my-org/my-repo",
@@ -127,17 +158,34 @@ describe("implementation targeting", () => {
 					}),
 				},
 			),
-		).resolves.toBe("main");
+		).resolves.toEqual({
+			productName: "example-product",
+			implementationName: "main",
+		});
+		expect(apiClient.listImplementations).toHaveBeenCalledWith({
+			productName: undefined,
+			repoUri: "github.com/my-org/my-repo",
+			branchName: "main",
+			featureName: "feature",
+		});
 	});
 
-	test("cli-core.TARGETING.4 rejects ambiguous git-derived implementations", async () => {
+	test("feature.MAIN.2-1 cli-core.TARGETING.3 filters branch discovery by an omitted-product --impl value", async () => {
 		const apiClient = {
 			listImplementations: mock(async () =>
 				buildImplementationsResponse({
 					data: {
 						implementations: [
-							{ implementation_id: "impl-1", implementation_name: "main" },
-							{ implementation_id: "impl-2", implementation_name: "preview" },
+							{
+								implementation_id: "impl-1",
+								implementation_name: "main",
+								product_name: "product-a",
+							},
+							{
+								implementation_id: "impl-2",
+								implementation_name: "preview",
+								product_name: "product-b",
+							},
 						],
 					},
 				}),
@@ -145,9 +193,9 @@ describe("implementation targeting", () => {
 		};
 
 		await expect(
-			resolveImplementationName(
+			resolveImplementationTarget(
 				apiClient as never,
-				{ productName: "example-product" },
+				{ featureName: "feature", implementationFilter: "main" },
 				{
 					readGitContext: async () => ({
 						repoUri: "github.com/my-org/my-repo",
@@ -155,12 +203,47 @@ describe("implementation targeting", () => {
 					}),
 				},
 			),
+		).resolves.toEqual({
+			productName: "product-a",
+			implementationName: "main",
+		});
+	});
+
+	test("cli-core.TARGETING.4 feature.MAIN.2-2 rejects ambiguous git-derived implementations with qualified selectors", async () => {
+		const apiClient = {
+			listImplementations: mock(async () =>
+				buildImplementationsResponse({
+					data: {
+						implementations: [
+							{
+								implementation_id: "impl-1",
+								implementation_name: "main",
+								product_name: "product-b",
+							},
+							{
+								implementation_id: "impl-2",
+								implementation_name: "main",
+								product_name: "product-a",
+							},
+						],
+					},
+				}),
+			),
+		};
+
+		await expect(
+			resolveImplementationName(apiClient as never, {}, {
+				readGitContext: async () => ({
+					repoUri: "github.com/my-org/my-repo",
+					branchName: "main",
+				}),
+			}),
 		).rejects.toThrow(
-			"Multiple implementations matched the current repo, branch, and product: main, preview",
+			"Multiple implementations matched the current repo, branch, and filters: product-a/main, product-b/main",
 		);
 	});
 
-	test("cli-core.TARGETING.5 rejects when no git-derived implementation matches", async () => {
+	test("cli-core.TARGETING.5 feature.MAIN.2-2 rejects when no git-derived implementation matches the filters", async () => {
 		const apiClient = {
 			listImplementations: mock(async () =>
 				buildImplementationsResponse({ data: { implementations: [] } }),
@@ -168,18 +251,14 @@ describe("implementation targeting", () => {
 		};
 
 		await expect(
-			resolveImplementationName(
-				apiClient as never,
-				{ productName: "example-product" },
-				{
-					readGitContext: async () => ({
-						repoUri: "github.com/my-org/my-repo",
-						branchName: "main",
-					}),
-				},
-			),
+			resolveImplementationName(apiClient as never, { featureName: "feature" }, {
+				readGitContext: async () => ({
+					repoUri: "github.com/my-org/my-repo",
+					branchName: "main",
+				}),
+			}),
 		).rejects.toThrow(
-			"No implementation matched the current repo, branch, and product. This branch may not have been pushed yet. Try: acai push --all",
+			"No implementation matched the current repo, branch, and filters. This branch may not be tracked yet or no tracked implementation on this branch includes feature `feature`. Try `acai push` from this branch, or pass `--product` and `--impl` for a known implementation.",
 		);
 	});
 
@@ -189,15 +268,11 @@ describe("implementation targeting", () => {
 		};
 
 		await expect(
-			resolveImplementationName(
-				apiClient as never,
-				{ productName: "example-product" },
-				{
-					readGitContext: async () => {
-						throw new Error("git missing");
-					},
+			resolveImplementationName(apiClient as never, { productName: "example-product" }, {
+				readGitContext: async () => {
+					throw new Error("git missing");
 				},
-			),
+			}),
 		).rejects.toThrow("git missing");
 	});
 });
@@ -294,7 +369,41 @@ describe("feature API and formatting", () => {
 		]);
 	});
 
-	test("feature.MAIN.6 cli-core.OUTPUT.1 and cli-core.OUTPUT.2 keep the full json payload on stdout and warnings on stderr", async () => {
+	test("feature.UX.2 only performs targeting reads and feature-context reads", async () => {
+		const getFeatureContext = mock(async () => buildFeatureContextResponse());
+		const setFeatureStates = mock(async () => {
+			throw new Error("should not be called");
+		});
+		const push = mock(async () => {
+			throw new Error("should not be called");
+		});
+
+		await runFeatureCommand(
+			{
+				listImplementations: mock(async () => {
+					throw new Error("should not be called");
+				}),
+				getFeatureContext,
+				setFeatureStates,
+				push,
+			} as never,
+			{
+				featureName: "feature",
+				productName: "example-product",
+				implementationName: "main",
+				implementationFilter: undefined,
+				statuses: [],
+				includeRefs: false,
+				json: false,
+			},
+		);
+
+		expect(getFeatureContext).toHaveBeenCalledTimes(1);
+		expect(setFeatureStates).not.toHaveBeenCalled();
+		expect(push).not.toHaveBeenCalled();
+	});
+
+		test("feature.MAIN.6 cli-core.OUTPUT.1 and cli-core.OUTPUT.2 keep the full json payload on stdout and warnings on stderr", async () => {
 		const payload = buildFeatureContextResponse({
 			data: { warnings: ["warning one"] },
 		});
@@ -307,6 +416,7 @@ describe("feature API and formatting", () => {
 				featureName: "feature",
 				productName: "example-product",
 				implementationName: "main",
+				implementationFilter: undefined,
 				statuses: [],
 				includeRefs: false,
 				json: true,

@@ -98,14 +98,17 @@ describe("feature command", () => {
 		}
 	});
 
-	test("cli-core.TARGETING.2 cli-core.TARGETING.3 resolve exactly one implementation from git context", async () => {
+	test("feature.MAIN.2-1 cli-core.TARGETING.2 cli-core.TARGETING.3 resolve exactly one implementation from git context without --product", async () => {
 		const git = await createFakeGitContext({ remote: "git@github.com:my-org/my-repo.git", branch: "main" });
 		const server = createMockApiServer((request) => {
 			const url = new URL(request.url);
 			if (url.pathname === "/implementations") {
+				expect(url.searchParams.get("product_name")).toBeNull();
+				expect(url.searchParams.get("feature_name")).toBe("feature");
 				return Response.json(buildImplementationsResponse());
 			}
 			if (url.pathname === "/feature-context") {
+				expect(url.searchParams.get("product_name")).toBe("example-product");
 				expect(url.searchParams.get("implementation_name")).toBe("main");
 				return Response.json(buildFeatureContextResponse());
 			}
@@ -114,7 +117,7 @@ describe("feature command", () => {
 
 		try {
 			const result = await runCliSubprocess(
-				["feature", "feature", "--product", "example-product"],
+				["feature", "feature"],
 				apiEnv(server, git.env),
 			);
 			expect(result.exitCode).toBe(0);
@@ -126,9 +129,29 @@ describe("feature command", () => {
 		}
 	});
 
-	test("feature.MAIN.2 resolves product from --impl product/implementation without --product", async () => {
+	test("feature.MAIN.2-1 feature.API.1 cli-core.ERRORS.2 exits before feature lookup when git context is missing without --product", async () => {
+		const git = await createFakeGitContext({ remoteExitCode: 1 });
+		const server = createMockApiServer(() => {
+			throw new Error("feature lookup should not be reached without git context");
+		});
+
+		try {
+			const result = await runCliSubprocess(["feature", "feature"], apiEnv(server, git.env));
+			expect(result.exitCode).toBe(1);
+			expect(result.stderr).toContain("Git context could not be determined.");
+			expect(server.requests).toHaveLength(0);
+		} finally {
+			server.stop();
+			await git.cleanup();
+		}
+	});
+
+	test("feature.MAIN.2-1 feature.MAIN.3 resolves product from --impl product/implementation without --product", async () => {
 		const server = createMockApiServer((request) => {
 			const url = new URL(request.url);
+			if (url.pathname === "/implementations") {
+				throw new Error("namespaced selectors should bypass discovery");
+			}
 			if (url.pathname === "/feature-context") {
 				expect(url.searchParams.get("product_name")).toBe("example-product");
 				expect(url.searchParams.get("implementation_name")).toBe("preview");
@@ -149,6 +172,63 @@ describe("feature command", () => {
 			expect(result.stdout).toContain("TARGET: example-product/preview");
 		} finally {
 			server.stop();
+		}
+	});
+
+	test("cli-core.TARGETING.4 feature.MAIN.2-2 reports ambiguous cross-product discovery", async () => {
+		const git = await createFakeGitContext({ remote: "git@github.com:my-org/my-repo.git", branch: "main" });
+		const server = createMockApiServer((request) => {
+			const url = new URL(request.url);
+			if (url.pathname === "/implementations") {
+				return Response.json(
+					buildImplementationsResponse({
+						data: {
+							implementations: [
+								{ implementation_id: "impl-1", implementation_name: "main", product_name: "product-b" },
+								{ implementation_id: "impl-2", implementation_name: "main", product_name: "product-a" },
+							],
+						},
+					}),
+				);
+			}
+			return new Response("not found", { status: 404 });
+		});
+
+		try {
+			const result = await runCliSubprocess(["feature", "feature"], apiEnv(server, git.env));
+			expect(result.exitCode).toBe(1);
+			expect(result.stderr).toContain(
+				"Multiple implementations matched the current repo, branch, and filters: product-a/main, product-b/main",
+			);
+		} finally {
+			server.stop();
+			await git.cleanup();
+		}
+	});
+
+	test("cli-core.TARGETING.5 feature.MAIN.2-2 reports no-match discovery with filter wording", async () => {
+		const git = await createFakeGitContext({ remote: "git@github.com:my-org/my-repo.git", branch: "main" });
+		const server = createMockApiServer((request) => {
+			const url = new URL(request.url);
+			if (url.pathname === "/implementations") {
+				expect(url.searchParams.get("feature_name")).toBe("feature");
+				return Response.json(buildImplementationsResponse({ data: { implementations: [] } }));
+			}
+			return new Response("not found", { status: 404 });
+		});
+
+		try {
+			const result = await runCliSubprocess(
+				["feature", "feature", "--impl", "main"],
+				apiEnv(server, git.env),
+			);
+			expect(result.exitCode).toBe(1);
+			expect(result.stderr).toContain(
+				"No implementation matched the current repo, branch, and filters. This branch may not be tracked yet or no tracked implementation on this branch includes feature `feature`. Try `acai push` from this branch, or pass `--product` and `--impl` for a known implementation.",
+			);
+		} finally {
+			server.stop();
+			await git.cleanup();
 		}
 	});
 

@@ -34,7 +34,8 @@
         "build:release:darwin-x64": "bun build ./src/index.ts --compile --target=bun-darwin-x64-modern --outfile dist/acai-darwin-x64",
         "build:release:darwin-arm64": "bun build ./src/index.ts --compile --target=bun-darwin-arm64-modern --outfile dist/acai-darwin-arm64",
         "prepack": "bun run build:npm",
-        "test": "AGENT=1 bun test"
+        "test": "AGENT=1 bun test",
+        "regen:openapi": "openapi-typescript api/openapi.json -o src/generated/openapi.ts"
     },
     "devDependencies": {
         "@types/bun": "latest",

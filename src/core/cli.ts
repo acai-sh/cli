@@ -295,22 +295,26 @@ function createCliProgram(
 
     program
         .command("features")
-        .usage("--product <name> [options]")
+        .usage("[options]")
         .description(
-            `The ${dim}\`features\`${reset} command fetches a summary list of known features for the given Product. The summary includes status & reference counts, inheritance, and metadata. Use this to understand what exists and what to work on next. When --impl is omitted, acai resolves the current implementation from the git branch.\n`,
+            `The ${dim}\`features\`${reset} command fetches a summary list of known features for one implementation. The summary includes status & reference counts, inheritance, and metadata. Use this to understand what exists and what to work on next. When --product is omitted, acai resolves the target from the current git branch unless --impl uses a namespaced selector.\n`,
         )
         // features.MAIN.2
-        .requiredOption("--product <name>", "product name (required)")
+        .option("--product <name>", "product name")
+        // features.MAIN.3
         .option(
             "--impl <name>",
-            "implementation name (defaults to the current git-resolved implementation)",
+            "implementation name or namespaced selector <product/implementation>",
         )
+        // features.MAIN.4
         .option(
             "--status <value>",
             "status filter",
             (value: string, previous: string[] = []) => [...previous, value],
         )
+        // features.MAIN.5
         .option("--changed-since-commit <commit>", "filter by commit")
+        // features.MAIN.6
         .option("--json", "emit JSON output")
         .action(async (options: FeaturesCommandOptions) => {
             try {

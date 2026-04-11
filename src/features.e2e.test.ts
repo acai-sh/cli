@@ -99,19 +99,91 @@ describe("features command", () => {
 		}
 	});
 
+	test("features.MAIN.2-1 cli-core.TARGETING.2 cli-core.TARGETING.3 resolves acai features without --product from git context", async () => {
+		const git = await createFakeGitContext({ remote: "git@github.com:my-org/my-repo.git", branch: "main" });
+		let implementationFeaturesRequests = 0;
+		const server = createMockApiServer((request) => {
+			const url = new URL(request.url);
+			if (url.pathname === "/implementations") {
+				expect(url.searchParams.get("product_name")).toBeNull();
+				expect(url.searchParams.get("repo_uri")).toBe("github.com/my-org/my-repo");
+				expect(url.searchParams.get("branch_name")).toBe("main");
+				return Response.json(
+					buildImplementationsResponse({
+						data: {
+							product_name: undefined,
+							implementations: [
+								{ implementation_id: "impl-1", implementation_name: "main", product_name: "example-product" },
+							],
+						},
+					}),
+				);
+			}
+			if (url.pathname === "/implementation-features") {
+				implementationFeaturesRequests += 1;
+				expect(url.searchParams.get("product_name")).toBe("example-product");
+				expect(url.searchParams.get("implementation_name")).toBe("main");
+				return Response.json(
+					buildImplementationFeaturesResponse({
+						data: { features: [buildImplementationFeatureEntry({ feature_name: "feature-a", completed_count: 3, total_count: 5, refs_count: 2 })] },
+					}),
+				);
+			}
+			return new Response("not found", { status: 404 });
+		});
+
+		try {
+			const result = await runCliSubprocess(["features"], apiEnv(server, git.env));
+			expect(result.exitCode).toBe(0);
+			expect(result.stderr.trim()).toBe("");
+			expect(result.stdout).toContain("feature-a");
+			expect(implementationFeaturesRequests).toBe(1);
+		} finally {
+			server.stop();
+			await git.cleanup();
+		}
+	});
+
+	test("features.MAIN.2-1 features.MAIN.3 supports namespaced --impl without --product", async () => {
+		let implementationFeaturesRequests = 0;
+		const server = createMockApiServer((request) => {
+			const url = new URL(request.url);
+			if (url.pathname === "/implementation-features") {
+				implementationFeaturesRequests += 1;
+				expect(url.searchParams.get("product_name")).toBe("example-product");
+				expect(url.searchParams.get("implementation_name")).toBe("main");
+				return Response.json(
+					buildImplementationFeaturesResponse({
+						data: { features: [buildImplementationFeatureEntry({ feature_name: "feature-a" })] },
+					}),
+				);
+			}
+			return new Response("not found", { status: 404 });
+		});
+
+		try {
+			const result = await runCliSubprocess(["features", "--impl", "example-product/main"], apiEnv(server));
+			expect(result.exitCode).toBe(0);
+			expect(result.stdout).toContain("feature-a");
+			expect(implementationFeaturesRequests).toBe(1);
+		} finally {
+			server.stop();
+		}
+	});
+
 	for (const [acid, implementations, message] of [
 		[
 			"cli-core.TARGETING.4",
 			[
-				{ implementation_id: "impl-1", implementation_name: "main" },
-				{ implementation_id: "impl-2", implementation_name: "preview" },
+				{ implementation_id: "impl-1", implementation_name: "main", product_name: "example-product" },
+				{ implementation_id: "impl-2", implementation_name: "preview", product_name: "example-product" },
 			],
-			"Multiple implementations matched the current repo, branch, and product",
+			"Multiple implementations matched the current repo, branch, and filters: example-product/main, example-product/preview",
 		],
 		[
 			"cli-core.TARGETING.5",
 			[],
-			"No implementation matched the current repo, branch, and product. This branch may not have been pushed yet. Try: acai push --all",
+			"No implementation matched the current repo, branch, and filters. This branch may not be tracked yet. Try `acai push` from this branch, or pass `--product` and `--impl` for a known implementation.",
 		],
 	] as const) {
 		test(`${acid} exits non-zero for unsupported branch targeting`, async () => {
@@ -152,17 +224,36 @@ describe("features command", () => {
 		expectUsageError(result, "Usage: acai features", "Missing API bearer token configuration.");
 	});
 
-	test("cli-core.EXITS.2 requires a product selector", async () => {
-		const result = await runCliSubprocess(["features", "--impl", "main"], {
-			ACAI_API_BASE_URL: "https://api.example.test",
-			ACAI_API_TOKEN: "secret",
+	test("features.MAIN.2-2 cli-core.TARGETING.4 rejects ambiguous branch discovery across products", async () => {
+		const git = await createFakeGitContext({ remote: "git@github.com:my-org/my-repo.git", branch: "main" });
+		const server = createMockApiServer((request) => {
+			const url = new URL(request.url);
+			if (url.pathname === "/implementations") {
+				return Response.json(
+					buildImplementationsResponse({
+						data: {
+							product_name: undefined,
+							implementations: [
+								{ implementation_id: "impl-1", implementation_name: "main", product_name: "product-b" },
+								{ implementation_id: "impl-2", implementation_name: "main", product_name: "product-a" },
+							],
+						},
+					}),
+				);
+			}
+			return new Response("not found", { status: 404 });
 		});
-		expectUsageError(result, "Usage: acai features", "required option '--product <name>' not specified");
-	});
 
-	test("cli-core.TARGETING.1 still reports a missing product selector when API env is absent", async () => {
-		const result = await runCliSubprocess(["features", "--impl", "main"]);
-		expectUsageError(result, "Usage: acai features", "required option '--product <name>' not specified");
+		try {
+			const result = await runCliSubprocess(["features"], apiEnv(server, git.env));
+			expect(result.exitCode).toBe(1);
+			expect(result.stderr).toContain(
+				"Multiple implementations matched the current repo, branch, and filters: product-a/main, product-b/main",
+			);
+		} finally {
+			server.stop();
+			await git.cleanup();
+		}
 	});
 
 	test("cli-core.ERRORS.3 exits non-zero for unknown commands", async () => {
@@ -208,10 +299,12 @@ describe("features command", () => {
 		expect(result.stderr).toContain("API request failed.");
 	});
 
-	test("features.MAIN.6 features.UX.5 keep json payload on stdout", async () => {
+	test("features.MAIN.6 features.UX.5 keep json payload on stdout as a single implementation payload", async () => {
+		let implementationFeaturesRequests = 0;
 		const server = createMockApiServer((request) => {
 			const url = new URL(request.url);
 			if (url.pathname === "/implementation-features") {
+				implementationFeaturesRequests += 1;
 				return Response.json(buildImplementationFeaturesResponse({ data: { features: [buildImplementationFeatureEntry({ feature_name: "feature-a" })] } }));
 			}
 			return new Response("not found", { status: 404 });
@@ -222,6 +315,7 @@ describe("features command", () => {
 			expect(result.exitCode).toBe(0);
 			expect(result.stderr.trim()).toBe("");
 			expect(JSON.parse(result.stdout).data.features[0].feature_name).toBe("feature-a");
+			expect(implementationFeaturesRequests).toBe(1);
 		} finally {
 			server.stop();
 		}
@@ -257,5 +351,17 @@ describe("features command", () => {
 			ACAI_API_TOKEN: "secret",
 		});
 		expectUsageError(result, "Usage: acai features", "Missing value for --changed-since-commit.");
+	});
+
+	test("features.MAIN.2 features.MAIN.3 cli-core.HELP.3 prints help with optional --product", async () => {
+		const result = await runCliSubprocess(["features", "--help"]);
+		expect(result.exitCode).toBe(0);
+		expect(result.stdout).toContain("Usage: acai features [options]");
+		expect(result.stdout).toContain("--product <name>");
+		expect(result.stdout).not.toContain("product name (required)");
+		expect(result.stdout).toContain(
+			"implementation name or namespaced selector",
+		);
+		expect(result.stdout).toContain("<product/implementation>");
 	});
 });

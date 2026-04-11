@@ -4,32 +4,18 @@
         "schemas": {
             "AcidEntry": {
                 "properties": {
-                    "acid": {
-                        "type": "string"
-                    },
-                    "deprecated": {
-                        "type": "boolean"
-                    },
-                    "note": {
-                        "type": "string"
-                    },
+                    "acid": { "type": "string" },
+                    "deprecated": { "type": "boolean" },
+                    "note": { "type": "string" },
                     "refs": {
                         "items": {
                             "allOf": [
                                 {
                                     "properties": {
-                                        "branch_name": {
-                                            "type": "string"
-                                        },
-                                        "is_test": {
-                                            "type": "boolean"
-                                        },
-                                        "path": {
-                                            "type": "string"
-                                        },
-                                        "repo_uri": {
-                                            "type": "string"
-                                        }
+                                        "branch_name": { "type": "string" },
+                                        "is_test": { "type": "boolean" },
+                                        "path": { "type": "string" },
+                                        "repo_uri": { "type": "string" }
                                     },
                                     "required": [
                                         "path",
@@ -44,41 +30,29 @@
                         },
                         "type": "array"
                     },
-                    "refs_count": {
-                        "type": "integer"
-                    },
+                    "refs_count": { "type": "integer" },
                     "replaced_by": {
-                        "items": {
-                            "type": "string"
-                        },
+                        "items": { "type": "string" },
                         "type": "array"
                     },
-                    "requirement": {
-                        "type": "string"
-                    },
+                    "requirement": { "type": "string" },
                     "state": {
                         "allOf": [
                             {
                                 "properties": {
-                                    "comment": {
-                                        "type": "string"
-                                    },
+                                    "comment": { "type": "string" },
                                     "status": {
                                         "nullable": true,
                                         "type": "string"
                                     },
-                                    "updated_at": {
-                                        "type": "string"
-                                    }
+                                    "updated_at": { "type": "string" }
                                 },
                                 "title": "StateObject",
                                 "type": "object"
                             }
                         ]
                     },
-                    "test_refs_count": {
-                        "type": "integer"
-                    }
+                    "test_refs_count": { "type": "integer" }
                 },
                 "required": [
                     "acid",
@@ -92,23 +66,17 @@
             },
             "DanglingStateEntry": {
                 "properties": {
-                    "acid": {
-                        "type": "string"
-                    },
+                    "acid": { "type": "string" },
                     "state": {
                         "allOf": [
                             {
                                 "properties": {
-                                    "comment": {
-                                        "type": "string"
-                                    },
+                                    "comment": { "type": "string" },
                                     "status": {
                                         "nullable": true,
                                         "type": "string"
                                     },
-                                    "updated_at": {
-                                        "type": "string"
-                                    }
+                                    "updated_at": { "type": "string" }
                                 },
                                 "title": "StateObject",
                                 "type": "object"
@@ -124,12 +92,8 @@
                 "properties": {
                     "errors": {
                         "properties": {
-                            "detail": {
-                                "type": "string"
-                            },
-                            "status": {
-                                "type": "string"
-                            }
+                            "detail": { "type": "string" },
+                            "status": { "type": "string" }
                         },
                         "required": ["detail"],
                         "type": "object"
@@ -160,9 +124,7 @@
                     },
                     "prerequisites": {
                         "description": "Optional list of prerequisite feature names",
-                        "items": {
-                            "type": "string"
-                        },
+                        "items": { "type": "string" },
                         "type": "array"
                     },
                     "product": {
@@ -186,15 +148,9 @@
                             "allOf": [
                                 {
                                     "properties": {
-                                        "acid": {
-                                            "type": "string"
-                                        },
-                                        "deprecated": {
-                                            "type": "boolean"
-                                        },
-                                        "note": {
-                                            "type": "string"
-                                        },
+                                        "acid": { "type": "string" },
+                                        "deprecated": { "type": "boolean" },
+                                        "note": { "type": "string" },
                                         "refs": {
                                             "items": {
                                                 "allOf": [
@@ -226,18 +182,12 @@
                                             },
                                             "type": "array"
                                         },
-                                        "refs_count": {
-                                            "type": "integer"
-                                        },
+                                        "refs_count": { "type": "integer" },
                                         "replaced_by": {
-                                            "items": {
-                                                "type": "string"
-                                            },
+                                            "items": { "type": "string" },
                                             "type": "array"
                                         },
-                                        "requirement": {
-                                            "type": "string"
-                                        },
+                                        "requirement": { "type": "string" },
                                         "state": {
                                             "allOf": [
                                                 {
@@ -258,9 +208,7 @@
                                                 }
                                             ]
                                         },
-                                        "test_refs_count": {
-                                            "type": "integer"
-                                        }
+                                        "test_refs_count": { "type": "integer" }
                                     },
                                     "required": [
                                         "acid",
@@ -281,9 +229,7 @@
                             "allOf": [
                                 {
                                     "properties": {
-                                        "acid": {
-                                            "type": "string"
-                                        },
+                                        "acid": { "type": "string" },
                                         "state": {
                                             "allOf": [
                                                 {
@@ -313,31 +259,19 @@
                         },
                         "type": "array"
                     },
-                    "feature_name": {
-                        "type": "string"
-                    },
-                    "implementation_id": {
-                        "type": "string"
-                    },
-                    "implementation_name": {
-                        "type": "string"
-                    },
-                    "product_name": {
-                        "type": "string"
-                    },
+                    "feature_name": { "type": "string" },
+                    "implementation_id": { "type": "string" },
+                    "implementation_name": { "type": "string" },
+                    "product_name": { "type": "string" },
                     "refs_source": {
                         "allOf": [
                             {
                                 "properties": {
                                     "branch_names": {
-                                        "items": {
-                                            "type": "string"
-                                        },
+                                        "items": { "type": "string" },
                                         "type": "array"
                                     },
-                                    "implementation_name": {
-                                        "type": "string"
-                                    },
+                                    "implementation_name": { "type": "string" },
                                     "source_type": {
                                         "enum": ["local", "inherited", "none"],
                                         "type": "string"
@@ -354,14 +288,10 @@
                             {
                                 "properties": {
                                     "branch_names": {
-                                        "items": {
-                                            "type": "string"
-                                        },
+                                        "items": { "type": "string" },
                                         "type": "array"
                                     },
-                                    "implementation_name": {
-                                        "type": "string"
-                                    },
+                                    "implementation_name": { "type": "string" },
                                     "source_type": {
                                         "enum": ["local", "inherited", "none"],
                                         "type": "string"
@@ -378,14 +308,10 @@
                             {
                                 "properties": {
                                     "branch_names": {
-                                        "items": {
-                                            "type": "string"
-                                        },
+                                        "items": { "type": "string" },
                                         "type": "array"
                                     },
-                                    "implementation_name": {
-                                        "type": "string"
-                                    },
+                                    "implementation_name": { "type": "string" },
                                     "source_type": {
                                         "enum": ["local", "inherited", "none"],
                                         "type": "string"
@@ -401,12 +327,8 @@
                         "allOf": [
                             {
                                 "properties": {
-                                    "status_counts": {
-                                        "type": "object"
-                                    },
-                                    "total_acids": {
-                                        "type": "integer"
-                                    }
+                                    "status_counts": { "type": "object" },
+                                    "total_acids": { "type": "integer" }
                                 },
                                 "required": ["total_acids", "status_counts"],
                                 "title": "Summary",
@@ -415,9 +337,7 @@
                         ]
                     },
                     "warnings": {
-                        "items": {
-                            "type": "string"
-                        },
+                        "items": { "type": "string" },
                         "type": "array"
                     }
                 },
@@ -577,18 +497,10 @@
                                         },
                                         "type": "array"
                                     },
-                                    "feature_name": {
-                                        "type": "string"
-                                    },
-                                    "implementation_id": {
-                                        "type": "string"
-                                    },
-                                    "implementation_name": {
-                                        "type": "string"
-                                    },
-                                    "product_name": {
-                                        "type": "string"
-                                    },
+                                    "feature_name": { "type": "string" },
+                                    "implementation_id": { "type": "string" },
+                                    "implementation_name": { "type": "string" },
+                                    "product_name": { "type": "string" },
                                     "refs_source": {
                                         "allOf": [
                                             {
@@ -694,9 +606,7 @@
                                         ]
                                     },
                                     "warnings": {
-                                        "items": {
-                                            "type": "string"
-                                        },
+                                        "items": { "type": "string" },
                                         "type": "array"
                                     }
                                 },
@@ -774,15 +684,9 @@
             },
             "FeatureStatesRequest": {
                 "properties": {
-                    "feature_name": {
-                        "type": "string"
-                    },
-                    "implementation_name": {
-                        "type": "string"
-                    },
-                    "product_name": {
-                        "type": "string"
-                    },
+                    "feature_name": { "type": "string" },
+                    "implementation_name": { "type": "string" },
+                    "product_name": { "type": "string" },
                     "states": {
                         "additionalProperties": {
                             "allOf": [
@@ -831,25 +735,13 @@
                         "allOf": [
                             {
                                 "properties": {
-                                    "feature_name": {
-                                        "type": "string"
-                                    },
-                                    "implementation_id": {
-                                        "type": "string"
-                                    },
-                                    "implementation_name": {
-                                        "type": "string"
-                                    },
-                                    "product_name": {
-                                        "type": "string"
-                                    },
-                                    "states_written": {
-                                        "type": "integer"
-                                    },
+                                    "feature_name": { "type": "string" },
+                                    "implementation_id": { "type": "string" },
+                                    "implementation_name": { "type": "string" },
+                                    "product_name": { "type": "string" },
+                                    "states_written": { "type": "integer" },
                                     "warnings": {
-                                        "items": {
-                                            "type": "string"
-                                        },
+                                        "items": { "type": "string" },
                                         "type": "array"
                                     }
                                 },
@@ -873,25 +765,13 @@
             },
             "FeatureStatesResponseData": {
                 "properties": {
-                    "feature_name": {
-                        "type": "string"
-                    },
-                    "implementation_id": {
-                        "type": "string"
-                    },
-                    "implementation_name": {
-                        "type": "string"
-                    },
-                    "product_name": {
-                        "type": "string"
-                    },
-                    "states_written": {
-                        "type": "integer"
-                    },
+                    "feature_name": { "type": "string" },
+                    "implementation_id": { "type": "string" },
+                    "implementation_name": { "type": "string" },
+                    "product_name": { "type": "string" },
+                    "states_written": { "type": "integer" },
                     "warnings": {
-                        "items": {
-                            "type": "string"
-                        },
+                        "items": { "type": "string" },
                         "type": "array"
                     }
                 },
@@ -908,54 +788,34 @@
             },
             "ImplementationEntry": {
                 "properties": {
-                    "implementation_id": {
-                        "type": "string"
-                    },
-                    "implementation_name": {
-                        "type": "string"
-                    }
+                    "implementation_id": { "type": "string" },
+                    "implementation_name": { "type": "string" },
+                    "product_name": { "type": "string" }
                 },
-                "required": ["implementation_name", "implementation_id"],
+                "required": [
+                    "implementation_name",
+                    "implementation_id",
+                    "product_name"
+                ],
                 "title": "ImplementationEntry",
                 "type": "object"
             },
             "ImplementationFeatureEntry": {
                 "properties": {
-                    "completed_count": {
-                        "type": "integer"
-                    },
-                    "description": {
-                        "nullable": true,
-                        "type": "string"
-                    },
-                    "feature_name": {
-                        "type": "string"
-                    },
-                    "has_local_spec": {
-                        "type": "boolean"
-                    },
-                    "has_local_states": {
-                        "type": "boolean"
-                    },
-                    "refs_count": {
-                        "type": "integer"
-                    },
-                    "refs_inherited": {
-                        "type": "boolean"
-                    },
+                    "completed_count": { "type": "integer" },
+                    "description": { "nullable": true, "type": "string" },
+                    "feature_name": { "type": "string" },
+                    "has_local_spec": { "type": "boolean" },
+                    "has_local_states": { "type": "boolean" },
+                    "refs_count": { "type": "integer" },
+                    "refs_inherited": { "type": "boolean" },
                     "spec_last_seen_commit": {
                         "nullable": true,
                         "type": "string"
                     },
-                    "states_inherited": {
-                        "type": "boolean"
-                    },
-                    "test_refs_count": {
-                        "type": "integer"
-                    },
-                    "total_count": {
-                        "type": "integer"
-                    }
+                    "states_inherited": { "type": "boolean" },
+                    "test_refs_count": { "type": "integer" },
+                    "total_count": { "type": "integer" }
                 },
                 "required": [
                     "feature_name",
@@ -987,21 +847,13 @@
                                             "nullable": true,
                                             "type": "string"
                                         },
-                                        "feature_name": {
-                                            "type": "string"
-                                        },
-                                        "has_local_spec": {
-                                            "type": "boolean"
-                                        },
+                                        "feature_name": { "type": "string" },
+                                        "has_local_spec": { "type": "boolean" },
                                         "has_local_states": {
                                             "type": "boolean"
                                         },
-                                        "refs_count": {
-                                            "type": "integer"
-                                        },
-                                        "refs_inherited": {
-                                            "type": "boolean"
-                                        },
+                                        "refs_count": { "type": "integer" },
+                                        "refs_inherited": { "type": "boolean" },
                                         "spec_last_seen_commit": {
                                             "nullable": true,
                                             "type": "string"
@@ -1012,9 +864,7 @@
                                         "test_refs_count": {
                                             "type": "integer"
                                         },
-                                        "total_count": {
-                                            "type": "integer"
-                                        }
+                                        "total_count": { "type": "integer" }
                                     },
                                     "required": [
                                         "feature_name",
@@ -1036,15 +886,9 @@
                         },
                         "type": "array"
                     },
-                    "implementation_id": {
-                        "type": "string"
-                    },
-                    "implementation_name": {
-                        "type": "string"
-                    },
-                    "product_name": {
-                        "type": "string"
-                    }
+                    "implementation_id": { "type": "string" },
+                    "implementation_name": { "type": "string" },
+                    "product_name": { "type": "string" }
                 },
                 "required": [
                     "product_name",
@@ -1122,15 +966,9 @@
                                         },
                                         "type": "array"
                                     },
-                                    "implementation_id": {
-                                        "type": "string"
-                                    },
-                                    "implementation_name": {
-                                        "type": "string"
-                                    },
-                                    "product_name": {
-                                        "type": "string"
-                                    }
+                                    "implementation_id": { "type": "string" },
+                                    "implementation_name": { "type": "string" },
+                                    "product_name": { "type": "string" }
                                 },
                                 "required": [
                                     "product_name",
@@ -1150,9 +988,7 @@
             },
             "ImplementationsData": {
                 "properties": {
-                    "branch_name": {
-                        "type": "string"
-                    },
+                    "branch_name": { "type": "string" },
                     "implementations": {
                         "items": {
                             "allOf": [
@@ -1163,11 +999,13 @@
                                         },
                                         "implementation_name": {
                                             "type": "string"
-                                        }
+                                        },
+                                        "product_name": { "type": "string" }
                                     },
                                     "required": [
                                         "implementation_name",
-                                        "implementation_id"
+                                        "implementation_id",
+                                        "product_name"
                                     ],
                                     "title": "ImplementationEntry",
                                     "type": "object"
@@ -1176,14 +1014,10 @@
                         },
                         "type": "array"
                     },
-                    "product_name": {
-                        "type": "string"
-                    },
-                    "repo_uri": {
-                        "type": "string"
-                    }
+                    "product_name": { "type": "string" },
+                    "repo_uri": { "type": "string" }
                 },
-                "required": ["product_name", "implementations"],
+                "required": ["implementations"],
                 "title": "ImplementationsData",
                 "type": "object"
             },
@@ -1193,9 +1027,7 @@
                         "allOf": [
                             {
                                 "properties": {
-                                    "branch_name": {
-                                        "type": "string"
-                                    },
+                                    "branch_name": { "type": "string" },
                                     "implementations": {
                                         "items": {
                                             "allOf": [
@@ -1206,11 +1038,15 @@
                                                         },
                                                         "implementation_name": {
                                                             "type": "string"
+                                                        },
+                                                        "product_name": {
+                                                            "type": "string"
                                                         }
                                                     },
                                                     "required": [
                                                         "implementation_name",
-                                                        "implementation_id"
+                                                        "implementation_id",
+                                                        "product_name"
                                                     ],
                                                     "title": "ImplementationEntry",
                                                     "type": "object"
@@ -1219,14 +1055,10 @@
                                         },
                                         "type": "array"
                                     },
-                                    "product_name": {
-                                        "type": "string"
-                                    },
-                                    "repo_uri": {
-                                        "type": "string"
-                                    }
+                                    "product_name": { "type": "string" },
+                                    "repo_uri": { "type": "string" }
                                 },
-                                "required": ["product_name", "implementations"],
+                                "required": ["implementations"],
                                 "title": "ImplementationsData",
                                 "type": "object"
                             }
@@ -1575,9 +1407,7 @@
                                     },
                                     "warnings": {
                                         "description": "List of non-fatal warnings",
-                                        "items": {
-                                            "type": "string"
-                                        },
+                                        "items": { "type": "string" },
                                         "type": "array"
                                     }
                                 },
@@ -1633,9 +1463,7 @@
                     },
                     "warnings": {
                         "description": "List of non-fatal warnings",
-                        "items": {
-                            "type": "string"
-                        },
+                        "items": { "type": "string" },
                         "type": "array"
                     }
                 },
@@ -1738,9 +1566,7 @@
                     },
                     "replaced_by": {
                         "description": "Optional list of requirement IDs that replace this one",
-                        "items": {
-                            "type": "string"
-                        },
+                        "items": { "type": "string" },
                         "type": "array"
                     },
                     "requirement": {
@@ -1756,14 +1582,10 @@
             "SourceObject": {
                 "properties": {
                     "branch_names": {
-                        "items": {
-                            "type": "string"
-                        },
+                        "items": { "type": "string" },
                         "type": "array"
                     },
-                    "implementation_name": {
-                        "type": "string"
-                    },
+                    "implementation_name": { "type": "string" },
                     "source_type": {
                         "enum": ["local", "inherited", "none"],
                         "type": "string"
@@ -1815,9 +1637,7 @@
                                     },
                                     "prerequisites": {
                                         "description": "Optional list of prerequisite feature names",
-                                        "items": {
-                                            "type": "string"
-                                        },
+                                        "items": { "type": "string" },
                                         "type": "array"
                                     },
                                     "product": {
@@ -1889,9 +1709,7 @@
                                         },
                                         "replaced_by": {
                                             "description": "Optional list of requirement IDs that replace this one",
-                                            "items": {
-                                                "type": "string"
-                                            },
+                                            "items": { "type": "string" },
                                             "type": "array"
                                         },
                                         "requirement": {
@@ -1917,28 +1735,17 @@
             },
             "StateObject": {
                 "properties": {
-                    "comment": {
-                        "type": "string"
-                    },
-                    "status": {
-                        "nullable": true,
-                        "type": "string"
-                    },
-                    "updated_at": {
-                        "type": "string"
-                    }
+                    "comment": { "type": "string" },
+                    "status": { "nullable": true, "type": "string" },
+                    "updated_at": { "type": "string" }
                 },
                 "title": "StateObject",
                 "type": "object"
             },
             "Summary": {
                 "properties": {
-                    "status_counts": {
-                        "type": "object"
-                    },
-                    "total_acids": {
-                        "type": "integer"
-                    }
+                    "status_counts": { "type": "object" },
+                    "total_acids": { "type": "integer" }
                 },
                 "required": ["total_acids", "status_counts"],
                 "title": "Summary",
@@ -1971,64 +1778,50 @@
                         "in": "query",
                         "name": "product_name",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "schema": { "type": "string" }
                     },
                     {
                         "description": "Feature name",
                         "in": "query",
                         "name": "feature_name",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "schema": { "type": "string" }
                     },
                     {
                         "description": "Implementation name",
                         "in": "query",
                         "name": "implementation_name",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "schema": { "type": "string" }
                     },
                     {
                         "description": "Include per-ACID ref details",
                         "in": "query",
                         "name": "include_refs",
                         "required": false,
-                        "schema": {
-                            "type": "boolean"
-                        }
+                        "schema": { "type": "boolean" }
                     },
                     {
                         "description": "Include dangling stored states",
                         "in": "query",
                         "name": "include_dangling_states",
                         "required": false,
-                        "schema": {
-                            "type": "boolean"
-                        }
+                        "schema": { "type": "boolean" }
                     },
                     {
                         "description": "Include deprecated ACIDs",
                         "in": "query",
                         "name": "include_deprecated",
                         "required": false,
-                        "schema": {
-                            "type": "boolean"
-                        }
+                        "schema": { "type": "boolean" }
                     },
                     {
-                        "description": "Repeated status filter values; the literal string `null` means a null status",
+                        "description": "Repeated status filter values, for example `statuses=completed&statuses=null`; the literal string `null` means a null status",
                         "in": "query",
                         "name": "statuses",
                         "required": false,
                         "schema": {
-                            "items": {
-                                "type": "string"
-                            },
+                            "items": { "type": "string" },
                             "type": "array"
                         }
                     }
@@ -2085,11 +1878,7 @@
                         "description": "Validation error"
                     }
                 },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
+                "security": [{ "bearerAuth": [] }],
                 "summary": "Read canonical feature context",
                 "tags": ["Actions"]
             }
@@ -2183,11 +1972,7 @@
                         "description": "Rate limit exceeded"
                     }
                 },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
+                "security": [{ "bearerAuth": [] }],
                 "summary": "Write feature states",
                 "tags": ["Actions"]
             }
@@ -2203,28 +1988,22 @@
                         "in": "query",
                         "name": "product_name",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "schema": { "type": "string" }
                     },
                     {
                         "description": "Implementation name",
                         "in": "query",
                         "name": "implementation_name",
                         "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "schema": { "type": "string" }
                     },
                     {
-                        "description": "Repeated status filter values; the literal string `null` means a null status",
+                        "description": "Repeated status filter values, for example `statuses=completed&statuses=null`; the literal string `null` means a null status",
                         "in": "query",
                         "name": "statuses",
                         "required": false,
                         "schema": {
-                            "items": {
-                                "type": "string"
-                            },
+                            "items": { "type": "string" },
                             "type": "array"
                         }
                     },
@@ -2233,9 +2012,7 @@
                         "in": "query",
                         "name": "changed_since_commit",
                         "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "schema": { "type": "string" }
                     }
                 ],
                 "responses": {
@@ -2290,11 +2067,7 @@
                         "description": "Validation error"
                     }
                 },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
+                "security": [{ "bearerAuth": [] }],
                 "summary": "List implementation features",
                 "tags": ["Actions"]
             }
@@ -2302,44 +2075,36 @@
         "/implementations": {
             "get": {
                 "callbacks": {},
-                "description": "Discover which Implementations exist for a Product. Filter by Repo + Branch name, and by Feature name.\n      This is the orientation endpoint: when you know the current repo and branch, and need to identify the relevant Implementations that track it.",
+                "description": "Discover implementations either within one Product or across Products for an exact Repo + Branch.\n      This is the orientation endpoint the CLI uses to resolve which implementation contexts track the current branch before any single-context detail reads.",
                 "operationId": "AcaiWeb.Api.ImplementationsController.index",
                 "parameters": [
                     {
                         "description": "Product name",
                         "in": "query",
                         "name": "product_name",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "required": false,
+                        "schema": { "type": "string" }
                     },
                     {
                         "description": "Exact repository URI",
                         "in": "query",
                         "name": "repo_uri",
                         "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "schema": { "type": "string" }
                     },
                     {
                         "description": "Exact branch name",
                         "in": "query",
                         "name": "branch_name",
                         "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "schema": { "type": "string" }
                     },
                     {
                         "description": "Filter to implementations that can resolve this feature",
                         "in": "query",
                         "name": "feature_name",
                         "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "schema": { "type": "string" }
                     }
                 ],
                 "responses": {
@@ -2384,11 +2149,7 @@
                         "description": "Validation error"
                     }
                 },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
+                "security": [{ "bearerAuth": [] }],
                 "summary": "List implementations",
                 "tags": ["Actions"]
             }
@@ -2472,21 +2233,13 @@
                         "description": "Rate limit exceeded"
                     }
                 },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
+                "security": [{ "bearerAuth": [] }],
                 "summary": "Push from branch",
                 "tags": ["Actions"]
             }
         }
     },
-    "security": [
-        {
-            "bearerAuth": []
-        }
-    ],
+    "security": [{ "bearerAuth": [] }],
     "servers": [
         {
             "description": "API v1",
