@@ -2,15 +2,28 @@
 
 # Acai.sh CLI
 
-The acai command-line interface is used to push specs and metadata about your codebase to the server, and to read implementation status and notes from the server.
+The `acai` Command-line Interface helps you (or your agent, or script) perform common actions related to spec-driven development with Acai.
+
+Primarily, it is used to push and pull specs and metadata to an acai server, and to read implementation status and notes from the server as well.
 
 It works with our official hosted server, or your own self-hosted instance.
 
-See Quickstart, docs and tutorials at [https://acai.sh](https://acai.sh)
+For install, quickstart, docs and tutorials see [https://acai.sh](https://acai.sh)
+
+## Project overview
+
+The CLI is written in TypeScript with `bun` and `commander`. It is aligned to the Acai.sh API using `openapi-fetch` and `openapi-typescript`.
 
 ## Local development
 The repo includes a `.devcontainer.json` so you can get up and running quickly.
-`devpod` cli is recommended.
+`devpod` cli is recommended but not required.
+
+```sh
+# from cli repo root
+devpod up .
+```
+
+If you don't have devpod, you can open the repo in Zed/VSCode and click "open in devcontainer".
 
 ## License
 Apache 2.0. Contributors must sign a Contributor License Agreement. You are free to use, modify, and distribute this software, including for commercial purposes, under the terms of the license.
