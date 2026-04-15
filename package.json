@@ -1,6 +1,7 @@
 {
-    "name": "acai",
-    "version": "0.0.0",
+    "name": "@acai-sh/cli",
+    "version": "0.0.1",
+    "license": "Apache-2.0",
     "description": "CLI for syncing and querying acai.sh spec-driven development data.",
     "module": "index.ts",
     "type": "module",
