@@ -8,7 +8,16 @@ Primarily, it is used to push and pull specs and metadata to an acai server, and
 
 It works with our official hosted server, or your own self-hosted instance.
 
-For install, quickstart, docs and tutorials see [https://acai.sh](https://acai.sh)
+For Quickstart, docs and tutorials see [https://acai.sh](https://acai.sh).
+
+## Install
+
+The CLI is available on NPM as a JavaScript bundle.
+```sh
+npm i -g @acai.sh/cli
+```
+
+If you don't have a JavaScript runtime, we have macOS and Linux releases available on GitHub.
 
 ## Project overview
 
