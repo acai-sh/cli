@@ -1,125 +1,131 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v*"
+    push:
+        tags:
+            - "v*"
 
+# Default to least privilege for all jobs
 permissions:
-  contents: write
-  id-token: write
+    contents: read
 
 jobs:
-  validate-release:
-    runs-on: ubuntu-latest
+    validate-release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
 
-    steps:
-      - uses: actions/checkout@v4
+            - uses: oven-sh/setup-bun@v2
 
-      - uses: oven-sh/setup-bun@v2
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            - name: Verify tag matches package version
+              run: |
+                  TAG_VERSION="${GITHUB_REF_NAME#v}"
+                  # Using jq (pre-installed on ubuntu runners) for safer parsing without Node
+                  PACKAGE_VERSION=$(jq -r .version package.json)
+                  if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+                    echo "Tag version $TAG_VERSION does not match package.json version $PACKAGE_VERSION" >&2
+                    exit 1
+                  fi
 
-      - name: Verify tag matches package version
-        run: |
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
-            echo "Tag version $TAG_VERSION does not match package.json version $PACKAGE_VERSION" >&2
-            exit 1
-          fi
+            - name: Run test suite
+              run: AGENT=1 bun test
 
-      - name: Run test suite
-        run: AGENT=1 bun test
-
-  publish-npm:
+publish-npm:
     runs-on: ubuntu-latest
     needs: validate-release
-
+    # Requires OIDC token for npm provenance
+    permissions:
+        contents: read
+        id-token: write
     steps:
-      - uses: actions/checkout@v4
+        - uses: actions/checkout@v4
 
-      - uses: oven-sh/setup-bun@v2
+        - uses: oven-sh/setup-bun@v2
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          registry-url: https://registry.npmjs.org
+        - uses: actions/setup-node@v4
+          with:
+              node-version: 22 # Updated to active LTS
+              registry-url: https://registry.npmjs.org
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+        - name: Install dependencies
+          run: bun install --frozen-lockfile
 
-      - name: Publish package to npm with provenance
-        # cli-core.DIST.1
-        run: |
-          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
-            npm publish --provenance --tag next
-          else
-            npm publish --provenance
-          fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        - name: Publish package to npm with provenance
+          # cli-core.DIST.1
+          run: |
+              if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+                npm publish --provenance --tag next
+              else
+                npm publish --provenance
+              fi
+          env:
+              NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  build-release-binaries:
+build-release-binaries:
     runs-on: ubuntu-latest
     needs: validate-release
     strategy:
-      matrix:
-        include:
-          - artifact: acai-linux-x64
-            script: build:release:linux-x64
-          - artifact: acai-linux-arm64
-            script: build:release:linux-arm64
-          - artifact: acai-darwin-x64
-            script: build:release:darwin-x64
-          - artifact: acai-darwin-arm64
-            script: build:release:darwin-arm64
+        matrix:
+            include:
+                - artifact: acai-linux-x64
+                  script: build:release:linux-x64
+                - artifact: acai-linux-arm64
+                  script: build:release:linux-arm64
+                - artifact: acai-darwin-x64
+                  script: build:release:darwin-x64
+                - artifact: acai-darwin-arm64
+                  script: build:release:darwin-arm64
 
     steps:
-      - uses: actions/checkout@v4
+        - uses: actions/checkout@v4
 
-      - uses: oven-sh/setup-bun@v2
+        - uses: oven-sh/setup-bun@v2
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+        - name: Install dependencies
+          run: bun install --frozen-lockfile
 
-      - name: Build release binary
-        # cli-core.DIST.2 / cli-core.DIST.3
-        run: bun run ${{ matrix.script }}
+        - name: Build release binary
+          # cli-core.DIST.2 / cli-core.DIST.3
+          run: bun run ${{ matrix.script }}
 
-      - name: Upload release artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact }}
-          path: dist/${{ matrix.artifact }}
+        - name: Upload release artifact
+          uses: actions/upload-artifact@v4
+          with:
+              name: ${{ matrix.artifact }}
+              path: dist/${{ matrix.artifact }}
+              retention-days: 1 # Prevents storage bloat; only needed for the next job
 
-  publish-github-release:
+publish-github-release:
     runs-on: ubuntu-latest
     needs: build-release-binaries
-
+    # Requires write permissions to draft/publish a GitHub release
+    permissions:
+        contents: write
     steps:
-      - uses: actions/checkout@v4
+        - uses: actions/checkout@v4
 
-      - name: Download compiled binaries
-        uses: actions/download-artifact@v4
-        with:
-          path: dist
-          merge-multiple: true
+        - name: Download compiled binaries
+          uses: actions/download-artifact@v4
+          with:
+              path: dist
+              merge-multiple: true
 
-      - name: Generate checksums
-        run: |
-          cd dist
-          sha256sum acai-* > SHA256SUMS.txt
+        - name: Generate checksums
+          run: |
+              cd dist
+              sha256sum acai-* > SHA256SUMS.txt
 
-      - name: Publish GitHub Release assets
-        uses: softprops/action-gh-release@v2
-        with:
-          prerelease: ${{ contains(github.ref_name, '-') }}
-          generate_release_notes: true
-          files: |
-            dist/acai-linux-x64
-            dist/acai-linux-arm64
-            dist/acai-darwin-x64
-            dist/acai-darwin-arm64
-            dist/SHA256SUMS.txt
+        - name: Publish GitHub Release assets
+          uses: softprops/action-gh-release@v2
+          with:
+              prerelease: ${{ contains(github.ref_name, '-') }}
+              generate_release_notes: true
+              files: |
+                  dist/acai-linux-x64
+                  dist/acai-linux-arm64
+                  dist/acai-darwin-x64
+                  dist/acai-darwin-arm64
+                  dist/SHA256SUMS.txt
