@@ -32,7 +32,7 @@ describe("cli-core.CONFIG.1 cli-core.AUTH.2", () => {
     test("cli-core.CONFIG.1 defaults the API base URL to the hosted acai.sh endpoint", () => {
         const config = resolveApiConfig({ ACAI_API_TOKEN: "secret" });
         expect(config).toEqual({
-            baseUrl: "https://acai.sh/api/v1",
+            baseUrl: "https://app.acai.sh/api/v1",
             token: "secret",
         });
     });
