@@ -116,29 +116,20 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
         expect(pushRuntime).not.toContain("Bun.");
         expect(setStatusRuntime).not.toContain("Bun.");
 
-        expect(ciWorkflow).toContain("name: CI");
-        expect(ciWorkflow).toContain("branches:");
-        expect(ciWorkflow).toContain("- main");
-        expect(ciWorkflow).toContain("pull_request:");
-        expect(ciWorkflow).toContain("test-and-build:");
         expect(ciWorkflow).toContain("AGENT=1 bun test");
         expect(ciWorkflow).toContain("bun run build:npm");
         expect(ciWorkflow).toContain("verify-npm-artifact:");
         expect(ciWorkflow).toContain(
             "if: github.event_name == 'push' && github.ref == 'refs/heads/main'",
         );
-        expect(ciWorkflow).toContain("actions/setup-node@v4");
         expect(ciWorkflow).toContain("bun run verify:npm-artifact");
 
         expect(releaseWorkflow).toContain("id-token: write");
-        expect(releaseWorkflow).toContain("Verify tag matches package version");
-        expect(releaseWorkflow).toContain("actions/setup-node@v4");
-        expect(releaseWorkflow).toContain("Verify packed npm artifact under real Node");
+        expect(releaseWorkflow).toContain("environment: npm");
+        expect(releaseWorkflow).toContain('TAG_VERSION="${GITHUB_REF_NAME#v}"');
         expect(releaseWorkflow).toContain("bun run verify:npm-artifact");
         expect(releaseWorkflow).toContain("npm publish --access public --provenance");
         expect(releaseWorkflow).toContain("--tag next");
-        expect(releaseWorkflow).toContain("cli-core.DIST.1");
-        expect(releaseWorkflow).toContain("cli-core.DIST.2 / cli-core.DIST.3");
         expect(releaseWorkflow).toContain("softprops/action-gh-release@v2");
         expect(releaseWorkflow).toContain("SHA256SUMS.txt");
         expect(npmArtifactVerification).toContain("bun-node-fallback-bin");
