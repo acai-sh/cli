@@ -1,0 +1,47 @@
+feature:
+    name: set-status
+    product: cli
+    version: 1.0.0
+    description: |
+        The `acai set-status` command applies a batch of ACID state updates to one feature in one implementation.
+        It is the primary write command used by AI agents to record progress while keeping branch-derived truth separate from status updates.
+
+components:
+    MAIN:
+        description: Primary command behavior
+        requirements:
+            1: Exposes `acai set-status <json>`
+            2: Accepts `@file` input to read the JSON payload from a file
+            3: Accepts `-` input to read the JSON payload from stdin
+            4: Requires a product selector via `--product` or an equivalent namespaced implementation selector
+            5: Accepts optional `--impl <implementation-name>`
+            6: Supports `--json` output for machine consumption
+
+    INPUT:
+        description: Status payload parsing and validation
+        requirements:
+            1: The top-level JSON payload is a map of full ACID strings to state objects
+            2: Each state object includes nullable `status` and optional `comment`
+            2-1: Valid status values are `null`, `assigned`, `blocked`, `incomplete`, `completed`, `rejected`, and `accepted`
+            3: All ACIDs in one command invocation must share the same feature prefix
+            4: The command derives `feature_name` from that shared ACID prefix
+            5: The command rejects malformed JSON, malformed ACIDs, mixed-feature payloads, or invalid status values before making any API call
+
+    API:
+        description: Interaction with the feature states API
+        requirements:
+            1: After parsing and target resolution, the command calls `PATCH /api/v1/feature-states`
+            2: The command sends exactly one product, one feature, one implementation, and one `states` map per invocation
+            3: Warnings returned by the API are surfaced to the user
+
+constraints:
+    SAFETY:
+        requirements:
+            1: The command never scans the repo for specs or refs
+            2: The command never guesses an implementation when target resolution is ambiguous
+            3: The command never writes states for more than one feature per invocation
+
+    UX:
+        requirements:
+            1: The default text output includes the resolved product, implementation, feature, and states written count for the write result
+            2: The command works in non-interactive environments such as CI and agent runtimes

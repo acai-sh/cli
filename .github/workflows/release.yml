@@ -1,0 +1,147 @@
+name: Release
+
+on:
+    push:
+        tags:
+            - "v*"
+
+# Default to least privilege for all jobs
+permissions:
+    contents: read
+
+concurrency:
+    group: release-${{ github.ref }}
+    cancel-in-progress: false
+
+jobs:
+    validate-release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: oven-sh/setup-bun@v2
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Verify tag matches package version
+              run: |
+                  TAG_VERSION="${GITHUB_REF_NAME#v}"
+                  # Using jq (pre-installed on ubuntu runners) for safer parsing without Node
+                  PACKAGE_VERSION=$(jq -r .version package.json)
+                  if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+                    echo "Tag version $TAG_VERSION does not match package.json version $PACKAGE_VERSION" >&2
+                    exit 1
+                  fi
+
+            - name: Run test suite
+              run: AGENT=1 bun test
+
+            - name: Verify packed npm artifact under real Node
+              # cli-core.DIST.1 / cli-core.HELP.1 / cli-core.HELP.3 / cli-core.HELP.4 / cli-core.OUTPUT.1 / cli-core.OUTPUT.2 / skill.MAIN.2 / skill.MAIN.3 / skill.WRITE.1 / set-status.MAIN.2 / set-status.MAIN.3 / push.MAIN.3 / push.MAIN.7 / push.MAIN.8
+              run: bun run verify:npm-artifact
+
+    publish-npm:
+        runs-on: ubuntu-latest
+        needs: validate-release
+        environment: npm
+        timeout-minutes: 10
+        # Requires OIDC token for npm trusted publishing and provenance
+        permissions:
+            contents: read
+            id-token: write
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: oven-sh/setup-bun@v2
+
+            - uses: actions/setup-node@v6
+              with:
+                  node-version: 24
+
+            - name: Show publish toolchain
+              run: |
+                  node --version
+                  npm --version
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Publish package to npm with provenance
+              # cli-core.DIST.1
+              run: |
+                  if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+                    npm publish --access public --provenance --tag next
+                  else
+                    npm publish --access public --provenance
+                  fi
+
+    build-release-binaries:
+        runs-on: ubuntu-latest
+        needs: validate-release
+        strategy:
+            matrix:
+                include:
+                    - artifact: acai-linux-x64
+                      script: build:release:linux-x64
+                    - artifact: acai-linux-arm64
+                      script: build:release:linux-arm64
+                    - artifact: acai-darwin-x64
+                      script: build:release:darwin-x64
+                    - artifact: acai-darwin-arm64
+                      script: build:release:darwin-arm64
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: oven-sh/setup-bun@v2
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Build release binary
+              # cli-core.DIST.2 / cli-core.DIST.3
+              run: bun run ${{ matrix.script }}
+
+            - name: Upload release artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ matrix.artifact }}
+                  path: dist/${{ matrix.artifact }}
+                  retention-days: 1 # Prevents storage bloat; only needed for the next job
+
+    publish-github-release:
+        runs-on: ubuntu-latest
+        needs: build-release-binaries
+        # Requires write permissions to draft/publish a GitHub release
+        permissions:
+            contents: write
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Download compiled binaries
+              uses: actions/download-artifact@v4
+              with:
+                  path: dist
+                  merge-multiple: true
+
+            - name: Generate checksums
+              run: |
+                  cd dist
+                  sha256sum acai-* > SHA256SUMS.txt
+
+            - name: Publish GitHub Release assets
+              uses: softprops/action-gh-release@v2
+              with:
+                  prerelease: ${{ contains(github.ref_name, '-') }}
+                  generate_release_notes: true
+                  files: |
+                      dist/acai-linux-x64
+                      dist/acai-linux-arm64
+                      dist/acai-darwin-x64
+                      dist/acai-darwin-arm64
+                      dist/SHA256SUMS.txt

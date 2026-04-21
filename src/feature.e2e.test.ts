@@ -1,0 +1,305 @@
+import { describe, expect, test } from "bun:test";
+import {
+	buildFeatureContextResponse,
+	buildImplementationsResponse,
+} from "../test/support/fixtures.ts";
+import { createFakeGitContext } from "../test/support/fake-git.ts";
+import { createMockApiServer } from "../test/support/mock-api.ts";
+import { runCliSubprocess } from "../test/support/cli.ts";
+import { apiEnv, expectUsageError } from "../test/support/e2e.ts";
+
+describe("feature command", () => {
+	test("feature.API.2 feature.API.3 feature.UX.1 prints text output for a direct target with refs, statuses, and warnings", async () => {
+		const server = createMockApiServer((request) => {
+			const url = new URL(request.url);
+
+			if (url.pathname === "/feature-context") {
+				expect(url.searchParams.get("product_name")).toBe("example-product");
+				expect(url.searchParams.get("feature_name")).toBe("feature");
+				expect(url.searchParams.get("implementation_name")).toBe("main");
+				expect(url.searchParams.get("include_refs")).toBe("true");
+				expect(url.searchParams.getAll("statuses")).toEqual([
+					"completed",
+					"incomplete",
+				]);
+
+				return Response.json(
+					buildFeatureContextResponse({
+						data: {
+							acids: [
+								{
+									acid: "feature.MAIN.2",
+									refs_count: 0,
+									requirement: "requires product selector",
+									state: { status: "incomplete" },
+									test_refs_count: 0,
+									refs: [],
+								},
+								{
+									acid: "feature.API.3",
+									refs_count: 1,
+									requirement: "relays refs",
+									state: { status: "completed" },
+									test_refs_count: 1,
+									refs: [
+										{
+											branch_name: "main",
+											is_test: true,
+											path: "src/feature.test.ts",
+											repo_uri: "github.com/my-org/my-repo",
+										},
+									],
+								},
+							],
+							summary: {
+								total_acids: 2,
+								status_counts: { incomplete: 1, completed: 1 } as never,
+							},
+							warnings: ["warning one"],
+						},
+					}),
+				);
+			}
+
+			return new Response("not found", { status: 404 });
+		});
+
+		try {
+			const result = await runCliSubprocess(
+				[
+					"feature",
+					"feature",
+					"--product",
+					"example-product",
+					"--impl",
+					"main",
+					"--status",
+					"completed",
+					"--status",
+					"incomplete",
+					"--include-refs",
+				],
+				apiEnv(server),
+			);
+
+			expect(result.exitCode).toBe(0);
+			expect(result.stderr.trim()).toBe("");
+				expect(result.stdout).toContain("TARGET: example-product/main");
+				expect(result.stdout).toContain("FEATURE: feature");
+				expect(result.stdout).toContain("ACID");
+				expect(result.stdout).toContain("feature.MAIN.2");
+				expect(result.stdout).toContain("feature.API.3");
+				expect(result.stdout).toContain("REFS");
+				expect(result.stdout).toContain("src/feature.test.ts");
+				expect(result.stdout).toContain("WARNINGS");
+				expect(result.stdout).toContain("warning one");
+			} finally {
+			server.stop();
+		}
+	});
+
+	test("feature.MAIN.2-1 cli-core.TARGETING.2 cli-core.TARGETING.3 resolve exactly one implementation from git context without --product", async () => {
+		const git = await createFakeGitContext({ remote: "git@github.com:my-org/my-repo.git", branch: "main" });
+		const server = createMockApiServer((request) => {
+			const url = new URL(request.url);
+			if (url.pathname === "/implementations") {
+				expect(url.searchParams.get("product_name")).toBeNull();
+				expect(url.searchParams.get("feature_name")).toBe("feature");
+				return Response.json(buildImplementationsResponse());
+			}
+			if (url.pathname === "/feature-context") {
+				expect(url.searchParams.get("product_name")).toBe("example-product");
+				expect(url.searchParams.get("implementation_name")).toBe("main");
+				return Response.json(buildFeatureContextResponse());
+			}
+			return new Response("not found", { status: 404 });
+		});
+
+		try {
+			const result = await runCliSubprocess(
+				["feature", "feature"],
+				apiEnv(server, git.env),
+			);
+			expect(result.exitCode).toBe(0);
+			expect(result.stderr.trim()).toBe("");
+			expect(result.stdout).toContain("TARGET: example-product/main");
+		} finally {
+			server.stop();
+			await git.cleanup();
+		}
+	});
+
+	test("feature.MAIN.2-1 feature.API.1 cli-core.ERRORS.2 exits before feature lookup when git context is missing without --product", async () => {
+		const git = await createFakeGitContext({ remoteExitCode: 1 });
+		const server = createMockApiServer(() => {
+			throw new Error("feature lookup should not be reached without git context");
+		});
+
+		try {
+			const result = await runCliSubprocess(["feature", "feature"], apiEnv(server, git.env));
+			expect(result.exitCode).toBe(1);
+			expect(result.stderr).toContain("Git context could not be determined.");
+			expect(server.requests).toHaveLength(0);
+		} finally {
+			server.stop();
+			await git.cleanup();
+		}
+	});
+
+	test("feature.MAIN.2-1 feature.MAIN.3 resolves product from --impl product/implementation without --product", async () => {
+		const server = createMockApiServer((request) => {
+			const url = new URL(request.url);
+			if (url.pathname === "/implementations") {
+				throw new Error("namespaced selectors should bypass discovery");
+			}
+			if (url.pathname === "/feature-context") {
+				expect(url.searchParams.get("product_name")).toBe("example-product");
+				expect(url.searchParams.get("implementation_name")).toBe("preview");
+				return Response.json(
+					buildFeatureContextResponse({ data: { implementation_name: "preview" } }),
+				);
+			}
+			return new Response("not found", { status: 404 });
+		});
+
+		try {
+			const result = await runCliSubprocess(
+				["feature", "feature", "--impl", "example-product/preview"],
+				apiEnv(server),
+			);
+			expect(result.exitCode).toBe(0);
+			expect(result.stderr.trim()).toBe("");
+			expect(result.stdout).toContain("TARGET: example-product/preview");
+		} finally {
+			server.stop();
+		}
+	});
+
+	test("cli-core.TARGETING.4 feature.MAIN.2-2 reports ambiguous cross-product discovery", async () => {
+		const git = await createFakeGitContext({ remote: "git@github.com:my-org/my-repo.git", branch: "main" });
+		const server = createMockApiServer((request) => {
+			const url = new URL(request.url);
+			if (url.pathname === "/implementations") {
+				return Response.json(
+					buildImplementationsResponse({
+						data: {
+							implementations: [
+								{ implementation_id: "impl-1", implementation_name: "main", product_name: "product-b" },
+								{ implementation_id: "impl-2", implementation_name: "main", product_name: "product-a" },
+							],
+						},
+					}),
+				);
+			}
+			return new Response("not found", { status: 404 });
+		});
+
+		try {
+			const result = await runCliSubprocess(["feature", "feature"], apiEnv(server, git.env));
+			expect(result.exitCode).toBe(1);
+			expect(result.stderr).toContain(
+				"Multiple implementations matched the current repo, branch, and filters: product-a/main, product-b/main",
+			);
+		} finally {
+			server.stop();
+			await git.cleanup();
+		}
+	});
+
+	test("cli-core.TARGETING.5 feature.MAIN.2-2 reports no-match discovery with filter wording", async () => {
+		const git = await createFakeGitContext({ remote: "git@github.com:my-org/my-repo.git", branch: "main" });
+		const server = createMockApiServer((request) => {
+			const url = new URL(request.url);
+			if (url.pathname === "/implementations") {
+				expect(url.searchParams.get("feature_name")).toBe("feature");
+				return Response.json(buildImplementationsResponse({ data: { implementations: [] } }));
+			}
+			return new Response("not found", { status: 404 });
+		});
+
+		try {
+			const result = await runCliSubprocess(
+				["feature", "feature", "--impl", "main"],
+				apiEnv(server, git.env),
+			);
+			expect(result.exitCode).toBe(1);
+			expect(result.stderr).toContain(
+				"No implementation matched the current repo, branch, and filters. This branch may not be tracked yet or no tracked implementation on this branch includes feature `feature`. Try `acai push` from this branch, or pass `--product` and `--impl` for a known implementation.",
+			);
+		} finally {
+			server.stop();
+			await git.cleanup();
+		}
+	});
+
+	test("feature.MAIN.6 cli-core.OUTPUT.1 cli-core.OUTPUT.2 keeps json payload on stdout and warnings on stderr", async () => {
+		const server = createMockApiServer((request) => {
+			const url = new URL(request.url);
+			if (url.pathname === "/feature-context") {
+				return Response.json(
+					buildFeatureContextResponse({ data: { warnings: ["warning one"] } }),
+				);
+			}
+			return new Response("not found", { status: 404 });
+		});
+
+		try {
+			const result = await runCliSubprocess(
+				["feature", "feature", "--product", "example-product", "--impl", "main", "--json"],
+				apiEnv(server),
+			);
+			expect(result.exitCode).toBe(0);
+			expect(result.stderr.trim()).toBe("warning one");
+			expect(JSON.parse(result.stdout).data.feature_name).toBe("feature");
+		} finally {
+			server.stop();
+		}
+	});
+
+	test("cli-core.ERRORS.4 reject unknown feature options", async () => {
+		const result = await runCliSubprocess([
+			"feature",
+			"feature",
+			"--product",
+			"example-product",
+			"--unknown-option",
+		]);
+		expectUsageError(result, "Usage: acai feature", "unknown option");
+	});
+
+	for (const [acid, detail, status] of [
+		["cli-core.HTTP.2", "unauthorized", 401],
+		["cli-core.HTTP.3", "validation failed", 422],
+		["cli-core.HTTP.3", "not found", 404],
+	] as const) {
+		test(`${acid} surface feature API failure: ${detail}`, async () => {
+			const server = createMockApiServer((request) => {
+				const url = new URL(request.url);
+				if (url.pathname === "/feature-context") {
+					return Response.json({ errors: { detail } }, { status });
+				}
+				return new Response("not found", { status: 404 });
+			});
+
+			try {
+				const result = await runCliSubprocess(
+					["feature", "feature", "--product", "example-product", "--impl", "main"],
+					apiEnv(server),
+				);
+				expect(result.exitCode).toBe(1);
+				expect(result.stderr).toContain(detail);
+			} finally {
+				server.stop();
+			}
+		});
+	}
+
+	test("cli-core.HTTP.1 surfaces feature network failures", async () => {
+		const result = await runCliSubprocess(
+			["feature", "feature", "--product", "example-product", "--impl", "main"],
+			{ ACAI_API_BASE_URL: "http://127.0.0.1:65535", ACAI_API_TOKEN: "secret" },
+		);
+		expect(result.exitCode).toBe(1);
+		expect(result.stderr).toContain("API request failed.");
+	});
+});

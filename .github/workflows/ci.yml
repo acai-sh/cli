@@ -1,0 +1,46 @@
+name: CI
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+
+permissions:
+    contents: read
+
+jobs:
+    test-and-build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: oven-sh/setup-bun@v2
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Run test suite
+              run: AGENT=1 bun test
+
+            - name: Build npm bundle
+              run: bun run build:npm
+
+    verify-npm-artifact:
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        needs: test-and-build
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: oven-sh/setup-bun@v2
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
+
+            - name: Verify packed npm artifact under real Node
+              run: bun run verify:npm-artifact

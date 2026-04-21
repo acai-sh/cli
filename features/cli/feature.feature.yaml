@@ -1,0 +1,33 @@
+feature:
+    name: feature
+    product: cli
+    version: 1.0.0
+    description: |
+        The `acai feature` command loads canonical feature context for one feature in one implementation.
+        It is the primary read command used by AI agents before making spec, code, or status changes.
+
+components:
+    MAIN:
+        description: Primary command behavior
+        requirements:
+            1: Exposes `acai feature <feature-name>`
+            2: Accepts optional `--product <product-name>`
+            2-1: When `--product` is omitted and no namespaced `--impl` supplies it, the command resolves a target from the current repo and branch using implementation discovery filtered by the requested feature name
+            2-2: When `--product` is omitted and no namespaced `--impl` supplies it, and implementation discovery does not resolve exactly one matching target, the command exits non-zero with a targeting error
+            3: Accepts optional `--impl <implementation-name>` or namespaced selector `<product/implementation>`
+            4: Accepts optional `--include-refs`
+            5: Accepts optional `--status <value>` filters, repeatable
+            6: Supports `--json` output for machine consumption
+
+    API:
+        description: Interaction with the feature context API
+        requirements:
+            1: After target resolution, the command calls `GET /api/v1/feature-context`
+            2: The command relays canonical requirement definitions, resolved states, and summary counts from the API response
+            3: When refs are requested, the command relays per-ACID refs returned by the API response
+
+constraints:
+    UX:
+        requirements:
+            1: The default text output includes feature summary counts and presents each returned ACID with its resolved state and ref counts
+            2: The command never performs status writes or branch pushes

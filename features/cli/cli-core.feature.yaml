@@ -1,0 +1,78 @@
+feature:
+    name: cli-core
+    product: cli
+    version: 1.0.0
+    description: |
+        Shared command-line behavior for the acai CLI.
+        These requirements apply across the CLI surface where relevant.
+
+components:
+    TARGETING:
+        description: Shared implementation resolution behavior for commands that target one implementation
+        requirements:
+            1: A command that accepts `--impl` uses that implementation directly when it is provided
+            2: A command that relies on branch-based implementation discovery reads the current repo remote and branch name from git
+            3: If branch-based implementation discovery yields exactly one matching implementation context after applying the command's filters, that context is used automatically
+            4: If branch-based implementation discovery yields multiple matching implementation contexts, the command exits with an ambiguity error and lists the product-qualified candidates
+            5: If branch-based implementation discovery yields no matching implementation context, the command exits non-zero and states that no implementation matched the current repo, branch, and filters
+
+    AUTH:
+        description: Shared API authentication behavior
+        requirements:
+            1: A command that calls the API includes a Bearer token in each request
+            2: The Bearer token is configurable via an environment variable
+
+    CONFIG:
+        description: Shared runtime configuration behavior
+        requirements:
+            1: A command that calls the API defaults its API base URL to `https://app.acai.sh/api/<version>` and allows configuration to override it
+            2: A command that requires API configuration exits with a usage or input validation error when required configuration is missing
+
+    OUTPUT:
+        description: Shared machine-readable output behavior
+        requirements:
+            1: A command that supports `--json` reserves stdout for the final JSON payload when `--json` is active
+            2: A command that supports `--json` writes warnings, diagnostics, and non-payload text to stderr when `--json` is active
+
+    HELP:
+        description: Shared help and command discovery behavior
+        requirements:
+            1: Invoking `acai` with no subcommand prints top-level help output
+            2: Invoking `acai --help` prints top-level help output
+            3: Invoking `acai <command> --help` prints help output for that command
+            4: Help output exits successfully without calling the API
+            5: Invoking `acai -h` or `acai <command> -h` prints the same help output as the corresponding `--help` form
+
+    ERRORS:
+        description: Shared API and runtime error reporting behavior
+        requirements:
+            1: When the API returns an error response with a detail message, the command surfaces that detail to the user
+            2: When branch-based targeting cannot read the current repo remote or branch name from git, the command exits non-zero and states that git context could not be determined
+            3: Invoking `acai <unknown-command>` exits with a usage or input validation error and identifies the command as unknown
+            4: Invoking a command with an unknown option exits with a usage or input validation error and identifies the option as unknown
+            5: When a command exits with a usage or input validation error, the CLI also prints command usage or help text
+            6: When an API call fails without a structured error payload, the command exits non-zero with a normalized runtime error instead of crashing on an unexpected response shape
+
+constraints:
+    HTTP:
+        requirements:
+            1: A network failure while calling the API exits with code `1`
+            2: An API authentication or authorization failure exits with code `1`
+            3: An API not found or validation failure exits with code `1`
+
+    EXITS:
+        requirements:
+            1: A successful command exits with code `0`
+            2: A usage or input validation error, including unknown commands and unknown options, exits with code `2`
+            3: A runtime failure exits with code `1`
+
+    UX:
+        requirements:
+            1: The CLI works in non-interactive environments such as CI and agent runtimes
+            2: The CLI never requires an interactive prompt to complete a command
+
+    DIST:
+        requirements:
+            1: The CLI can be distributed as a JavaScript bundle runnable via `npx`
+            2: The CLI can be distributed through GitHub Releases as platform-specific binaries
+            3: GitHub Release binaries are built using `bun compile`

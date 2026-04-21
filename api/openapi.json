@@ -1,0 +1,2256 @@
+{
+    "components": {
+        "responses": {},
+        "schemas": {
+            "AcidEntry": {
+                "properties": {
+                    "acid": { "type": "string" },
+                    "deprecated": { "type": "boolean" },
+                    "note": { "type": "string" },
+                    "refs": {
+                        "items": {
+                            "allOf": [
+                                {
+                                    "properties": {
+                                        "branch_name": { "type": "string" },
+                                        "is_test": { "type": "boolean" },
+                                        "path": { "type": "string" },
+                                        "repo_uri": { "type": "string" }
+                                    },
+                                    "required": [
+                                        "path",
+                                        "is_test",
+                                        "repo_uri",
+                                        "branch_name"
+                                    ],
+                                    "title": "RefObject",
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "type": "array"
+                    },
+                    "refs_count": { "type": "integer" },
+                    "replaced_by": {
+                        "items": { "type": "string" },
+                        "type": "array"
+                    },
+                    "requirement": { "type": "string" },
+                    "state": {
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "comment": { "type": "string" },
+                                    "status": {
+                                        "nullable": true,
+                                        "type": "string"
+                                    },
+                                    "updated_at": { "type": "string" }
+                                },
+                                "title": "StateObject",
+                                "type": "object"
+                            }
+                        ]
+                    },
+                    "test_refs_count": { "type": "integer" }
+                },
+                "required": [
+                    "acid",
+                    "requirement",
+                    "state",
+                    "refs_count",
+                    "test_refs_count"
+                ],
+                "title": "AcidEntry",
+                "type": "object"
+            },
+            "DanglingStateEntry": {
+                "properties": {
+                    "acid": { "type": "string" },
+                    "state": {
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "comment": { "type": "string" },
+                                    "status": {
+                                        "nullable": true,
+                                        "type": "string"
+                                    },
+                                    "updated_at": { "type": "string" }
+                                },
+                                "title": "StateObject",
+                                "type": "object"
+                            }
+                        ]
+                    }
+                },
+                "required": ["acid", "state"],
+                "title": "DanglingStateEntry",
+                "type": "object"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "errors": {
+                        "properties": {
+                            "detail": { "type": "string" },
+                            "status": { "type": "string" }
+                        },
+                        "required": ["detail"],
+                        "type": "object"
+                    }
+                },
+                "required": ["errors"],
+                "title": "ErrorResponse",
+                "type": "object"
+            },
+            "Feature": {
+                "description": "Feature metadata",
+                "example": {
+                    "description": "Authentication feature",
+                    "name": "auth-feature",
+                    "prerequisites": [],
+                    "product": "my-app",
+                    "version": "1.0.0"
+                },
+                "properties": {
+                    "description": {
+                        "description": "Optional feature description",
+                        "maxLength": 5000,
+                        "type": "string"
+                    },
+                    "name": {
+                        "description": "Feature name (alphanumeric, hyphens, underscores only)",
+                        "type": "string"
+                    },
+                    "prerequisites": {
+                        "description": "Optional list of prerequisite feature names",
+                        "items": { "type": "string" },
+                        "type": "array"
+                    },
+                    "product": {
+                        "description": "Product name",
+                        "type": "string"
+                    },
+                    "version": {
+                        "default": "1.0.0",
+                        "description": "Optional version string (SemVer)",
+                        "type": "string"
+                    }
+                },
+                "required": ["name", "product"],
+                "title": "Feature",
+                "type": "object"
+            },
+            "FeatureContextData": {
+                "properties": {
+                    "acids": {
+                        "items": {
+                            "allOf": [
+                                {
+                                    "properties": {
+                                        "acid": { "type": "string" },
+                                        "deprecated": { "type": "boolean" },
+                                        "note": { "type": "string" },
+                                        "refs": {
+                                            "items": {
+                                                "allOf": [
+                                                    {
+                                                        "properties": {
+                                                            "branch_name": {
+                                                                "type": "string"
+                                                            },
+                                                            "is_test": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "path": {
+                                                                "type": "string"
+                                                            },
+                                                            "repo_uri": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "path",
+                                                            "is_test",
+                                                            "repo_uri",
+                                                            "branch_name"
+                                                        ],
+                                                        "title": "RefObject",
+                                                        "type": "object"
+                                                    }
+                                                ]
+                                            },
+                                            "type": "array"
+                                        },
+                                        "refs_count": { "type": "integer" },
+                                        "replaced_by": {
+                                            "items": { "type": "string" },
+                                            "type": "array"
+                                        },
+                                        "requirement": { "type": "string" },
+                                        "state": {
+                                            "allOf": [
+                                                {
+                                                    "properties": {
+                                                        "comment": {
+                                                            "type": "string"
+                                                        },
+                                                        "status": {
+                                                            "nullable": true,
+                                                            "type": "string"
+                                                        },
+                                                        "updated_at": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "title": "StateObject",
+                                                    "type": "object"
+                                                }
+                                            ]
+                                        },
+                                        "test_refs_count": { "type": "integer" }
+                                    },
+                                    "required": [
+                                        "acid",
+                                        "requirement",
+                                        "state",
+                                        "refs_count",
+                                        "test_refs_count"
+                                    ],
+                                    "title": "AcidEntry",
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "type": "array"
+                    },
+                    "dangling_states": {
+                        "items": {
+                            "allOf": [
+                                {
+                                    "properties": {
+                                        "acid": { "type": "string" },
+                                        "state": {
+                                            "allOf": [
+                                                {
+                                                    "properties": {
+                                                        "comment": {
+                                                            "type": "string"
+                                                        },
+                                                        "status": {
+                                                            "nullable": true,
+                                                            "type": "string"
+                                                        },
+                                                        "updated_at": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "title": "StateObject",
+                                                    "type": "object"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["acid", "state"],
+                                    "title": "DanglingStateEntry",
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "type": "array"
+                    },
+                    "feature_name": { "type": "string" },
+                    "implementation_id": { "type": "string" },
+                    "implementation_name": { "type": "string" },
+                    "product_name": { "type": "string" },
+                    "refs_source": {
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "branch_names": {
+                                        "items": { "type": "string" },
+                                        "type": "array"
+                                    },
+                                    "implementation_name": { "type": "string" },
+                                    "source_type": {
+                                        "enum": ["local", "inherited", "none"],
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["source_type"],
+                                "title": "SourceObject",
+                                "type": "object"
+                            }
+                        ]
+                    },
+                    "spec_source": {
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "branch_names": {
+                                        "items": { "type": "string" },
+                                        "type": "array"
+                                    },
+                                    "implementation_name": { "type": "string" },
+                                    "source_type": {
+                                        "enum": ["local", "inherited", "none"],
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["source_type"],
+                                "title": "SourceObject",
+                                "type": "object"
+                            }
+                        ]
+                    },
+                    "states_source": {
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "branch_names": {
+                                        "items": { "type": "string" },
+                                        "type": "array"
+                                    },
+                                    "implementation_name": { "type": "string" },
+                                    "source_type": {
+                                        "enum": ["local", "inherited", "none"],
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["source_type"],
+                                "title": "SourceObject",
+                                "type": "object"
+                            }
+                        ]
+                    },
+                    "summary": {
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "status_counts": { "type": "object" },
+                                    "total_acids": { "type": "integer" }
+                                },
+                                "required": ["total_acids", "status_counts"],
+                                "title": "Summary",
+                                "type": "object"
+                            }
+                        ]
+                    },
+                    "warnings": {
+                        "items": { "type": "string" },
+                        "type": "array"
+                    }
+                },
+                "required": [
+                    "product_name",
+                    "feature_name",
+                    "implementation_name",
+                    "implementation_id",
+                    "spec_source",
+                    "states_source",
+                    "refs_source",
+                    "summary",
+                    "acids",
+                    "warnings"
+                ],
+                "title": "FeatureContextData",
+                "type": "object"
+            },
+            "FeatureContextResponse": {
+                "properties": {
+                    "data": {
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "acids": {
+                                        "items": {
+                                            "allOf": [
+                                                {
+                                                    "properties": {
+                                                        "acid": {
+                                                            "type": "string"
+                                                        },
+                                                        "deprecated": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "note": {
+                                                            "type": "string"
+                                                        },
+                                                        "refs": {
+                                                            "items": {
+                                                                "allOf": [
+                                                                    {
+                                                                        "properties": {
+                                                                            "branch_name": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "is_test": {
+                                                                                "type": "boolean"
+                                                                            },
+                                                                            "path": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "repo_uri": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "required": [
+                                                                            "path",
+                                                                            "is_test",
+                                                                            "repo_uri",
+                                                                            "branch_name"
+                                                                        ],
+                                                                        "title": "RefObject",
+                                                                        "type": "object"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "type": "array"
+                                                        },
+                                                        "refs_count": {
+                                                            "type": "integer"
+                                                        },
+                                                        "replaced_by": {
+                                                            "items": {
+                                                                "type": "string"
+                                                            },
+                                                            "type": "array"
+                                                        },
+                                                        "requirement": {
+                                                            "type": "string"
+                                                        },
+                                                        "state": {
+                                                            "allOf": [
+                                                                {
+                                                                    "properties": {
+                                                                        "comment": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "status": {
+                                                                            "nullable": true,
+                                                                            "type": "string"
+                                                                        },
+                                                                        "updated_at": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "title": "StateObject",
+                                                                    "type": "object"
+                                                                }
+                                                            ]
+                                                        },
+                                                        "test_refs_count": {
+                                                            "type": "integer"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "acid",
+                                                        "requirement",
+                                                        "state",
+                                                        "refs_count",
+                                                        "test_refs_count"
+                                                    ],
+                                                    "title": "AcidEntry",
+                                                    "type": "object"
+                                                }
+                                            ]
+                                        },
+                                        "type": "array"
+                                    },
+                                    "dangling_states": {
+                                        "items": {
+                                            "allOf": [
+                                                {
+                                                    "properties": {
+                                                        "acid": {
+                                                            "type": "string"
+                                                        },
+                                                        "state": {
+                                                            "allOf": [
+                                                                {
+                                                                    "properties": {
+                                                                        "comment": {
+                                                                            "type": "string"
+                                                                        },
+                                                                        "status": {
+                                                                            "nullable": true,
+                                                                            "type": "string"
+                                                                        },
+                                                                        "updated_at": {
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "title": "StateObject",
+                                                                    "type": "object"
+                                                                }
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "acid",
+                                                        "state"
+                                                    ],
+                                                    "title": "DanglingStateEntry",
+                                                    "type": "object"
+                                                }
+                                            ]
+                                        },
+                                        "type": "array"
+                                    },
+                                    "feature_name": { "type": "string" },
+                                    "implementation_id": { "type": "string" },
+                                    "implementation_name": { "type": "string" },
+                                    "product_name": { "type": "string" },
+                                    "refs_source": {
+                                        "allOf": [
+                                            {
+                                                "properties": {
+                                                    "branch_names": {
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "type": "array"
+                                                    },
+                                                    "implementation_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "source_type": {
+                                                        "enum": [
+                                                            "local",
+                                                            "inherited",
+                                                            "none"
+                                                        ],
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["source_type"],
+                                                "title": "SourceObject",
+                                                "type": "object"
+                                            }
+                                        ]
+                                    },
+                                    "spec_source": {
+                                        "allOf": [
+                                            {
+                                                "properties": {
+                                                    "branch_names": {
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "type": "array"
+                                                    },
+                                                    "implementation_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "source_type": {
+                                                        "enum": [
+                                                            "local",
+                                                            "inherited",
+                                                            "none"
+                                                        ],
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["source_type"],
+                                                "title": "SourceObject",
+                                                "type": "object"
+                                            }
+                                        ]
+                                    },
+                                    "states_source": {
+                                        "allOf": [
+                                            {
+                                                "properties": {
+                                                    "branch_names": {
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "type": "array"
+                                                    },
+                                                    "implementation_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "source_type": {
+                                                        "enum": [
+                                                            "local",
+                                                            "inherited",
+                                                            "none"
+                                                        ],
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": ["source_type"],
+                                                "title": "SourceObject",
+                                                "type": "object"
+                                            }
+                                        ]
+                                    },
+                                    "summary": {
+                                        "allOf": [
+                                            {
+                                                "properties": {
+                                                    "status_counts": {
+                                                        "type": "object"
+                                                    },
+                                                    "total_acids": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "total_acids",
+                                                    "status_counts"
+                                                ],
+                                                "title": "Summary",
+                                                "type": "object"
+                                            }
+                                        ]
+                                    },
+                                    "warnings": {
+                                        "items": { "type": "string" },
+                                        "type": "array"
+                                    }
+                                },
+                                "required": [
+                                    "product_name",
+                                    "feature_name",
+                                    "implementation_name",
+                                    "implementation_id",
+                                    "spec_source",
+                                    "states_source",
+                                    "refs_source",
+                                    "summary",
+                                    "acids",
+                                    "warnings"
+                                ],
+                                "title": "FeatureContextData",
+                                "type": "object"
+                            }
+                        ]
+                    }
+                },
+                "required": ["data"],
+                "title": "FeatureContextResponse",
+                "type": "object"
+            },
+            "FeatureMeta": {
+                "description": "Metadata about the feature file location",
+                "example": {
+                    "last_seen_commit": "abc123def456",
+                    "path": "features/auth.feature.yaml"
+                },
+                "properties": {
+                    "last_seen_commit": {
+                        "description": "Commit hash when this feature was last seen",
+                        "type": "string"
+                    },
+                    "path": {
+                        "description": "Path from repo root (e.g., features/auth.feature.yaml)",
+                        "maxLength": 1024,
+                        "type": "string"
+                    },
+                    "raw_content": {
+                        "description": "Optional raw content of the feature file",
+                        "maxLength": 102400,
+                        "type": "string"
+                    }
+                },
+                "required": ["path", "last_seen_commit"],
+                "title": "FeatureMeta",
+                "type": "object"
+            },
+            "FeatureStateObject": {
+                "properties": {
+                    "comment": {
+                        "description": "Optional state comment",
+                        "type": "string"
+                    },
+                    "status": {
+                        "description": "Nullable state status",
+                        "enum": [
+                            "assigned",
+                            "blocked",
+                            "incomplete",
+                            "completed",
+                            "rejected",
+                            "accepted"
+                        ],
+                        "nullable": true,
+                        "type": "string"
+                    }
+                },
+                "required": ["status"],
+                "title": "FeatureStateObject",
+                "type": "object"
+            },
+            "FeatureStatesRequest": {
+                "properties": {
+                    "feature_name": { "type": "string" },
+                    "implementation_name": { "type": "string" },
+                    "product_name": { "type": "string" },
+                    "states": {
+                        "additionalProperties": {
+                            "allOf": [
+                                {
+                                    "properties": {
+                                        "comment": {
+                                            "description": "Optional state comment",
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "description": "Nullable state status",
+                                            "enum": [
+                                                "assigned",
+                                                "blocked",
+                                                "incomplete",
+                                                "completed",
+                                                "rejected",
+                                                "accepted"
+                                            ],
+                                            "nullable": true,
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["status"],
+                                    "title": "FeatureStateObject",
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "minProperties": 1,
+                        "type": "object"
+                    }
+                },
+                "required": [
+                    "product_name",
+                    "feature_name",
+                    "implementation_name",
+                    "states"
+                ],
+                "title": "FeatureStatesRequest",
+                "type": "object"
+            },
+            "FeatureStatesResponse": {
+                "properties": {
+                    "data": {
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "feature_name": { "type": "string" },
+                                    "implementation_id": { "type": "string" },
+                                    "implementation_name": { "type": "string" },
+                                    "product_name": { "type": "string" },
+                                    "states_written": { "type": "integer" },
+                                    "warnings": {
+                                        "items": { "type": "string" },
+                                        "type": "array"
+                                    }
+                                },
+                                "required": [
+                                    "product_name",
+                                    "feature_name",
+                                    "implementation_name",
+                                    "implementation_id",
+                                    "states_written",
+                                    "warnings"
+                                ],
+                                "title": "FeatureStatesResponseData",
+                                "type": "object"
+                            }
+                        ]
+                    }
+                },
+                "required": ["data"],
+                "title": "FeatureStatesResponse",
+                "type": "object"
+            },
+            "FeatureStatesResponseData": {
+                "properties": {
+                    "feature_name": { "type": "string" },
+                    "implementation_id": { "type": "string" },
+                    "implementation_name": { "type": "string" },
+                    "product_name": { "type": "string" },
+                    "states_written": { "type": "integer" },
+                    "warnings": {
+                        "items": { "type": "string" },
+                        "type": "array"
+                    }
+                },
+                "required": [
+                    "product_name",
+                    "feature_name",
+                    "implementation_name",
+                    "implementation_id",
+                    "states_written",
+                    "warnings"
+                ],
+                "title": "FeatureStatesResponseData",
+                "type": "object"
+            },
+            "ImplementationEntry": {
+                "properties": {
+                    "implementation_id": { "type": "string" },
+                    "implementation_name": { "type": "string" },
+                    "product_name": { "type": "string" }
+                },
+                "required": [
+                    "implementation_name",
+                    "implementation_id",
+                    "product_name"
+                ],
+                "title": "ImplementationEntry",
+                "type": "object"
+            },
+            "ImplementationFeatureEntry": {
+                "properties": {
+                    "completed_count": { "type": "integer" },
+                    "description": { "nullable": true, "type": "string" },
+                    "feature_name": { "type": "string" },
+                    "has_local_spec": { "type": "boolean" },
+                    "has_local_states": { "type": "boolean" },
+                    "refs_count": { "type": "integer" },
+                    "refs_inherited": { "type": "boolean" },
+                    "spec_last_seen_commit": {
+                        "nullable": true,
+                        "type": "string"
+                    },
+                    "states_inherited": { "type": "boolean" },
+                    "test_refs_count": { "type": "integer" },
+                    "total_count": { "type": "integer" }
+                },
+                "required": [
+                    "feature_name",
+                    "description",
+                    "completed_count",
+                    "total_count",
+                    "refs_count",
+                    "test_refs_count",
+                    "has_local_spec",
+                    "has_local_states",
+                    "spec_last_seen_commit",
+                    "states_inherited",
+                    "refs_inherited"
+                ],
+                "title": "ImplementationFeatureEntry",
+                "type": "object"
+            },
+            "ImplementationFeaturesData": {
+                "properties": {
+                    "features": {
+                        "items": {
+                            "allOf": [
+                                {
+                                    "properties": {
+                                        "completed_count": {
+                                            "type": "integer"
+                                        },
+                                        "description": {
+                                            "nullable": true,
+                                            "type": "string"
+                                        },
+                                        "feature_name": { "type": "string" },
+                                        "has_local_spec": { "type": "boolean" },
+                                        "has_local_states": {
+                                            "type": "boolean"
+                                        },
+                                        "refs_count": { "type": "integer" },
+                                        "refs_inherited": { "type": "boolean" },
+                                        "spec_last_seen_commit": {
+                                            "nullable": true,
+                                            "type": "string"
+                                        },
+                                        "states_inherited": {
+                                            "type": "boolean"
+                                        },
+                                        "test_refs_count": {
+                                            "type": "integer"
+                                        },
+                                        "total_count": { "type": "integer" }
+                                    },
+                                    "required": [
+                                        "feature_name",
+                                        "description",
+                                        "completed_count",
+                                        "total_count",
+                                        "refs_count",
+                                        "test_refs_count",
+                                        "has_local_spec",
+                                        "has_local_states",
+                                        "spec_last_seen_commit",
+                                        "states_inherited",
+                                        "refs_inherited"
+                                    ],
+                                    "title": "ImplementationFeatureEntry",
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "type": "array"
+                    },
+                    "implementation_id": { "type": "string" },
+                    "implementation_name": { "type": "string" },
+                    "product_name": { "type": "string" }
+                },
+                "required": [
+                    "product_name",
+                    "implementation_name",
+                    "implementation_id",
+                    "features"
+                ],
+                "title": "ImplementationFeaturesData",
+                "type": "object"
+            },
+            "ImplementationFeaturesResponse": {
+                "properties": {
+                    "data": {
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "features": {
+                                        "items": {
+                                            "allOf": [
+                                                {
+                                                    "properties": {
+                                                        "completed_count": {
+                                                            "type": "integer"
+                                                        },
+                                                        "description": {
+                                                            "nullable": true,
+                                                            "type": "string"
+                                                        },
+                                                        "feature_name": {
+                                                            "type": "string"
+                                                        },
+                                                        "has_local_spec": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "has_local_states": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "refs_count": {
+                                                            "type": "integer"
+                                                        },
+                                                        "refs_inherited": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "spec_last_seen_commit": {
+                                                            "nullable": true,
+                                                            "type": "string"
+                                                        },
+                                                        "states_inherited": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "test_refs_count": {
+                                                            "type": "integer"
+                                                        },
+                                                        "total_count": {
+                                                            "type": "integer"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "feature_name",
+                                                        "description",
+                                                        "completed_count",
+                                                        "total_count",
+                                                        "refs_count",
+                                                        "test_refs_count",
+                                                        "has_local_spec",
+                                                        "has_local_states",
+                                                        "spec_last_seen_commit",
+                                                        "states_inherited",
+                                                        "refs_inherited"
+                                                    ],
+                                                    "title": "ImplementationFeatureEntry",
+                                                    "type": "object"
+                                                }
+                                            ]
+                                        },
+                                        "type": "array"
+                                    },
+                                    "implementation_id": { "type": "string" },
+                                    "implementation_name": { "type": "string" },
+                                    "product_name": { "type": "string" }
+                                },
+                                "required": [
+                                    "product_name",
+                                    "implementation_name",
+                                    "implementation_id",
+                                    "features"
+                                ],
+                                "title": "ImplementationFeaturesData",
+                                "type": "object"
+                            }
+                        ]
+                    }
+                },
+                "required": ["data"],
+                "title": "ImplementationFeaturesResponse",
+                "type": "object"
+            },
+            "ImplementationsData": {
+                "properties": {
+                    "branch_name": { "type": "string" },
+                    "implementations": {
+                        "items": {
+                            "allOf": [
+                                {
+                                    "properties": {
+                                        "implementation_id": {
+                                            "type": "string"
+                                        },
+                                        "implementation_name": {
+                                            "type": "string"
+                                        },
+                                        "product_name": { "type": "string" }
+                                    },
+                                    "required": [
+                                        "implementation_name",
+                                        "implementation_id",
+                                        "product_name"
+                                    ],
+                                    "title": "ImplementationEntry",
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "type": "array"
+                    },
+                    "product_name": { "type": "string" },
+                    "repo_uri": { "type": "string" }
+                },
+                "required": ["implementations"],
+                "title": "ImplementationsData",
+                "type": "object"
+            },
+            "ImplementationsResponse": {
+                "properties": {
+                    "data": {
+                        "allOf": [
+                            {
+                                "properties": {
+                                    "branch_name": { "type": "string" },
+                                    "implementations": {
+                                        "items": {
+                                            "allOf": [
+                                                {
+                                                    "properties": {
+                                                        "implementation_id": {
+                                                            "type": "string"
+                                                        },
+                                                        "implementation_name": {
+                                                            "type": "string"
+                                                        },
+                                                        "product_name": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "implementation_name",
+                                                        "implementation_id",
+                                                        "product_name"
+                                                    ],
+                                                    "title": "ImplementationEntry",
+                                                    "type": "object"
+                                                }
+                                            ]
+                                        },
+                                        "type": "array"
+                                    },
+                                    "product_name": { "type": "string" },
+                                    "repo_uri": { "type": "string" }
+                                },
+                                "required": ["implementations"],
+                                "title": "ImplementationsData",
+                                "type": "object"
+                            }
+                        ]
+                    }
+                },
+                "required": ["data"],
+                "title": "ImplementationsResponse",
+                "type": "object"
+            },
+            "PushRequest": {
+                "additionalProperties": false,
+                "description": "Request body for pushing specs and refs",
+                "example": {
+                    "branch_name": "main",
+                    "commit_hash": "abc123def456",
+                    "repo_uri": "github.com/my-org/my-repo",
+                    "specs": [
+                        {
+                            "feature": {
+                                "name": "auth-feature",
+                                "product": "my-app"
+                            },
+                            "meta": {
+                                "last_seen_commit": "abc123def456",
+                                "path": "features/auth.feature.yaml"
+                            },
+                            "requirements": {
+                                "auth-feature.AUTH.1": {
+                                    "requirement": "Must validate credentials"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "properties": {
+                    "branch_name": {
+                        "description": "Git branch name being pushed (e.g., 'main', 'feature/auth-123')",
+                        "type": "string"
+                    },
+                    "commit_hash": {
+                        "description": "Full 40-character Git commit SHA that this push represents (e.g., 'abc123def456...')",
+                        "type": "string"
+                    },
+                    "parent_impl_name": {
+                        "description": "Name of a parent implementation for inheritance. When creating a new implementation, it will inherit the parent's baseline and refs (e.g., create 'feature-branch-impl' with parent 'main' to start with main's baseline). Useful for short-lived branches that extend an existing implementation",
+                        "type": "string"
+                    },
+                    "product_name": {
+                        "description": "Optional product name used for refs-only implementation creation or linking",
+                        "type": "string"
+                    },
+                    "references": {
+                        "allOf": [
+                            {
+                                "description": "Code references grouped by requirement ID",
+                                "example": {
+                                    "data": {
+                                        "auth-feature.AUTH.1": [
+                                            {
+                                                "is_test": false,
+                                                "path": "lib/my_app/auth.ex:42"
+                                            }
+                                        ]
+                                    },
+                                    "override": false
+                                },
+                                "properties": {
+                                    "data": {
+                                        "additionalProperties": {
+                                            "items": {
+                                                "allOf": [
+                                                    {
+                                                        "description": "A code reference",
+                                                        "example": {
+                                                            "is_test": false,
+                                                            "path": "lib/my_app/auth.ex:42"
+                                                        },
+                                                        "properties": {
+                                                            "is_test": {
+                                                                "default": false,
+                                                                "description": "Whether this reference is a test",
+                                                                "type": "boolean"
+                                                            },
+                                                            "path": {
+                                                                "description": "Path to the code reference (e.g., lib/foo.ex:42)",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": ["path"],
+                                                        "title": "RefObject",
+                                                        "type": "object"
+                                                    }
+                                                ]
+                                            },
+                                            "type": "array"
+                                        },
+                                        "description": "Map of requirement IDs to arrays of ref objects",
+                                        "maxProperties": 10000,
+                                        "type": "object"
+                                    },
+                                    "override": {
+                                        "default": false,
+                                        "description": "If true, replaces all existing refs instead of merging",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["data"],
+                                "title": "References",
+                                "type": "object"
+                            }
+                        ],
+                        "description": "Optional code references"
+                    },
+                    "repo_uri": {
+                        "description": "`repo_uri` should be in the format `host/owner/repo` (e.g. `github.com/my-org/my-repo`). Supported hosts for deep linking are `github.com`, `gitlab.com`, and `bitbucket.org`. Self-hosted instances may work for tracking but deep links are not guaranteed yet.",
+                        "maxLength": 2048,
+                        "type": "string"
+                    },
+                    "specs": {
+                        "description": "Optional list of specs to push",
+                        "items": {
+                            "allOf": [
+                                {
+                                    "description": "A single spec to push",
+                                    "example": {
+                                        "feature": {
+                                            "name": "auth-feature",
+                                            "product": "my-app",
+                                            "version": "1.0.0"
+                                        },
+                                        "meta": {
+                                            "last_seen_commit": "abc123",
+                                            "path": "features/auth.feature.yaml"
+                                        },
+                                        "requirements": {
+                                            "auth-feature.AUTH.1": {
+                                                "requirement": "Must validate credentials"
+                                            }
+                                        }
+                                    },
+                                    "properties": {
+                                        "feature": {
+                                            "allOf": [
+                                                {
+                                                    "description": "Feature metadata",
+                                                    "example": {
+                                                        "description": "Authentication feature",
+                                                        "name": "auth-feature",
+                                                        "prerequisites": [],
+                                                        "product": "my-app",
+                                                        "version": "1.0.0"
+                                                    },
+                                                    "properties": {
+                                                        "description": {
+                                                            "description": "Optional feature description",
+                                                            "maxLength": 5000,
+                                                            "type": "string"
+                                                        },
+                                                        "name": {
+                                                            "description": "Feature name (alphanumeric, hyphens, underscores only)",
+                                                            "type": "string"
+                                                        },
+                                                        "prerequisites": {
+                                                            "description": "Optional list of prerequisite feature names",
+                                                            "items": {
+                                                                "type": "string"
+                                                            },
+                                                            "type": "array"
+                                                        },
+                                                        "product": {
+                                                            "description": "Product name",
+                                                            "type": "string"
+                                                        },
+                                                        "version": {
+                                                            "default": "1.0.0",
+                                                            "description": "Optional version string (SemVer)",
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "name",
+                                                        "product"
+                                                    ],
+                                                    "title": "Feature",
+                                                    "type": "object"
+                                                }
+                                            ],
+                                            "description": "Feature metadata"
+                                        },
+                                        "meta": {
+                                            "allOf": [
+                                                {
+                                                    "description": "Metadata about the feature file location",
+                                                    "example": {
+                                                        "last_seen_commit": "abc123def456",
+                                                        "path": "features/auth.feature.yaml"
+                                                    },
+                                                    "properties": {
+                                                        "last_seen_commit": {
+                                                            "description": "Commit hash when this feature was last seen",
+                                                            "type": "string"
+                                                        },
+                                                        "path": {
+                                                            "description": "Path from repo root (e.g., features/auth.feature.yaml)",
+                                                            "maxLength": 1024,
+                                                            "type": "string"
+                                                        },
+                                                        "raw_content": {
+                                                            "description": "Optional raw content of the feature file",
+                                                            "maxLength": 102400,
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "path",
+                                                        "last_seen_commit"
+                                                    ],
+                                                    "title": "FeatureMeta",
+                                                    "type": "object"
+                                                }
+                                            ],
+                                            "description": "Feature file metadata"
+                                        },
+                                        "requirements": {
+                                            "additionalProperties": {
+                                                "allOf": [
+                                                    {
+                                                        "description": "Definition of a single requirement (acceptance criteria)",
+                                                        "example": {
+                                                            "deprecated": false,
+                                                            "requirement": "System must validate email format"
+                                                        },
+                                                        "properties": {
+                                                            "deprecated": {
+                                                                "default": false,
+                                                                "description": "Whether this requirement is deprecated",
+                                                                "type": "boolean"
+                                                            },
+                                                            "note": {
+                                                                "description": "Optional note about this requirement",
+                                                                "type": "string"
+                                                            },
+                                                            "replaced_by": {
+                                                                "description": "Optional list of requirement IDs that replace this one",
+                                                                "items": {
+                                                                    "type": "string"
+                                                                },
+                                                                "type": "array"
+                                                            },
+                                                            "requirement": {
+                                                                "description": "The requirement text describing the acceptance criteria",
+                                                                "maxLength": 2000,
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "requirement"
+                                                        ],
+                                                        "title": "RequirementDefinition",
+                                                        "type": "object"
+                                                    }
+                                                ]
+                                            },
+                                            "description": "Map of requirement IDs to requirement definitions",
+                                            "maxProperties": 200,
+                                            "type": "object"
+                                        }
+                                    },
+                                    "required": [
+                                        "feature",
+                                        "requirements",
+                                        "meta"
+                                    ],
+                                    "title": "SpecObject",
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "maxItems": 100,
+                        "type": "array"
+                    },
+                    "target_impl_name": {
+                        "description": "Name of the implementation (deployment environment) to associate this branch with. An implementation represents a deployable instance of your product (e.g., 'production', 'staging', 'mobile-app-v2'). For spec-push creation flows, a missing implementation may be auto-created within the product. For refs-only pushes, `product_name` + `target_impl_name` must resolve to an existing implementation unless `parent_impl_name` is also provided to create a new child implementation.",
+                        "type": "string"
+                    }
+                },
+                "required": ["repo_uri", "branch_name", "commit_hash"],
+                "title": "PushRequest",
+                "type": "object"
+            },
+            "PushResponse": {
+                "description": "Successful push response",
+                "example": {
+                    "data": {
+                        "branch_id": "123e4567-e89b-12d3-a456-426614174001",
+                        "implementation_id": "123e4567-e89b-12d3-a456-426614174000",
+                        "implementation_name": "production",
+                        "product_name": "my-app",
+                        "specs_created": 1,
+                        "specs_updated": 0,
+                        "warnings": []
+                    }
+                },
+                "properties": {
+                    "data": {
+                        "allOf": [
+                            {
+                                "description": "Response data for a successful push",
+                                "example": {
+                                    "branch_id": "123e4567-e89b-12d3-a456-426614174001",
+                                    "implementation_id": "123e4567-e89b-12d3-a456-426614174000",
+                                    "implementation_name": "production",
+                                    "product_name": "my-app",
+                                    "specs_created": 1,
+                                    "specs_updated": 0,
+                                    "warnings": []
+                                },
+                                "properties": {
+                                    "branch_id": {
+                                        "description": "ID of the branch",
+                                        "type": "string"
+                                    },
+                                    "implementation_id": {
+                                        "description": "Unique ID of the implementation. Null if the branch is not tracked by any implementation",
+                                        "nullable": true,
+                                        "type": "string"
+                                    },
+                                    "implementation_name": {
+                                        "description": "Name of the implementation (deployment environment) this branch is linked to, such as 'production' or 'staging'. Null if the branch is not tracked by any implementation",
+                                        "nullable": true,
+                                        "type": "string"
+                                    },
+                                    "product_name": {
+                                        "description": "Name of the product (null if untracked)",
+                                        "nullable": true,
+                                        "type": "string"
+                                    },
+                                    "specs_created": {
+                                        "description": "Number of specs created",
+                                        "type": "integer"
+                                    },
+                                    "specs_updated": {
+                                        "description": "Number of specs updated",
+                                        "type": "integer"
+                                    },
+                                    "warnings": {
+                                        "description": "List of non-fatal warnings",
+                                        "items": { "type": "string" },
+                                        "type": "array"
+                                    }
+                                },
+                                "title": "PushResponseData",
+                                "type": "object"
+                            }
+                        ],
+                        "description": "Push response data"
+                    }
+                },
+                "required": ["data"],
+                "title": "PushResponse",
+                "type": "object"
+            },
+            "PushResponseData": {
+                "description": "Response data for a successful push",
+                "example": {
+                    "branch_id": "123e4567-e89b-12d3-a456-426614174001",
+                    "implementation_id": "123e4567-e89b-12d3-a456-426614174000",
+                    "implementation_name": "production",
+                    "product_name": "my-app",
+                    "specs_created": 1,
+                    "specs_updated": 0,
+                    "warnings": []
+                },
+                "properties": {
+                    "branch_id": {
+                        "description": "ID of the branch",
+                        "type": "string"
+                    },
+                    "implementation_id": {
+                        "description": "Unique ID of the implementation. Null if the branch is not tracked by any implementation",
+                        "nullable": true,
+                        "type": "string"
+                    },
+                    "implementation_name": {
+                        "description": "Name of the implementation (deployment environment) this branch is linked to, such as 'production' or 'staging'. Null if the branch is not tracked by any implementation",
+                        "nullable": true,
+                        "type": "string"
+                    },
+                    "product_name": {
+                        "description": "Name of the product (null if untracked)",
+                        "nullable": true,
+                        "type": "string"
+                    },
+                    "specs_created": {
+                        "description": "Number of specs created",
+                        "type": "integer"
+                    },
+                    "specs_updated": {
+                        "description": "Number of specs updated",
+                        "type": "integer"
+                    },
+                    "warnings": {
+                        "description": "List of non-fatal warnings",
+                        "items": { "type": "string" },
+                        "type": "array"
+                    }
+                },
+                "title": "PushResponseData",
+                "type": "object"
+            },
+            "RefObject": {
+                "description": "A code reference",
+                "example": {
+                    "is_test": false,
+                    "path": "lib/my_app/auth.ex:42"
+                },
+                "properties": {
+                    "is_test": {
+                        "default": false,
+                        "description": "Whether this reference is a test",
+                        "type": "boolean"
+                    },
+                    "path": {
+                        "description": "Path to the code reference (e.g., lib/foo.ex:42)",
+                        "type": "string"
+                    }
+                },
+                "required": ["path"],
+                "title": "RefObject",
+                "type": "object"
+            },
+            "References": {
+                "description": "Code references grouped by requirement ID",
+                "example": {
+                    "data": {
+                        "auth-feature.AUTH.1": [
+                            {
+                                "is_test": false,
+                                "path": "lib/my_app/auth.ex:42"
+                            }
+                        ]
+                    },
+                    "override": false
+                },
+                "properties": {
+                    "data": {
+                        "additionalProperties": {
+                            "items": {
+                                "allOf": [
+                                    {
+                                        "description": "A code reference",
+                                        "example": {
+                                            "is_test": false,
+                                            "path": "lib/my_app/auth.ex:42"
+                                        },
+                                        "properties": {
+                                            "is_test": {
+                                                "default": false,
+                                                "description": "Whether this reference is a test",
+                                                "type": "boolean"
+                                            },
+                                            "path": {
+                                                "description": "Path to the code reference (e.g., lib/foo.ex:42)",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": ["path"],
+                                        "title": "RefObject",
+                                        "type": "object"
+                                    }
+                                ]
+                            },
+                            "type": "array"
+                        },
+                        "description": "Map of requirement IDs to arrays of ref objects",
+                        "maxProperties": 10000,
+                        "type": "object"
+                    },
+                    "override": {
+                        "default": false,
+                        "description": "If true, replaces all existing refs instead of merging",
+                        "type": "boolean"
+                    }
+                },
+                "required": ["data"],
+                "title": "References",
+                "type": "object"
+            },
+            "RequirementDefinition": {
+                "description": "Definition of a single requirement (acceptance criteria)",
+                "example": {
+                    "deprecated": false,
+                    "requirement": "System must validate email format"
+                },
+                "properties": {
+                    "deprecated": {
+                        "default": false,
+                        "description": "Whether this requirement is deprecated",
+                        "type": "boolean"
+                    },
+                    "note": {
+                        "description": "Optional note about this requirement",
+                        "type": "string"
+                    },
+                    "replaced_by": {
+                        "description": "Optional list of requirement IDs that replace this one",
+                        "items": { "type": "string" },
+                        "type": "array"
+                    },
+                    "requirement": {
+                        "description": "The requirement text describing the acceptance criteria",
+                        "maxLength": 2000,
+                        "type": "string"
+                    }
+                },
+                "required": ["requirement"],
+                "title": "RequirementDefinition",
+                "type": "object"
+            },
+            "SourceObject": {
+                "properties": {
+                    "branch_names": {
+                        "items": { "type": "string" },
+                        "type": "array"
+                    },
+                    "implementation_name": { "type": "string" },
+                    "source_type": {
+                        "enum": ["local", "inherited", "none"],
+                        "type": "string"
+                    }
+                },
+                "required": ["source_type"],
+                "title": "SourceObject",
+                "type": "object"
+            },
+            "SpecObject": {
+                "description": "A single spec to push",
+                "example": {
+                    "feature": {
+                        "name": "auth-feature",
+                        "product": "my-app",
+                        "version": "1.0.0"
+                    },
+                    "meta": {
+                        "last_seen_commit": "abc123",
+                        "path": "features/auth.feature.yaml"
+                    },
+                    "requirements": {
+                        "auth-feature.AUTH.1": {
+                            "requirement": "Must validate credentials"
+                        }
+                    }
+                },
+                "properties": {
+                    "feature": {
+                        "allOf": [
+                            {
+                                "description": "Feature metadata",
+                                "example": {
+                                    "description": "Authentication feature",
+                                    "name": "auth-feature",
+                                    "prerequisites": [],
+                                    "product": "my-app",
+                                    "version": "1.0.0"
+                                },
+                                "properties": {
+                                    "description": {
+                                        "description": "Optional feature description",
+                                        "maxLength": 5000,
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "description": "Feature name (alphanumeric, hyphens, underscores only)",
+                                        "type": "string"
+                                    },
+                                    "prerequisites": {
+                                        "description": "Optional list of prerequisite feature names",
+                                        "items": { "type": "string" },
+                                        "type": "array"
+                                    },
+                                    "product": {
+                                        "description": "Product name",
+                                        "type": "string"
+                                    },
+                                    "version": {
+                                        "default": "1.0.0",
+                                        "description": "Optional version string (SemVer)",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["name", "product"],
+                                "title": "Feature",
+                                "type": "object"
+                            }
+                        ],
+                        "description": "Feature metadata"
+                    },
+                    "meta": {
+                        "allOf": [
+                            {
+                                "description": "Metadata about the feature file location",
+                                "example": {
+                                    "last_seen_commit": "abc123def456",
+                                    "path": "features/auth.feature.yaml"
+                                },
+                                "properties": {
+                                    "last_seen_commit": {
+                                        "description": "Commit hash when this feature was last seen",
+                                        "type": "string"
+                                    },
+                                    "path": {
+                                        "description": "Path from repo root (e.g., features/auth.feature.yaml)",
+                                        "maxLength": 1024,
+                                        "type": "string"
+                                    },
+                                    "raw_content": {
+                                        "description": "Optional raw content of the feature file",
+                                        "maxLength": 102400,
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["path", "last_seen_commit"],
+                                "title": "FeatureMeta",
+                                "type": "object"
+                            }
+                        ],
+                        "description": "Feature file metadata"
+                    },
+                    "requirements": {
+                        "additionalProperties": {
+                            "allOf": [
+                                {
+                                    "description": "Definition of a single requirement (acceptance criteria)",
+                                    "example": {
+                                        "deprecated": false,
+                                        "requirement": "System must validate email format"
+                                    },
+                                    "properties": {
+                                        "deprecated": {
+                                            "default": false,
+                                            "description": "Whether this requirement is deprecated",
+                                            "type": "boolean"
+                                        },
+                                        "note": {
+                                            "description": "Optional note about this requirement",
+                                            "type": "string"
+                                        },
+                                        "replaced_by": {
+                                            "description": "Optional list of requirement IDs that replace this one",
+                                            "items": { "type": "string" },
+                                            "type": "array"
+                                        },
+                                        "requirement": {
+                                            "description": "The requirement text describing the acceptance criteria",
+                                            "maxLength": 2000,
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["requirement"],
+                                    "title": "RequirementDefinition",
+                                    "type": "object"
+                                }
+                            ]
+                        },
+                        "description": "Map of requirement IDs to requirement definitions",
+                        "maxProperties": 200,
+                        "type": "object"
+                    }
+                },
+                "required": ["feature", "requirements", "meta"],
+                "title": "SpecObject",
+                "type": "object"
+            },
+            "StateObject": {
+                "properties": {
+                    "comment": { "type": "string" },
+                    "status": { "nullable": true, "type": "string" },
+                    "updated_at": { "type": "string" }
+                },
+                "title": "StateObject",
+                "type": "object"
+            },
+            "Summary": {
+                "properties": {
+                    "status_counts": { "type": "object" },
+                    "total_acids": { "type": "integer" }
+                },
+                "required": ["total_acids", "status_counts"],
+                "title": "Summary",
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "bearerFormat": "API token",
+                "scheme": "bearer",
+                "type": "http"
+            }
+        }
+    },
+    "info": {
+        "description": "Acai is an API for spec-driven development across git branches and product implementations. Specs store canonical requirement definitions, refs store where code on a branch appears to implement those requirements, and states store implementation-specific progress such as completed, blocked, or accepted. Agents typically discover an implementation, read canonical feature context, sync branch-derived changes, and then record status updates separately.",
+        "title": "Acai API",
+        "version": "1.0.0"
+    },
+    "openapi": "3.0.0",
+    "paths": {
+        "/feature-context": {
+            "get": {
+                "callbacks": {},
+                "description": "Return the complete context for one feature in one implementation.\n\nThis is the main read endpoint for spec-driven work. It returns the complete list of acceptance criteria, including the requirement definitions, lists of existing references in code, and additional metadata.\n\nAgents should call this before making additional code changes so they work from the same inherited source of truth that reviewers and dashboards use.\n",
+                "operationId": "AcaiWeb.Api.FeatureContextController.show",
+                "parameters": [
+                    {
+                        "description": "Product name",
+                        "in": "query",
+                        "name": "product_name",
+                        "required": true,
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "description": "Feature name",
+                        "in": "query",
+                        "name": "feature_name",
+                        "required": true,
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "description": "Implementation name",
+                        "in": "query",
+                        "name": "implementation_name",
+                        "required": true,
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "description": "Include per-ACID ref details",
+                        "in": "query",
+                        "name": "include_refs",
+                        "required": false,
+                        "schema": { "type": "boolean" }
+                    },
+                    {
+                        "description": "Include dangling stored states",
+                        "in": "query",
+                        "name": "include_dangling_states",
+                        "required": false,
+                        "schema": { "type": "boolean" }
+                    },
+                    {
+                        "description": "Include deprecated ACIDs",
+                        "in": "query",
+                        "name": "include_deprecated",
+                        "required": false,
+                        "schema": { "type": "boolean" }
+                    },
+                    {
+                        "description": "Repeated status filter values, for example `statuses=completed&statuses=null`; the literal string `null` means a null status",
+                        "in": "query",
+                        "name": "statuses",
+                        "required": false,
+                        "schema": {
+                            "items": { "type": "string" },
+                            "type": "array"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FeatureContextResponse"
+                                }
+                            }
+                        },
+                        "description": "Feature context"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Validation error"
+                    }
+                },
+                "security": [{ "bearerAuth": [] }],
+                "summary": "Read canonical feature context",
+                "tags": ["Actions"]
+            }
+        },
+        "/feature-states": {
+            "patch": {
+                "callbacks": {},
+                "description": "Record implementation-specific progress for one feature in one implementation. State writes do not change requirement text or code refs; they only capture how this implementation currently evaluates each requirement, for example assigned, blocked, completed, or accepted. On first write, local state starts from the parent implementation when one exists, then applies the incoming changes. Use this after analysis, coding, review, or QA to record progress without changing branch-derived truth.",
+                "operationId": "AcaiWeb.Api.FeatureStatesController.update",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FeatureStatesRequest"
+                            }
+                        }
+                    },
+                    "description": "Feature states request body",
+                    "required": false
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FeatureStatesResponse"
+                                }
+                            }
+                        },
+                        "description": "Feature states written"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not found"
+                    },
+                    "413": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Payload too large"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Validation error"
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Rate limit exceeded"
+                    }
+                },
+                "security": [{ "bearerAuth": [] }],
+                "summary": "Write feature states",
+                "tags": ["Actions"]
+            }
+        },
+        "/implementation-features": {
+            "get": {
+                "callbacks": {},
+                "description": "Return a summary list of Features that are visible to a given Implementation.\nThese features may be defined in specs that were pushed directly to that Implementation, or inherited from a parent Implementation.\nThe response is a summary list of features, containing some metadata and a summary of code references. This is useful to quickly identify features that may have changed or are missing references.\n",
+                "operationId": "AcaiWeb.Api.ImplementationFeaturesController.index",
+                "parameters": [
+                    {
+                        "description": "Product name",
+                        "in": "query",
+                        "name": "product_name",
+                        "required": true,
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "description": "Implementation name",
+                        "in": "query",
+                        "name": "implementation_name",
+                        "required": true,
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "description": "Repeated status filter values, for example `statuses=completed&statuses=null`; the literal string `null` means a null status",
+                        "in": "query",
+                        "name": "statuses",
+                        "required": false,
+                        "schema": {
+                            "items": { "type": "string" },
+                            "type": "array"
+                        }
+                    },
+                    {
+                        "description": "Filter by feature's last_seen_commit (simple equality)",
+                        "in": "query",
+                        "name": "changed_since_commit",
+                        "required": false,
+                        "schema": { "type": "string" }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ImplementationFeaturesResponse"
+                                }
+                            }
+                        },
+                        "description": "Implementation features"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Validation error"
+                    }
+                },
+                "security": [{ "bearerAuth": [] }],
+                "summary": "List implementation features",
+                "tags": ["Actions"]
+            }
+        },
+        "/implementations": {
+            "get": {
+                "callbacks": {},
+                "description": "Discover implementations either within one Product or across Products for an exact Repo + Branch.\n      This is the orientation endpoint the CLI uses to resolve which implementation contexts track the current branch before any single-context detail reads.",
+                "operationId": "AcaiWeb.Api.ImplementationsController.index",
+                "parameters": [
+                    {
+                        "description": "Product name",
+                        "in": "query",
+                        "name": "product_name",
+                        "required": false,
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "description": "Exact repository URI",
+                        "in": "query",
+                        "name": "repo_uri",
+                        "required": false,
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "description": "Exact branch name",
+                        "in": "query",
+                        "name": "branch_name",
+                        "required": false,
+                        "schema": { "type": "string" }
+                    },
+                    {
+                        "description": "Filter to implementations that can resolve this feature",
+                        "in": "query",
+                        "name": "feature_name",
+                        "required": false,
+                        "schema": { "type": "string" }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ImplementationsResponse"
+                                }
+                            }
+                        },
+                        "description": "Implementation list"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Validation error"
+                    }
+                },
+                "security": [{ "bearerAuth": [] }],
+                "summary": "List implementations",
+                "tags": ["Actions"]
+            }
+        },
+        "/push": {
+            "post": {
+                "callbacks": {},
+                "description": "Sync data from your current git branch to the server.\n- Upload specs (feature.yaml files) and the requirements and metadata defined in them.\n- Upload code references (ACID tags) found in source code, and their file paths.\n\nThis endpoint can create or link implementations while syncing specs and refs, but it does not\naccept feature-state writes or configure implementation settings directly.\n\nUse this when source code or specs have changed on a branch.\nThis endpoint is primarily intended to serve the `acai push` CLI command.\n",
+                "operationId": "AcaiWeb.Api.PushController.create",
+                "parameters": [],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PushRequest"
+                            }
+                        }
+                    },
+                    "description": "Push request body",
+                    "required": false
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PushResponse"
+                                }
+                            }
+                        },
+                        "description": "Push successful"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized - invalid or missing token"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden - token missing required scopes"
+                    },
+                    "413": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Payload too large"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Validation error - invalid request body"
+                    },
+                    "429": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Rate limit exceeded"
+                    }
+                },
+                "security": [{ "bearerAuth": [] }],
+                "summary": "Push from branch",
+                "tags": ["Actions"]
+            }
+        }
+    },
+    "security": [{ "bearerAuth": [] }],
+    "servers": [
+        {
+            "description": "API v1",
+            "url": "http://localhost:4000/api/v1",
+            "variables": {}
+        }
+    ],
+    "tags": [
+        {
+            "description": "Endpoints for syncing branch-derived truth, resolving canonical feature context, discovering implementation work, and recording implementation-specific progress. The API keeps specs and refs separate from status updates so agents can read shared requirements, push observed code changes, and write progress without mixing those concerns.",
+            "name": "Actions"
+        }
+    ]
+}

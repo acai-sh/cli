@@ -1,0 +1,9 @@
+{
+    "name": "cli",
+    "remoteUser": "bun",
+    "build": {
+        "dockerfile": "./Dockerfile"
+    },
+    "runArgs": ["--network=${localEnv:DEVCONTAINER_NETWORK:bridge}"],
+    "postCreateCommand": "bun install && curl -fsSL https://opencode.ai/install | bash"
+}
