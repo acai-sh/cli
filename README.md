@@ -58,3 +58,7 @@ If you don't have devpod, you can open the repo in Zed/VSCode and click "open in
 
 ## License
 Apache 2.0. Contributors must sign a Contributor License Agreement. You are free to use, modify, and distribute this software, including for commercial purposes, under the terms of the license.
+
+## Security
+
+See our [security checklist](docs/security.md) to understand how we protect this project and our users.

@@ -5,5 +5,5 @@
         "dockerfile": "./Dockerfile"
     },
     "runArgs": ["--network=${localEnv:DEVCONTAINER_NETWORK:bridge}"],
-    "postCreateCommand": "bun install"
+    "postCreateCommand": "bun install && curl -fsSL https://opencode.ai/install | bash"
 }
