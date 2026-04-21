@@ -21,6 +21,26 @@ The release pipeline verifies the packed npm artifact through the installed `aca
 
 If you don't have a JavaScript runtime, we have macOS and Linux releases available on GitHub.
 
+### Install from release
+
+You can install a standalone binary directly from a GitHub release asset. For example, on Linux x64:
+
+```sh
+curl -fL https://github.com/acai-sh/cli/releases/download/v0.0.2/acai-linux-x64 -o acai
+chmod +x acai
+sudo mv acai /usr/local/bin/acai
+acai --help
+```
+
+If you prefer a user-local install without `sudo`:
+
+```sh
+mkdir -p "$HOME/.local/bin"
+curl -fL https://github.com/acai-sh/cli/releases/download/v0.0.2/acai-linux-x64 -o "$HOME/.local/bin/acai"
+chmod +x "$HOME/.local/bin/acai"
+"$HOME/.local/bin/acai" --help
+```
+
 ## Project overview
 
 The CLI is written in TypeScript with `bun` and `commander`. It is aligned to the Acai.sh API using `openapi-fetch` and `openapi-typescript`.
