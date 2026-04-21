@@ -89,20 +89,16 @@ If this job fails, nothing is published.
 
 ### 2. `publish-npm`
 
-This job publishes the `acai` package to npm using `npm publish --provenance`.
+This job publishes the `acai` package to npm using `npm publish --access public --provenance`.
 
 Behavior:
 
 1. stable tags like `v1.2.3` publish normally
 2. prerelease tags like `v1.2.3-beta.1` publish to npm using the `next` dist-tag
 
-This job requires the repository secret:
+This job uses npm trusted publishing via GitHub Actions OIDC.
 
-```text
-NPM_TOKEN
-```
-
-GitHub Actions OIDC provenance is enabled through workflow permissions and `npm publish --provenance`.
+GitHub Actions OIDC provenance is enabled through the `npm` environment, workflow permissions, and `npm publish --access public --provenance`.
 
 ### 3. `build-release-binaries`
 
@@ -158,9 +154,7 @@ The workflow uses:
 
 ### Repository secrets
 
-You need:
-
-1. `NPM_TOKEN` for npm publishing
+No npm token is required when trusted publishing is configured correctly.
 
 ## Common Failure Modes
 
@@ -180,8 +174,10 @@ Fix by making them match exactly.
 Check:
 
 1. `NPM_TOKEN` is configured
-2. the package name is available or you have publish rights
-3. the version has not already been published
+2. trusted publishing is configured for the correct repository, workflow, and `npm` environment
+3. the scoped package is being published with public access
+4. the package name is available or you have publish rights
+5. the version has not already been published
 
 ### GitHub Release succeeds but assets are missing
 

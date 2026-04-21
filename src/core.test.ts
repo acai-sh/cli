@@ -96,6 +96,7 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
         expect(packageJson.name).toBe("@acai.sh/cli");
         expect(packageJson.files).toEqual(["dist", "README.md", "docs"]);
         expect(packageJson.bin).toEqual({ acai: "dist/acai.js" });
+        expect(packageJson.publishConfig).toEqual({ access: "public" });
         expect(packageJson.scripts["build:npm"]).toContain(
             "bun build ./src/index.ts --target=node --outfile dist/acai.js",
         );
@@ -134,7 +135,7 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
         expect(releaseWorkflow).toContain("actions/setup-node@v4");
         expect(releaseWorkflow).toContain("Verify packed npm artifact under real Node");
         expect(releaseWorkflow).toContain("bun run verify:npm-artifact");
-        expect(releaseWorkflow).toContain("npm publish --provenance");
+        expect(releaseWorkflow).toContain("npm publish --access public --provenance");
         expect(releaseWorkflow).toContain("--tag next");
         expect(releaseWorkflow).toContain("cli-core.DIST.1");
         expect(releaseWorkflow).toContain("cli-core.DIST.2 / cli-core.DIST.3");
@@ -150,6 +151,8 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
         expect(npmArtifactVerification).toContain("cli-core.DIST.1 verification requires a real Node runtime");
         expect(releaseDocs).toContain("bun run verify:npm-artifact");
         expect(releaseDocs).toContain("real Node runtime");
+        expect(releaseDocs).toContain("trusted publishing");
+        expect(releaseDocs).toContain("--access public --provenance");
     });
 });
 

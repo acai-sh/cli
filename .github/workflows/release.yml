@@ -66,9 +66,9 @@ jobs:
               # cli-core.DIST.1
               run: |
                   if [[ "$GITHUB_REF_NAME" == *-* ]]; then
-                    npm publish --provenance --tag next
+                    npm publish --access public --provenance --tag next
                   else
-                    npm publish --provenance
+                    npm publish --access public --provenance
                   fi
 
     build-release-binaries:

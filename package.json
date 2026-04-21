@@ -28,6 +28,9 @@
     "bin": {
         "acai": "dist/acai.js"
     },
+    "publishConfig": {
+        "access": "public"
+    },
     "scripts": {
         "build:npm": "bun build ./src/index.ts --target=node --outfile dist/acai.js",
         "build:release:linux-x64": "bun build ./src/index.ts --compile --target=bun-linux-x64-modern --outfile dist/acai-linux-x64",
