@@ -62,19 +62,29 @@ function assertRealNodeRuntime() {
 async function packArtifact(tempRoot) {
   const packDir = join(tempRoot, "pack");
   await mkdir(packDir, { recursive: true });
-  await runCommand("npm", ["pack", "--pack-destination", packDir], {
+  const result = await runCommand("npm", ["pack", "--pack-destination", packDir], {
     cwd: workspaceRoot,
   });
-  return join(packDir, "acai.tgz");
+  assertCommandSucceeded(result, "npm pack");
+
+  const tarballName = result.stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .at(-1);
+  assert.ok(tarballName, "npm pack did not report a tarball filename");
+
+  return join(packDir, tarballName);
 }
 
 async function installPackedArtifact(tarballPath, tempRoot) {
   const installRoot = join(tempRoot, "install");
   await mkdir(installRoot, { recursive: true });
   await writeFile(join(installRoot, "package.json"), '{"private":true}');
-  await runCommand("npm", ["install", "--no-package-lock", tarballPath], {
+  const result = await runCommand("npm", ["install", "--no-package-lock", tarballPath], {
     cwd: installRoot,
   });
+  assertCommandSucceeded(result, "npm install packed artifact");
   return installRoot;
 }
 
@@ -253,6 +263,14 @@ async function runCommand(command, args, options = {}) {
   });
 
   return { exitCode, stdout, stderr };
+}
+
+function assertCommandSucceeded(result, label) {
+  assert.equal(
+    result.exitCode,
+    0,
+    `${label} failed\nstdout:\n${result.stdout}\n\nstderr:\n${result.stderr}`,
+  );
 }
 
 async function createWorkspace(files, prefix) {

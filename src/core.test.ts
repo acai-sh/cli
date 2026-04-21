@@ -143,6 +143,8 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
         expect(npmArtifactVerification).toContain("bun-node-fallback-bin");
         expect(npmArtifactVerification).toContain('"npm", ["pack", "--pack-destination", packDir]');
         expect(npmArtifactVerification).toContain('"npm", ["install", "--no-package-lock", tarballPath]');
+        expect(npmArtifactVerification).toContain("npm pack did not report a tarball filename");
+        expect(npmArtifactVerification).toContain("assertCommandSucceeded(result, \"npm pack\")");
         expect(npmArtifactVerification).toContain('"node_modules", ".bin", "acai"');
         expect(npmArtifactVerification).toContain("runInstalledCli(binPath");
         expect(npmArtifactVerification).toContain("cli-core.DIST.1 verification requires a real Node runtime");
