@@ -60,6 +60,10 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
         const packageJson = JSON.parse(
             await readFile(new URL("../package.json", import.meta.url), "utf8"),
         );
+        const ciWorkflow = await readFile(
+            new URL("../.github/workflows/ci.yml", import.meta.url),
+            "utf8",
+        );
         const releaseWorkflow = await readFile(
             new URL("../.github/workflows/release.yml", import.meta.url),
             "utf8",
@@ -110,6 +114,20 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
         expect(gitRuntime).not.toContain("Bun.");
         expect(pushRuntime).not.toContain("Bun.");
         expect(setStatusRuntime).not.toContain("Bun.");
+
+        expect(ciWorkflow).toContain("name: CI");
+        expect(ciWorkflow).toContain("branches:");
+        expect(ciWorkflow).toContain("- main");
+        expect(ciWorkflow).toContain("pull_request:");
+        expect(ciWorkflow).toContain("test-and-build:");
+        expect(ciWorkflow).toContain("AGENT=1 bun test");
+        expect(ciWorkflow).toContain("bun run build:npm");
+        expect(ciWorkflow).toContain("verify-npm-artifact:");
+        expect(ciWorkflow).toContain(
+            "if: github.event_name == 'push' && github.ref == 'refs/heads/main'",
+        );
+        expect(ciWorkflow).toContain("actions/setup-node@v4");
+        expect(ciWorkflow).toContain("bun run verify:npm-artifact");
 
         expect(releaseWorkflow).toContain("id-token: write");
         expect(releaseWorkflow).toContain("Verify tag matches package version");
