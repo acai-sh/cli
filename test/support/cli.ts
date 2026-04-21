@@ -9,15 +9,19 @@ export interface RunCliSubprocessOptions {
   input?: string;
 }
 
-export async function runCliSubprocess(
-  args: string[],
+export interface CliCommand {
+  command: string;
+  args: string[];
+}
+
+export async function runSubprocess(
+  cli: CliCommand,
   env: Record<string, string> = {},
   options: RunCliSubprocessOptions = {},
 ): Promise<SpawnedCliResult> {
-  const workspaceRoot = import.meta.dir + "/../..";
   const proc = Bun.spawn({
-    cmd: ["bun", workspaceRoot + "/src/index.ts", ...args],
-    cwd: options.cwd ?? workspaceRoot,
+    cmd: [cli.command, ...cli.args],
+    cwd: options.cwd,
     env: {
       ...process.env,
       ...env,
@@ -34,4 +38,17 @@ export async function runCliSubprocess(
   ]);
 
   return { exitCode, stdout, stderr };
+}
+
+export async function runCliSubprocess(
+  args: string[],
+  env: Record<string, string> = {},
+  options: RunCliSubprocessOptions = {},
+): Promise<SpawnedCliResult> {
+  const workspaceRoot = import.meta.dir + "/../..";
+  return runSubprocess(
+    { command: "bun", args: [workspaceRoot + "/src/index.ts", ...args] },
+    env,
+    { ...options, cwd: options.cwd ?? workspaceRoot },
+  );
 }

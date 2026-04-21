@@ -64,6 +64,14 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
             new URL("../.github/workflows/release.yml", import.meta.url),
             "utf8",
         );
+        const npmArtifactVerification = await readFile(
+            new URL("../scripts/verify-npm-artifact.mjs", import.meta.url),
+            "utf8",
+        );
+        const releaseDocs = await readFile(
+            new URL("../docs/releasing.md", import.meta.url),
+            "utf8",
+        );
         const cliEntrypoint = await readFile(
             new URL("./index.ts", import.meta.url),
             "utf8",
@@ -87,6 +95,9 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
         expect(packageJson.scripts["build:npm"]).toContain(
             "bun build ./src/index.ts --target=node --outfile dist/acai.js",
         );
+        expect(packageJson.scripts["verify:npm-artifact"]).toBe(
+            "node ./scripts/verify-npm-artifact.mjs",
+        );
         expect(packageJson.scripts.prepack).toBe("bun run build:npm");
         expect(packageJson.scripts["build:release:linux-x64"]).toContain(
             "--compile",
@@ -102,12 +113,20 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
 
         expect(releaseWorkflow).toContain("id-token: write");
         expect(releaseWorkflow).toContain("Verify tag matches package version");
+        expect(releaseWorkflow).toContain("actions/setup-node@v4");
+        expect(releaseWorkflow).toContain("Verify packed npm artifact under real Node");
+        expect(releaseWorkflow).toContain("bun run verify:npm-artifact");
         expect(releaseWorkflow).toContain("npm publish --provenance");
         expect(releaseWorkflow).toContain("--tag next");
         expect(releaseWorkflow).toContain("cli-core.DIST.1");
         expect(releaseWorkflow).toContain("cli-core.DIST.2 / cli-core.DIST.3");
         expect(releaseWorkflow).toContain("softprops/action-gh-release@v2");
         expect(releaseWorkflow).toContain("SHA256SUMS.txt");
+        expect(npmArtifactVerification).toContain("bun-node-fallback-bin");
+        expect(npmArtifactVerification).toContain('"npm", ["install", "--no-package-lock", tarballPath]');
+        expect(npmArtifactVerification).toContain("cli-core.DIST.1 verification requires a real Node runtime");
+        expect(releaseDocs).toContain("bun run verify:npm-artifact");
+        expect(releaseDocs).toContain("real Node runtime");
     });
 });
 

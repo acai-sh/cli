@@ -17,6 +17,10 @@ jobs:
 
             - uses: oven-sh/setup-bun@v2
 
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
             - name: Install dependencies
               run: bun install --frozen-lockfile
 
@@ -32,6 +36,10 @@ jobs:
 
             - name: Run test suite
               run: AGENT=1 bun test
+
+            - name: Verify packed npm artifact under real Node
+              # cli-core.DIST.1 / cli-core.HELP.1 / cli-core.HELP.3 / cli-core.HELP.4 / cli-core.OUTPUT.1 / cli-core.OUTPUT.2 / skill.MAIN.2 / skill.MAIN.3 / skill.WRITE.1 / set-status.MAIN.2 / set-status.MAIN.3 / push.MAIN.3 / push.MAIN.7 / push.MAIN.8
+              run: bun run verify:npm-artifact
 
 publish-npm:
     runs-on: ubuntu-latest

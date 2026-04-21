@@ -10,8 +10,9 @@ When a tag matching `v*` is pushed, GitHub Actions runs `.github/workflows/relea
 
 1. Verifies the tag version matches `package.json`
 2. Runs the test suite
-3. Publishes the npm package with provenance
-4. Builds Linux and macOS binaries and attaches them to a GitHub Release
+3. Packs and installs the npm artifact, then runs smoke checks against that installed package under a real Node runtime
+4. Publishes the npm package with provenance
+5. Builds Linux and macOS binaries and attaches them to a GitHub Release
 
 This gives users two supported installation paths:
 
@@ -44,6 +45,21 @@ dist/acai.js
 
 Because `package.json` also defines `prepack`, the npm publish flow rebuilds the CLI bundle before packaging.
 
+Before `npm publish`, the release workflow now also runs:
+
+```sh
+bun run verify:npm-artifact
+```
+
+That verification:
+
+1. creates the tarball with `bun pm pack`
+2. installs that tarball with `npm install`
+3. runs the installed CLI with a real Node binary from `actions/setup-node`
+4. smoke-tests help, `skill`, `push`, `set-status`, and one `--json` stdout/stderr separation path
+
+This specifically closes the gap between Bun source execution and the real npm artifact users install.
+
 ### GitHub Release binaries
 
 The release workflow compiles these binaries with `bun build --compile`:
@@ -67,6 +83,7 @@ This job:
 2. installs dependencies with Bun
 3. verifies `github.ref_name` matches `package.json` version
 4. runs `AGENT=1 bun test`
+5. runs `bun run verify:npm-artifact` after provisioning a real Node runtime
 
 If this job fails, nothing is published.
 
@@ -177,7 +194,13 @@ Recommended local checks:
 ```sh
 AGENT=1 bun test
 bun run build:npm
-node dist/acai.js --help
+```
+
+If you want to run the same npm-artifact verification used by CI, do it from a shell that has a real Node installation on `PATH`.
+The devcontainer's default `node` points to Bun's compatibility fallback and does not count.
+
+```sh
+bun run verify:npm-artifact
 ```
 
 Optional binary checks:
