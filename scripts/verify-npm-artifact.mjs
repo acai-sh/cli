@@ -62,7 +62,7 @@ function assertRealNodeRuntime() {
 async function packArtifact(tempRoot) {
   const packDir = join(tempRoot, "pack");
   await mkdir(packDir, { recursive: true });
-  await runCommand("bun", ["pm", "pack", "--destination", packDir, "--filename", "acai.tgz"], {
+  await runCommand("npm", ["pack", "--pack-destination", packDir], {
     cwd: workspaceRoot,
   });
   return join(packDir, "acai.tgz");

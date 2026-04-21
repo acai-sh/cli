@@ -53,7 +53,7 @@ bun run verify:npm-artifact
 
 That verification:
 
-1. creates the tarball with `bun pm pack`
+1. creates the tarball with `npm pack`
 2. installs that tarball with `npm install`
 3. runs the installed CLI through the npm-installed `node_modules/.bin/acai` entrypoint with a real Node binary from `actions/setup-node`
 4. smoke-tests help, `skill`, `push`, `set-status`, and one `--json` stdout/stderr separation path
