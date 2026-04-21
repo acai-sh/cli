@@ -68,6 +68,18 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
             new URL("./index.ts", import.meta.url),
             "utf8",
         );
+        const gitRuntime = await readFile(
+            new URL("./core/git.ts", import.meta.url),
+            "utf8",
+        );
+        const pushRuntime = await readFile(
+            new URL("./core/push.ts", import.meta.url),
+            "utf8",
+        );
+        const setStatusRuntime = await readFile(
+            new URL("./core/set-status.ts", import.meta.url),
+            "utf8",
+        );
 
         expect(packageJson.name).toBe("@acai.sh/cli");
         expect(packageJson.files).toEqual(["dist", "README.md", "docs"]);
@@ -83,6 +95,10 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
             "--compile",
         );
         expect(cliEntrypoint.startsWith("#!/usr/bin/env node")).toBe(true);
+        expect(cliEntrypoint).not.toContain("Bun.");
+        expect(gitRuntime).not.toContain("Bun.");
+        expect(pushRuntime).not.toContain("Bun.");
+        expect(setStatusRuntime).not.toContain("Bun.");
 
         expect(releaseWorkflow).toContain("id-token: write");
         expect(releaseWorkflow).toContain("Verify tag matches package version");

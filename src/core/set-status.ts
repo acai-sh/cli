@@ -5,6 +5,7 @@ import type {
 import type { ApiClient } from "./api.ts";
 import { usageError } from "./errors.ts";
 import { formatTextTable, type CommandResult } from "./output.ts";
+import { defaultRuntime, type RuntimeCompat } from "./runtime.ts";
 import {
 	normalizeOneImplementationTarget,
 	resolveImplementationName,
@@ -39,6 +40,7 @@ export interface SetStatusCommandOptions {
 export interface SetStatusDependencies
 	extends OneImplementationResolverDependencies {
 	readInput?: (source: string) => Promise<string>;
+	runtime?: RuntimeCompat;
 }
 
 export interface ParsedFeatureStatesPayload {
@@ -65,9 +67,12 @@ export function normalizeSetStatusOptions(
 }
 
 // set-status.MAIN.2
-export async function readSetStatusInput(source: string): Promise<string> {
+export async function readSetStatusInput(
+	source: string,
+	runtime: RuntimeCompat = defaultRuntime,
+): Promise<string> {
 	if (source === "-") {
-		return await Bun.stdin.text();
+		return await runtime.readStdinText();
 	}
 
 	if (source.startsWith("@")) {
@@ -77,7 +82,7 @@ export async function readSetStatusInput(source: string): Promise<string> {
 		}
 
 		try {
-			return await Bun.file(filePath).text();
+			return await runtime.readTextFile(filePath);
 		} catch {
 			throw usageError(`Unable to read input file: ${filePath}`);
 		}
@@ -167,7 +172,10 @@ export async function runSetStatusCommand(
 	args: SetStatusArgs,
 	dependencies: SetStatusDependencies = {},
 ): Promise<CommandResult> {
-	const readInput = dependencies.readInput ?? readSetStatusInput;
+	const runtime = dependencies.runtime ?? defaultRuntime;
+	const readInput =
+		dependencies.readInput ??
+		((source: string) => readSetStatusInput(source, runtime));
 	const payload = parseFeatureStatesPayload(await readInput(args.source));
 
 	const implementationName = await resolveImplementationName(

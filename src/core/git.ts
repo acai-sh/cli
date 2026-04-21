@@ -1,4 +1,5 @@
 import { runtimeError } from "./errors.ts";
+import { defaultRuntime } from "./runtime.ts";
 
 export interface GitContext {
 	repoUri: string;
@@ -30,20 +31,7 @@ export interface GitCommandRunner {
 
 const defaultGitRunner: GitCommandRunner = {
 	async run(args, cwd) {
-		const proc = Bun.spawn({
-			cmd: ["git", ...args],
-			cwd,
-			stdout: "pipe",
-			stderr: "pipe",
-		});
-
-		const [stdout, stderr, exitCode] = await Promise.all([
-			new Response(proc.stdout).text(),
-			new Response(proc.stderr).text(),
-			proc.exited,
-		]);
-
-		return { exitCode, stdout, stderr };
+		return defaultRuntime.runCommand("git", args, { cwd });
 	},
 };
 
