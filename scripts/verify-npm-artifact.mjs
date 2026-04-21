@@ -35,12 +35,12 @@ async function main() {
 
     const api = await createMockApiServer();
     try {
-      await verifyHelpOutput(entrypoint, api.env, api.requests);
-      await verifySkillCommand(entrypoint, canonicalSkill, api.env, api.requests);
-      await verifyPushCommand(entrypoint, api.env, api.requests);
-      await verifySetStatusFileInput(entrypoint, api.env);
-      await verifySetStatusStdinInput(entrypoint, api.env);
-      await verifyJsonStdoutStderrSeparation(entrypoint, api.env);
+      await verifyHelpOutput(binPath, api.env, api.requests);
+      await verifySkillCommand(binPath, canonicalSkill, api.env, api.requests);
+      await verifyPushCommand(binPath, api.env, api.requests);
+      await verifySetStatusFileInput(binPath, api.env);
+      await verifySetStatusStdinInput(binPath, api.env);
+      await verifyJsonStdoutStderrSeparation(binPath, api.env);
 
       console.log("cli-core.DIST.1 verified with packed npm artifact under real Node.");
     } finally {
@@ -79,14 +79,14 @@ async function installPackedArtifact(tarballPath, tempRoot) {
 }
 
 // cli-core.HELP.1 / cli-core.HELP.3 / cli-core.HELP.4 / cli-core.UX.1 / cli-core.UX.2
-async function verifyHelpOutput(entrypoint, env, requests) {
+async function verifyHelpOutput(binPath, env, requests) {
   const baselineRequests = requests.length;
-  const topLevel = await runNodeCli(entrypoint, [], { env });
+  const topLevel = await runInstalledCli(binPath, [], { env });
   assert.equal(topLevel.exitCode, 0);
   assert.equal(topLevel.stderr, "");
   assert.match(topLevel.stdout, /Usage: acai/);
 
-  const commandHelp = await runNodeCli(entrypoint, ["push", "--help"], { env });
+  const commandHelp = await runInstalledCli(binPath, ["push", "--help"], { env });
   assert.equal(commandHelp.exitCode, 0);
   assert.equal(commandHelp.stderr, "");
   assert.match(commandHelp.stdout, /Usage: acai push/);
@@ -95,13 +95,13 @@ async function verifyHelpOutput(entrypoint, env, requests) {
 }
 
 // skill.MAIN.2 / skill.MAIN.3 / skill.WRITE.1 / skill.WRITE.2 / skill.SAFETY.1 / skill.SAFETY.3 / skill.UX.1 / skill.UX.2
-async function verifySkillCommand(entrypoint, canonicalSkill, env, requests) {
+async function verifySkillCommand(binPath, canonicalSkill, env, requests) {
   const workspace = await createWorkspace({}, "acai-npm-skill-");
   const installPath = join(workspace.root, ".agents", "skills", "acai", "SKILL.md");
   const baselineRequests = requests.length;
 
   try {
-    const printResult = await runNodeCli(entrypoint, ["skill"], {
+    const printResult = await runInstalledCli(binPath, ["skill"], {
       cwd: workspace.root,
       env,
     });
@@ -109,7 +109,7 @@ async function verifySkillCommand(entrypoint, canonicalSkill, env, requests) {
     assert.equal(printResult.stderr, "");
     assert.equal(printResult.stdout, canonicalSkill);
 
-    const installResult = await runNodeCli(entrypoint, ["skill", "--install"], {
+    const installResult = await runInstalledCli(binPath, ["skill", "--install"], {
       cwd: workspace.root,
       env,
     });
@@ -125,7 +125,7 @@ async function verifySkillCommand(entrypoint, canonicalSkill, env, requests) {
 }
 
 // push.MAIN.3 / push.MAIN.7 / push.MAIN.8 / push.SCAN.1 / push.SCAN.2 / push.SCAN.2-1 / push.SCAN.3 / push.UX.1
-async function verifyPushCommand(entrypoint, env, requests) {
+async function verifyPushCommand(binPath, env, requests) {
   const workspace = await createWorkspace(
     {
       "features/alpha.feature.yaml": "feature:\n  name: alpha\n  product: product-a\ncomponents:\n  MAIN:\n    requirements:\n      1: Alpha requirement\n",
@@ -139,7 +139,7 @@ async function verifyPushCommand(entrypoint, env, requests) {
   });
 
   try {
-    const result = await runNodeCli(entrypoint, ["push", "--all"], {
+    const result = await runInstalledCli(binPath, ["push", "--all"], {
       cwd: workspace.root,
       env: {
         ...env,
@@ -166,7 +166,7 @@ async function verifyPushCommand(entrypoint, env, requests) {
 }
 
 // set-status.MAIN.2 / set-status.UX.2
-async function verifySetStatusFileInput(entrypoint, env) {
+async function verifySetStatusFileInput(binPath, env) {
   const workspace = await createWorkspace(
     {
       "states.json": '{"set-status.MAIN.1":{"status":"completed"}}',
@@ -175,8 +175,8 @@ async function verifySetStatusFileInput(entrypoint, env) {
   );
 
   try {
-    const result = await runNodeCli(
-      entrypoint,
+    const result = await runInstalledCli(
+      binPath,
       ["set-status", "@states.json", "--product", "example-product", "--impl", "main"],
       { cwd: workspace.root, env },
     );
@@ -189,9 +189,9 @@ async function verifySetStatusFileInput(entrypoint, env) {
 }
 
 // set-status.MAIN.3 / set-status.UX.2
-async function verifySetStatusStdinInput(entrypoint, env) {
-  const result = await runNodeCli(
-    entrypoint,
+async function verifySetStatusStdinInput(binPath, env) {
+  const result = await runInstalledCli(
+    binPath,
     ["set-status", "-", "--product", "example-product", "--impl", "main"],
     {
       env,
@@ -204,9 +204,9 @@ async function verifySetStatusStdinInput(entrypoint, env) {
 }
 
 // cli-core.OUTPUT.1 / cli-core.OUTPUT.2 / set-status.MAIN.6
-async function verifyJsonStdoutStderrSeparation(entrypoint, env) {
-  const result = await runNodeCli(
-    entrypoint,
+async function verifyJsonStdoutStderrSeparation(binPath, env) {
+  const result = await runInstalledCli(
+    binPath,
     ["set-status", '{"set-status.MAIN.1":{"status":"completed"}}', "--product", "example-product", "--impl", "main", "--json"],
     { env },
   );
@@ -216,8 +216,8 @@ async function verifyJsonStdoutStderrSeparation(entrypoint, env) {
   assert.equal(JSON.parse(result.stdout).data.feature_name, "set-status");
 }
 
-async function runNodeCli(entrypoint, args, options = {}) {
-  return runCommand(process.execPath, [entrypoint, ...args], options);
+async function runInstalledCli(binPath, args, options = {}) {
+  return runCommand(binPath, args, options);
 }
 
 async function runCommand(command, args, options = {}) {

@@ -124,6 +124,8 @@ describe("cli-core.DIST.1 cli-core.DIST.2 cli-core.DIST.3", () => {
         expect(releaseWorkflow).toContain("SHA256SUMS.txt");
         expect(npmArtifactVerification).toContain("bun-node-fallback-bin");
         expect(npmArtifactVerification).toContain('"npm", ["install", "--no-package-lock", tarballPath]');
+        expect(npmArtifactVerification).toContain('"node_modules", ".bin", "acai"');
+        expect(npmArtifactVerification).toContain("runInstalledCli(binPath");
         expect(npmArtifactVerification).toContain("cli-core.DIST.1 verification requires a real Node runtime");
         expect(releaseDocs).toContain("bun run verify:npm-artifact");
         expect(releaseDocs).toContain("real Node runtime");

@@ -17,7 +17,7 @@ The CLI is available on NPM as a JavaScript bundle.
 npm i -g @acai.sh/cli
 ```
 
-The release pipeline verifies the packed npm artifact under a real Node runtime before publishing.
+The release pipeline verifies the packed npm artifact through the installed `acai` command under a real Node runtime before publishing.
 
 If you don't have a JavaScript runtime, we have macOS and Linux releases available on GitHub.
 
