@@ -91,6 +91,25 @@ describe("set-status input loading", () => {
 			"Missing file path after @ input selector.",
 		);
 	});
+
+	test("set-status.MAIN.2 set-status.MAIN.3 route @file and - input through the runtime abstraction", async () => {
+		const runtime = {
+			getArgv: () => [],
+			readTextFile: mock(async (filePath: string) => `file:${filePath}`),
+			readStdinText: mock(async () => "stdin-json"),
+			runCommand: mock(async () => ({ exitCode: 0, stdout: "", stderr: "" })),
+		};
+
+		await expect(readSetStatusInput("@payload.json", runtime)).resolves.toBe(
+			"file:payload.json",
+		);
+		await expect(readSetStatusInput("-", runtime)).resolves.toBe(
+			"stdin-json",
+		);
+
+		expect(runtime.readTextFile).toHaveBeenCalledWith("payload.json");
+		expect(runtime.readStdinText).toHaveBeenCalled();
+	});
 });
 
 describe("set-status payload validation", () => {

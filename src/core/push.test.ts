@@ -6,6 +6,7 @@ import {
 	buildPushPayloads,
 	normalizePushOptions,
 	parseFeatureDocument,
+	parseFeatureSpecFile,
 	planPush,
 	runPushCommand,
 	scanPushRepo,
@@ -116,6 +117,62 @@ describe("push reference scanning", () => {
 				isTest: true,
 			},
 		]);
+	});
+
+	test("push.SCAN.1 push.SCAN.2 read spec and reference files through the runtime abstraction", async () => {
+		const runtime = {
+			getArgv: () => [],
+			readTextFile: mock(async (filePath: string) => {
+				if (filePath.endsWith("features/alpha.feature.yaml")) {
+					return [
+						"feature:",
+						"  name: alpha",
+						"  product: product-a",
+						"components:",
+						"  MAIN:",
+						"    requirements:",
+						"      1: First requirement",
+					].join("\n");
+				}
+
+				if (filePath.endsWith("src/app.ts")) {
+					return 'const acid = "alpha.MAIN.1";\n';
+				}
+
+				throw new Error(`unexpected path: ${filePath}`);
+			}),
+			readStdinText: mock(async () => ""),
+			runCommand: mock(async () => ({ exitCode: 0, stdout: "", stderr: "" })),
+		};
+
+		const spec = await parseFeatureSpecFile(
+			"/repo",
+			"features/alpha.feature.yaml",
+			createGitRunner({ 'log -1 --format=%H -- features/alpha.feature.yaml': 'abc123' }),
+			runtime,
+		);
+		const references = await scanPushReferences(
+			"/repo",
+			["src/app.ts"],
+			undefined,
+			runtime,
+		);
+
+		expect(spec).toMatchObject({
+			featureName: "alpha",
+			productName: "product-a",
+			path: "features/alpha.feature.yaml",
+			lastSeenCommit: "abc123",
+		});
+		expect(references).toEqual([
+			{
+				featureName: "alpha",
+				acid: "alpha.MAIN.1",
+				path: "src/app.ts:1",
+				isTest: false,
+			},
+		]);
+		expect(runtime.readTextFile).toHaveBeenCalledTimes(2);
 	});
 });
 

@@ -11,6 +11,7 @@ import {
 	type GitCommandRunner,
 	type GitPushContext,
 } from "./git.ts";
+import { defaultRuntime, type RuntimeCompat } from "./runtime.ts";
 
 export type PushRequest = components["schemas"]["PushRequest"];
 export type PushSpec = NonNullable<PushRequest["specs"]>[number];
@@ -21,6 +22,7 @@ export type PushReference = NonNullable<
 export interface PushCommandOptions {
 	cwd?: string;
 	runner?: GitCommandRunner;
+	runtime?: RuntimeCompat;
 	featureNames?: string[];
 	all?: boolean;
 	product?: string;
@@ -136,12 +138,14 @@ export async function planPush(
 ): Promise<PushPlan> {
 	const cwd = options.cwd ?? process.cwd();
 	const runner = options.runner;
+	const runtime = options.runtime ?? defaultRuntime;
 	const repoRoot = await readGitRepoRoot({ cwd, runner });
 	const [gitContext, scan] = await Promise.all([
 		readGitPushContext({ cwd: repoRoot, runner }),
 		scanPushRepo({
 			cwd: repoRoot,
 			runner,
+			runtime,
 			featureNames: options.featureNames,
 			repoRoot,
 		}),
@@ -163,12 +167,14 @@ export async function scanPushRepo(
 	options: {
 		cwd?: string;
 		runner?: GitCommandRunner;
+		runtime?: RuntimeCompat;
 		featureNames?: string[];
 		repoRoot?: string;
 	} = {},
 ): Promise<PushScanResult> {
 	const cwd = options.cwd ?? process.cwd();
 	const runner = options.runner;
+	const runtime = options.runtime ?? defaultRuntime;
 	const featureFilter = normalizeFeatureFilter(options.featureNames);
 	const repoRoot = options.repoRoot ?? (await readGitRepoRoot({ cwd, runner }));
 	const filePaths = await listRepoFiles(repoRoot);
@@ -177,7 +183,12 @@ export async function scanPushRepo(
 	for (const relativePath of filePaths) {
 		if (!isFeatureSpecPath(relativePath)) continue;
 
-		const spec = await parseFeatureSpecFile(repoRoot, relativePath, runner);
+		const spec = await parseFeatureSpecFile(
+			repoRoot,
+			relativePath,
+			runner,
+			runtime,
+		);
 		if (
 			featureFilter !== undefined &&
 			!featureFilter.has(spec.spec.feature.name)
@@ -191,6 +202,7 @@ export async function scanPushRepo(
 		repoRoot,
 		filePaths,
 		featureFilter,
+		runtime,
 	);
 	return { specs, references };
 }
@@ -200,9 +212,10 @@ export async function parseFeatureSpecFile(
 	cwd: string,
 	relativePath: string,
 	runner?: GitCommandRunner,
+	runtime: RuntimeCompat = defaultRuntime,
 ): Promise<DiscoveredPushSpec> {
 	const absolutePath = joinPath(cwd, relativePath);
-	const raw = await Bun.file(absolutePath).text();
+	const raw = await runtime.readTextFile(absolutePath);
 	const parsed = parseFeatureDocument(raw, relativePath);
 	const lastSeenCommit = await resolveSpecLastSeenCommit(
 		cwd,
@@ -239,6 +252,7 @@ export async function scanPushReferences(
 	cwd: string,
 	filePaths: string[],
 	featureFilter?: Set<string>,
+	runtime: RuntimeCompat = defaultRuntime,
 ): Promise<DiscoveredPushReference[]> {
 	const references: DiscoveredPushReference[] = [];
 
@@ -246,7 +260,7 @@ export async function scanPushReferences(
 		if (!shouldScanForReferences(relativePath)) continue;
 
 		const absolutePath = joinPath(cwd, relativePath);
-		const text = await Bun.file(absolutePath).text();
+		const text = await runtime.readTextFile(absolutePath);
 		const seen = new Set<string>();
 
 		for (const match of text.matchAll(FULL_ACID_PATTERN)) {
