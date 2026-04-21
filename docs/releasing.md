@@ -89,7 +89,7 @@ If this job fails, nothing is published.
 
 ### 2. `publish-npm`
 
-This job publishes the `acai` package to npm using `npm publish --access public --provenance`.
+This job publishes the `@acai.sh/cli` package to npm using `npm publish --access public --provenance`.
 
 Behavior:
 
@@ -98,7 +98,11 @@ Behavior:
 
 This job uses npm trusted publishing via GitHub Actions OIDC.
 
-GitHub Actions OIDC provenance is enabled through the `npm` environment, workflow permissions, and `npm publish --access public --provenance`.
+GitHub Actions OIDC trusted publishing is enabled through the `npm` environment, workflow permissions, and `npm publish --access public --provenance`.
+
+The workflow intentionally does not configure `registry-url` or provide `NODE_AUTH_TOKEN` for the publish step. The publish itself should authenticate through OIDC, not a long-lived npm token.
+
+The publish job also prints `node --version` and `npm --version` before publishing so maintainers can quickly confirm the runner has a trusted-publishing-capable toolchain.
 
 ### 3. `build-release-binaries`
 
@@ -150,11 +154,13 @@ That will:
 The workflow uses:
 
 1. `contents: write` to publish GitHub Releases
-2. `id-token: write` for npm provenance
+2. `id-token: write` for npm trusted publishing and provenance
 
 ### Repository secrets
 
 No npm token is required when trusted publishing is configured correctly.
+
+If `actions/setup-node` is configured with `registry-url`, the job logs may still show `NODE_AUTH_TOKEN` because the action exports a placeholder value for npm auth wiring. That does not mean a real npm token is in use.
 
 ## Common Failure Modes
 
@@ -173,11 +179,18 @@ Fix by making them match exactly.
 
 Check:
 
-1. `NPM_TOKEN` is configured
-2. trusted publishing is configured for the correct repository, workflow, and `npm` environment
-3. the scoped package is being published with public access
-4. the package name is available or you have publish rights
-5. the version has not already been published
+1. the package has a trusted publisher configured for GitHub Actions
+2. the trusted publisher matches repository `acai-sh/cli`
+3. the trusted publisher workflow filename is exactly `release.yml`
+4. the trusted publisher environment name is exactly `npm`
+5. the workflow job includes `permissions: id-token: write`
+6. the publish job is running on a GitHub-hosted runner
+7. the publish toolchain is new enough for trusted publishing: Node `>= 22.14.0` and npm `>= 11.5.1`
+8. the scoped package is being published with public access
+9. the package name is available or you have publish rights
+10. the version has not already been published
+
+If the job fails with `E404 Not Found - PUT https://registry.npmjs.org/@scope%2fname`, npm usually has not accepted the workflow as an authorized publisher for that package. Re-check the trusted publisher fields for an exact match.
 
 ### GitHub Release succeeds but assets are missing
 
