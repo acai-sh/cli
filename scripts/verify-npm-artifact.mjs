@@ -165,7 +165,9 @@ async function verifyPushCommand(binPath, env, requests) {
     assert.ok(pushRequest, "expected packaged push command to call /push");
     assert.equal(pushRequest.body.repo_uri, "github.com/my-org/my-repo");
     assert.equal(pushRequest.body.branch_name, "main");
-    assert.equal(pushRequest.body.specs[0].feature_name, "alpha");
+    assert.equal(pushRequest.body.product_name, "product-a");
+    assert.equal(pushRequest.body.specs[0].feature.name, "alpha");
+    assert.equal(pushRequest.body.specs[0].feature.product, "product-a");
     assert.deepEqual(pushRequest.body.references.data["alpha.MAIN.1"], [
       { path: "src/alpha.ts:1", is_test: false },
     ]);
