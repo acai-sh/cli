@@ -70,8 +70,6 @@ jobs:
                   else
                     npm publish --provenance
                   fi
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     build-release-binaries:
         runs-on: ubuntu-latest
