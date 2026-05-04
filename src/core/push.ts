@@ -995,7 +995,9 @@ function isTestPath(relativePath: string): boolean {
 	const normalized = relativePath.split("\\").join("/");
 	const segments = normalized.split("/");
 	if (segments.some((segment) => TEST_PATH_SEGMENTS.has(segment))) return true;
-	return /(^|\.)(test|spec)\.[^.]+$/i.test(segments[segments.length - 1] ?? "");
+	return /(^|[._])(test|spec)\.[^.]+$/i.test(
+		segments[segments.length - 1] ?? "",
+	);
 }
 
 function compareReferenceEntries(
