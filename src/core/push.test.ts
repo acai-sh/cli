@@ -174,6 +174,104 @@ describe("push reference scanning", () => {
 		]);
 		expect(runtime.readTextFile).toHaveBeenCalledTimes(2);
 	});
+
+	test("recognizes Go _test.go files as test references", async () => {
+		const root = await createRepoFixture({
+			"internal/store/sqlite.go": `const ref = "sample.STORE.1";\n`,
+			"internal/store/sqlite_test.go": `const ref = "sample.STORE.1";\n`,
+		});
+
+		const references = await scanPushReferences(root, [
+			"internal/store/sqlite.go",
+			"internal/store/sqlite_test.go",
+		]);
+
+		expect(references).toHaveLength(2);
+		expect(references).toEqual(
+			expect.arrayContaining([
+			{
+				featureName: "sample",
+				acid: "sample.STORE.1",
+				path: "internal/store/sqlite.go:1",
+				isTest: false,
+			},
+			{
+				featureName: "sample",
+				acid: "sample.STORE.1",
+				path: "internal/store/sqlite_test.go:1",
+				isTest: true,
+			},
+			]),
+		);
+	});
+
+	test("recognizes underscore-delimited test conventions", async () => {
+		const root = await createRepoFixture({
+			"lib/parser.ex": `const ref = "parser.MAIN.1";\n`,
+			"lib/parser_test.exs": `const ref = "parser.MAIN.1";\n`,
+			"tests/parser_spec.py": `const ref = "parser.MAIN.1";\n`,
+		});
+
+		const references = await scanPushReferences(root, [
+			"lib/parser.ex",
+			"lib/parser_test.exs",
+			"tests/parser_spec.py",
+		]);
+
+		expect(references).toHaveLength(3);
+		expect(references).toEqual(
+			expect.arrayContaining([
+			{
+				featureName: "parser",
+				acid: "parser.MAIN.1",
+				path: "lib/parser.ex:1",
+				isTest: false,
+			},
+			{
+				featureName: "parser",
+				acid: "parser.MAIN.1",
+				path: "lib/parser_test.exs:1",
+				isTest: true,
+			},
+			{
+				featureName: "parser",
+				acid: "parser.MAIN.1",
+				path: "tests/parser_spec.py:1",
+				isTest: true,
+			},
+			]),
+		);
+	});
+
+	test("keeps existing dot-delimited conventions working", async () => {
+		const root = await createRepoFixture({
+			"src/app.test.ts": `const ref = "app.MAIN.1";\n`,
+			"src/app.spec.js": `const ref = "app.MAIN.1";\n`,
+		});
+
+		const references = await scanPushReferences(root, [
+			"src/app.test.ts",
+			"src/app.spec.js",
+		]);
+
+		expect(references).toHaveLength(2);
+		expect(references).toEqual(
+			expect.arrayContaining([
+			{
+				featureName: "app",
+				acid: "app.MAIN.1",
+				path: "src/app.spec.js:1",
+				isTest: true,
+			},
+			{
+				featureName: "app",
+				acid: "app.MAIN.1",
+				path: "src/app.test.ts:1",
+				isTest: true,
+			},
+			]),
+		);
+	});
 });
 
 describe("push payload construction", () => {
