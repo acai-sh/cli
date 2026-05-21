@@ -777,6 +777,83 @@ describe("push planning", () => {
 			"alpha",
 		]);
 	});
+
+	test("scanPushRepo skips extended build-output directories like target/, build/, .next/", async () => {
+		const root = await createRepoFixture({
+			"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: product-a\ncomponents:\n  MAIN:\n    requirements:\n      1: Alpha requirement\n`,
+			"src/main.ts": `// alpha.MAIN.1\n`,
+			// These should all be skipped during ref scanning.
+			"target/release/foo.rs": `// alpha.MAIN.1 leak from target\n`,
+			"build/output.js": `// alpha.MAIN.1 leak from build\n`,
+			".next/cache/x.js": `// alpha.MAIN.1 leak from .next\n`,
+			"vendor/pkg/lib.go": `// alpha.MAIN.1 leak from vendor\n`,
+			"__pycache__/m.pyc": `// alpha.MAIN.1 leak from __pycache__\n`,
+		});
+
+		const runner = createGitRunner({
+			"rev-parse --show-toplevel": root,
+			"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+		});
+
+		const scan = await scanPushRepo({
+			cwd: root,
+			runner: runner as never,
+		});
+
+		// Only the legitimate src/main.ts reference should be discovered.
+		expect(scan.references.map((entry) => entry.path)).toEqual([
+			"src/main.ts:1",
+		]);
+	});
+
+	test("scanPushRepo descends into src-tauri/src so Rust source ACIDs are discovered, while src-tauri/target is still skipped via the target rule", async () => {
+		const root = await createRepoFixture({
+			"features/tauri.feature.yaml": `feature:\n  name: tauri\n  product: app\ncomponents:\n  RUST:\n    requirements:\n      1: Native handler\n`,
+			// Real Rust source — should be scanned.
+			"src-tauri/src/main.rs": `// tauri.RUST.1\n`,
+			// Cargo build artifacts — must be skipped.
+			"src-tauri/target/release/app": `// tauri.RUST.1 leak\n`,
+		});
+
+		const runner = createGitRunner({
+			"rev-parse --show-toplevel": root,
+			"log -1 --format=%H -- features/tauri.feature.yaml": "t1",
+		});
+
+		const scan = await scanPushRepo({
+			cwd: root,
+			runner: runner as never,
+		});
+
+		expect(scan.references.map((entry) => entry.path)).toEqual([
+			"src-tauri/src/main.rs:1",
+		]);
+	});
+
+	test("scanPushRepo descends into features/<name>/ even when <name> matches a build-output directory (e.g. features/build/)", async () => {
+		const root = await createRepoFixture({
+			// Spec located under features/build/ — should be discovered despite
+			// "build" being in IGNORED_REF_DIRS.
+			"features/build/login.feature.yaml": `feature:\n  name: login\n  product: build\ncomponents:\n  FORM:\n    requirements:\n      1: Login form\n`,
+			"features/runtime/checkout.feature.yaml": `feature:\n  name: checkout\n  product: runtime\ncomponents:\n  CART:\n    requirements:\n      1: Cart flow\n`,
+		});
+
+		const runner = createGitRunner({
+			"rev-parse --show-toplevel": root,
+			"log -1 --format=%H -- features/build/login.feature.yaml": "b1",
+			"log -1 --format=%H -- features/runtime/checkout.feature.yaml": "r1",
+		});
+
+		const scan = await scanPushRepo({
+			cwd: root,
+			runner: runner as never,
+		});
+
+		expect(scan.specs.map((entry) => entry.featureName).sort()).toEqual([
+			"checkout",
+			"login",
+		]);
+	});
 });
 
 describe("push option normalization", () => {
