@@ -796,10 +796,103 @@ export function buildPushPayloads(
 }
 
 async function listRepoFiles(cwd: string): Promise<string[]> {
-	return walkFiles(cwd, cwd);
+	const ignoreMatcher = await loadAcaiIgnore(cwd);
+	return walkFiles(cwd, cwd, ignoreMatcher);
 }
 
-async function walkFiles(root: string, directory: string): Promise<string[]> {
+/**
+ * Loads `.acaiignore` from the repo root and returns a matcher function.
+ * Falls back to a no-op matcher if the file does not exist.
+ *
+ * Supports a subset of gitignore syntax:
+ *  - blank lines and lines starting with `#` are ignored
+ *  - lines without `/` match any path segment (e.g. `target` matches `foo/target/bar`)
+ *  - lines with `/` match path prefixes relative to the repo root (e.g. `src/legacy/`)
+ *  - trailing `/` is stripped (we always match against directory entries)
+ *  - leading `/` anchors the pattern to the repo root
+ *  - `*` is treated as `[^/]*` (single-segment glob)
+ *
+ * Negation (`!pattern`) and `**` are intentionally not supported in this minimal version.
+ */
+async function loadAcaiIgnore(
+	cwd: string,
+): Promise<(relativePath: string, isDirectory: boolean) => boolean> {
+	const { readFile } = await import("node:fs/promises");
+	const { join } = await import("node:path");
+
+	let raw: string;
+	try {
+		raw = await readFile(join(cwd, ".acaiignore"), "utf8");
+	} catch {
+		return () => false;
+	}
+
+	const segmentPatterns: RegExp[] = []; // match any single path segment
+	const prefixPatterns: RegExp[] = []; // match relative path prefix
+
+	for (const rawLine of raw.split(/\r?\n/)) {
+		const line = rawLine.trim();
+		if (!line || line.startsWith("#")) continue;
+		if (line.startsWith("!")) continue; // negation not supported
+
+		const stripped = line.replace(/\/+$/u, ""); // remove trailing slash
+		const anchored = stripped.startsWith("/");
+		const body = anchored ? stripped.slice(1) : stripped;
+		if (!body) continue;
+
+		const regex = globToRegExp(body);
+
+		if (anchored || body.includes("/")) {
+			prefixPatterns.push(regex);
+		} else {
+			segmentPatterns.push(regex);
+		}
+	}
+
+	if (segmentPatterns.length === 0 && prefixPatterns.length === 0) {
+		return () => false;
+	}
+
+	return (relativePath, _isDirectory) => {
+		const segments = relativePath.split("/");
+		for (const segment of segments) {
+			if (!segment) continue;
+			for (const pattern of segmentPatterns) {
+				if (pattern.test(segment)) return true;
+			}
+		}
+		for (const pattern of prefixPatterns) {
+			if (pattern.test(relativePath)) return true;
+		}
+		return false;
+	};
+}
+
+/**
+ * Converts a gitignore-style pattern to a RegExp anchored to the start of the input.
+ * Only `*` is treated as a glob (single segment, `[^/]*`).
+ */
+function globToRegExp(pattern: string): RegExp {
+	let regex = "^";
+	for (const ch of pattern) {
+		if (ch === "*") {
+			regex += "[^/]*";
+		} else if (/[.+?^${}()|[\]\\]/u.test(ch)) {
+			regex += `\\${ch}`;
+		} else {
+			regex += ch;
+		}
+	}
+	regex += "(?:/.*)?$";
+	return new RegExp(regex);
+}
+
+async function walkFiles(
+	root: string,
+	directory: string,
+	ignoreMatcher: (relativePath: string, isDirectory: boolean) => boolean = () =>
+		false,
+): Promise<string[]> {
 	const { readdir } = await import("node:fs/promises");
 	const { join, relative } = await import("node:path");
 	const collected: string[] = [];
@@ -816,25 +909,24 @@ async function walkFiles(root: string, directory: string): Promise<string[]> {
 		dirEntries.sort((left, right) => left.name.localeCompare(right.name));
 
 		for (const entry of dirEntries) {
+			const fullPath = join(current, entry.name);
+			const relativePath = relative(root, fullPath).split("\\").join("/");
+
 			if (entry.isDirectory()) {
 				// Always descend into the canonical features/ tree, even if a
 				// subdirectory shares a name with a build-output directory
 				// (e.g. `features/build/*.feature.yaml` for a product named "build").
-				const relativePath = relative(root, join(current, entry.name))
-					.split("\\")
-					.join("/");
 				const isUnderFeaturesRoot =
 					relativePath === FEATURE_SPEC_PREFIX.replace(/\/$/u, "") ||
 					relativePath.startsWith(FEATURE_SPEC_PREFIX);
 				if (!isUnderFeaturesRoot && IGNORED_REF_DIRS.has(entry.name)) continue;
-				queue.push(join(current, entry.name));
+				if (ignoreMatcher(relativePath, true)) continue;
+				queue.push(fullPath);
 				continue;
 			}
 
 			if (!entry.isFile()) continue;
-			const relativePath = relative(root, join(current, entry.name))
-				.split("\\")
-				.join("/");
+			if (ignoreMatcher(relativePath, false)) continue;
 			collected.push(relativePath);
 		}
 	}

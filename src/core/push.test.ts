@@ -854,6 +854,161 @@ describe("push planning", () => {
 			"login",
 		]);
 	});
+
+	describe(".acaiignore support", () => {
+		test("missing .acaiignore behaves as a no-op", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				"src/a.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path)).toEqual(["src/a.ts:1"]);
+		});
+
+		test("segment patterns ignore matching directories anywhere in the tree", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				".acaiignore": "large-data\n",
+				"large-data/dump.ts": `// alpha.M.1\n`,
+				"src/large-data/x.ts": `// alpha.M.1\n`,
+				"src/main.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path)).toEqual(["src/main.ts:1"]);
+		});
+
+		test("prefix patterns (containing /) match relative path prefixes only", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				".acaiignore": "src/legacy/\n",
+				"src/legacy/old.ts": `// alpha.M.1\n`,
+				"src/new.ts": `// alpha.M.1\n`,
+				"other/legacy/keep.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path).sort()).toEqual([
+				"other/legacy/keep.ts:1",
+				"src/new.ts:1",
+			]);
+		});
+
+		test("leading slash anchors a pattern to the repo root", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				".acaiignore": "/build-cache\n",
+				"build-cache/x.ts": `// alpha.M.1\n`,
+				"src/build-cache/y.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path)).toEqual([
+				"src/build-cache/y.ts:1",
+			]);
+		});
+
+		test("single-segment * glob matches any single segment", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				".acaiignore": "*.egg-info\n",
+				"foo.egg-info/PKG-INFO": `// alpha.M.1\n`,
+				"bar.egg-info/PKG-INFO": `// alpha.M.1\n`,
+				"src/main.py": `# alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path)).toEqual(["src/main.py:1"]);
+		});
+
+		test("comments and blank lines are skipped", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				".acaiignore": "\n# this is a comment\n\nlegacy\n  # leading-spaces also a comment\n",
+				"legacy/old.ts": `// alpha.M.1\n`,
+				"src/main.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path)).toEqual(["src/main.ts:1"]);
+		});
+
+		test("negation lines (!pattern) are skipped (unsupported, no crash)", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				// `legacy` ignores legacy/, the negation line is ignored as "unsupported".
+				".acaiignore": "legacy\n!legacy/keep.ts\n",
+				"legacy/old.ts": `// alpha.M.1\n`,
+				"legacy/keep.ts": `// alpha.M.1\n`,
+				"src/main.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			// Negation is unsupported, so legacy/keep.ts stays excluded.
+			expect(scan.references.map((r) => r.path)).toEqual(["src/main.ts:1"]);
+		});
+
+		test("file-level patterns (e.g. snapshot.json) ignore matching files", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				".acaiignore": "snapshot.json\n",
+				"snapshot.json": `{ "ref": "alpha.M.1" }\n`,
+				"src/main.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path)).toEqual(["src/main.ts:1"]);
+		});
+	});
 });
 
 describe("push option normalization", () => {
