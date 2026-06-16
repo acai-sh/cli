@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+process.loadEnvFile?.();
 import { runCli } from "./core/cli.ts";
 import { defaultRuntime } from "./core/runtime.ts";
 
