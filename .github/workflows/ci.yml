@@ -13,7 +13,7 @@ jobs:
     test-and-build:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v6
 
             - uses: oven-sh/setup-bun@v2
 
@@ -31,11 +31,11 @@ jobs:
         runs-on: ubuntu-latest
         needs: test-and-build
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v6
 
             - uses: oven-sh/setup-bun@v2
 
-            - uses: actions/setup-node@v4
+            - uses: actions/setup-node@v6
               with:
                   node-version: 22
 

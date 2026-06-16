@@ -17,7 +17,7 @@ jobs:
     validate-release:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v6
 
             - uses: oven-sh/setup-bun@v2
 
@@ -55,7 +55,7 @@ jobs:
             contents: read
             id-token: write
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v6
 
             - uses: oven-sh/setup-bun@v2
 
@@ -96,7 +96,7 @@ jobs:
                       script: build:release:darwin-arm64
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v6
 
             - uses: oven-sh/setup-bun@v2
 
@@ -108,7 +108,7 @@ jobs:
               run: bun run ${{ matrix.script }}
 
             - name: Upload release artifact
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: ${{ matrix.artifact }}
                   path: dist/${{ matrix.artifact }}
@@ -121,10 +121,10 @@ jobs:
         permissions:
             contents: write
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v6
 
             - name: Download compiled binaries
-              uses: actions/download-artifact@v4
+              uses: actions/download-artifact@v8
               with:
                   path: dist
                   merge-multiple: true
