@@ -104,6 +104,7 @@ const FEATURE_SPEC_SUFFIX = ".feature.yaml";
 const FEATURE_SPEC_PREFIX = "features/";
 const UNSCOPED_REFS_BUCKET = "";
 const IGNORED_REF_DIRS = new Set([
+	// Existing entries
 	".git",
 	"node_modules",
 	"coverage",
@@ -111,6 +112,41 @@ const IGNORED_REF_DIRS = new Set([
 	"tmp",
 	".agents",
 	"states",
+	// Build outputs (added: prevent V8 string-length overflow on large repos)
+	"target", // Rust/Cargo, Java/Maven, Scala/sbt
+	"build", // CMake, Gradle, generic
+	"out", // Next.js export, generic
+	"bin", // .NET, generic
+	"obj", // .NET
+	".next", // Next.js
+	".nuxt", // Nuxt
+	".svelte-kit", // SvelteKit
+	".turbo", // Turborepo
+	".cache", // Many tools
+	".parcel-cache", // Parcel
+	".vite", // Vite
+	".astro", // Astro
+	"DerivedData", // Xcode
+	"Pods", // iOS / CocoaPods
+	// Note: do NOT add `src-tauri` here. It contains real Rust source under
+	// `src-tauri/src/**` that should be scanned. The heavy artifact is
+	// `src-tauri/target/`, which is already excluded by the `target` entry above.
+	// Python
+	"__pycache__",
+	".venv",
+	"venv",
+	".tox",
+	".mypy_cache",
+	".pytest_cache",
+	".ruff_cache",
+	// Note: this set uses exact-name matching. Glob patterns like `*.egg-info`
+	// must be expressed via `.acaiignore` (not yet supported in this PR).
+	// Go / PHP
+	"vendor",
+	// IDE / OS junk
+	".idea",
+	".vscode",
+	".DS_Store",
 ]);
 const TEST_PATH_SEGMENTS = new Set(["test", "tests", "__tests__"]);
 const REF_SCAN_EXCLUDED_SUFFIXES = new Set([
@@ -781,7 +817,16 @@ async function walkFiles(root: string, directory: string): Promise<string[]> {
 
 		for (const entry of dirEntries) {
 			if (entry.isDirectory()) {
-				if (IGNORED_REF_DIRS.has(entry.name)) continue;
+				// Always descend into the canonical features/ tree, even if a
+				// subdirectory shares a name with a build-output directory
+				// (e.g. `features/build/*.feature.yaml` for a product named "build").
+				const relativePath = relative(root, join(current, entry.name))
+					.split("\\")
+					.join("/");
+				const isUnderFeaturesRoot =
+					relativePath === FEATURE_SPEC_PREFIX.replace(/\/$/u, "") ||
+					relativePath.startsWith(FEATURE_SPEC_PREFIX);
+				if (!isUnderFeaturesRoot && IGNORED_REF_DIRS.has(entry.name)) continue;
 				queue.push(join(current, entry.name));
 				continue;
 			}
