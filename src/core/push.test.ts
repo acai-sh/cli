@@ -777,6 +777,238 @@ describe("push planning", () => {
 			"alpha",
 		]);
 	});
+
+	test("scanPushRepo skips extended build-output directories like target/, build/, .next/", async () => {
+		const root = await createRepoFixture({
+			"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: product-a\ncomponents:\n  MAIN:\n    requirements:\n      1: Alpha requirement\n`,
+			"src/main.ts": `// alpha.MAIN.1\n`,
+			// These should all be skipped during ref scanning.
+			"target/release/foo.rs": `// alpha.MAIN.1 leak from target\n`,
+			"build/output.js": `// alpha.MAIN.1 leak from build\n`,
+			".next/cache/x.js": `// alpha.MAIN.1 leak from .next\n`,
+			"vendor/pkg/lib.go": `// alpha.MAIN.1 leak from vendor\n`,
+			"__pycache__/m.pyc": `// alpha.MAIN.1 leak from __pycache__\n`,
+		});
+
+		const runner = createGitRunner({
+			"rev-parse --show-toplevel": root,
+			"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+		});
+
+		const scan = await scanPushRepo({
+			cwd: root,
+			runner: runner as never,
+		});
+
+		// Only the legitimate src/main.ts reference should be discovered.
+		expect(scan.references.map((entry) => entry.path)).toEqual([
+			"src/main.ts:1",
+		]);
+	});
+
+	test("scanPushRepo descends into src-tauri/src so Rust source ACIDs are discovered, while src-tauri/target is still skipped via the target rule", async () => {
+		const root = await createRepoFixture({
+			"features/tauri.feature.yaml": `feature:\n  name: tauri\n  product: app\ncomponents:\n  RUST:\n    requirements:\n      1: Native handler\n`,
+			// Real Rust source — should be scanned.
+			"src-tauri/src/main.rs": `// tauri.RUST.1\n`,
+			// Cargo build artifacts — must be skipped.
+			"src-tauri/target/release/app": `// tauri.RUST.1 leak\n`,
+		});
+
+		const runner = createGitRunner({
+			"rev-parse --show-toplevel": root,
+			"log -1 --format=%H -- features/tauri.feature.yaml": "t1",
+		});
+
+		const scan = await scanPushRepo({
+			cwd: root,
+			runner: runner as never,
+		});
+
+		expect(scan.references.map((entry) => entry.path)).toEqual([
+			"src-tauri/src/main.rs:1",
+		]);
+	});
+
+	test("scanPushRepo descends into features/<name>/ even when <name> matches a build-output directory (e.g. features/build/)", async () => {
+		const root = await createRepoFixture({
+			// Spec located under features/build/ — should be discovered despite
+			// "build" being in IGNORED_REF_DIRS.
+			"features/build/login.feature.yaml": `feature:\n  name: login\n  product: build\ncomponents:\n  FORM:\n    requirements:\n      1: Login form\n`,
+			"features/runtime/checkout.feature.yaml": `feature:\n  name: checkout\n  product: runtime\ncomponents:\n  CART:\n    requirements:\n      1: Cart flow\n`,
+		});
+
+		const runner = createGitRunner({
+			"rev-parse --show-toplevel": root,
+			"log -1 --format=%H -- features/build/login.feature.yaml": "b1",
+			"log -1 --format=%H -- features/runtime/checkout.feature.yaml": "r1",
+		});
+
+		const scan = await scanPushRepo({
+			cwd: root,
+			runner: runner as never,
+		});
+
+		expect(scan.specs.map((entry) => entry.featureName).sort()).toEqual([
+			"checkout",
+			"login",
+		]);
+	});
+
+	describe(".acaiignore support", () => {
+		test("missing .acaiignore behaves as a no-op", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				"src/a.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path)).toEqual(["src/a.ts:1"]);
+		});
+
+		test("segment patterns ignore matching directories anywhere in the tree", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				".acaiignore": "large-data\n",
+				"large-data/dump.ts": `// alpha.M.1\n`,
+				"src/large-data/x.ts": `// alpha.M.1\n`,
+				"src/main.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path)).toEqual(["src/main.ts:1"]);
+		});
+
+		test("prefix patterns (containing /) match relative path prefixes only", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				".acaiignore": "src/legacy/\n",
+				"src/legacy/old.ts": `// alpha.M.1\n`,
+				"src/new.ts": `// alpha.M.1\n`,
+				"other/legacy/keep.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path).sort()).toEqual([
+				"other/legacy/keep.ts:1",
+				"src/new.ts:1",
+			]);
+		});
+
+		test("leading slash anchors a pattern to the repo root", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				".acaiignore": "/build-cache\n",
+				"build-cache/x.ts": `// alpha.M.1\n`,
+				"src/build-cache/y.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path)).toEqual([
+				"src/build-cache/y.ts:1",
+			]);
+		});
+
+		test("single-segment * glob matches any single segment", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				".acaiignore": "*.egg-info\n",
+				"foo.egg-info/PKG-INFO": `// alpha.M.1\n`,
+				"bar.egg-info/PKG-INFO": `// alpha.M.1\n`,
+				"src/main.py": `# alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path)).toEqual(["src/main.py:1"]);
+		});
+
+		test("comments and blank lines are skipped", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				".acaiignore": "\n# this is a comment\n\nlegacy\n  # leading-spaces also a comment\n",
+				"legacy/old.ts": `// alpha.M.1\n`,
+				"src/main.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path)).toEqual(["src/main.ts:1"]);
+		});
+
+		test("negation lines (!pattern) are skipped (unsupported, no crash)", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				// `legacy` ignores legacy/, the negation line is ignored as "unsupported".
+				".acaiignore": "legacy\n!legacy/keep.ts\n",
+				"legacy/old.ts": `// alpha.M.1\n`,
+				"legacy/keep.ts": `// alpha.M.1\n`,
+				"src/main.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			// Negation is unsupported, so legacy/keep.ts stays excluded.
+			expect(scan.references.map((r) => r.path)).toEqual(["src/main.ts:1"]);
+		});
+
+		test("file-level patterns (e.g. snapshot.json) ignore matching files", async () => {
+			const root = await createRepoFixture({
+				"features/alpha.feature.yaml": `feature:\n  name: alpha\n  product: a\ncomponents:\n  M:\n    requirements:\n      1: r\n`,
+				".acaiignore": "snapshot.json\n",
+				"snapshot.json": `{ "ref": "alpha.M.1" }\n`,
+				"src/main.ts": `// alpha.M.1\n`,
+			});
+			const runner = createGitRunner({
+				"rev-parse --show-toplevel": root,
+				"log -1 --format=%H -- features/alpha.feature.yaml": "a1",
+			});
+			const scan = await scanPushRepo({
+				cwd: root,
+				runner: runner as never,
+			});
+			expect(scan.references.map((r) => r.path)).toEqual(["src/main.ts:1"]);
+		});
+	});
 });
 
 describe("push option normalization", () => {
